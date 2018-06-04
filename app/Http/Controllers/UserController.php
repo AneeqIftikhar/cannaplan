@@ -84,16 +84,6 @@ class UserController extends Controller
         //
     }
 
-
-
-
-
-
-
-
-
-
-    public $successStatus = 200;
     /**
      * login api
      *
@@ -102,11 +92,11 @@ class UserController extends Controller
     public function login(){
         if(Auth::attempt(['email' => request('email'), 'password' => request('password')])){
             $user = Auth::user();
-            $success['token'] =  $user->createToken('CannaPlan')-> accessToken;
-            return response()->success(array('token'=> $success['token']),'Logged In SuccessFully');
+            $token =  $user->createToken('CannaPlan')-> accessToken;
+            return response()->success(array('token'=> $token),'Logged In SuccessFully');
         }
         else{
-            return response()->json(['error'=>'Unauthorised'], 401);
+            return response()->fail('LogIn Failed');
         }
     }
     /**
@@ -123,14 +113,13 @@ class UserController extends Controller
             'password' => 'required',
         ]);
         if ($validator->fails()) {
-            return response()->json(['error'=>$validator->errors()], 401);
+            return response()->error(['error'=>$validator->errors()]);
         }
         $input = $request->all();
         $input['password'] = bcrypt($input['password']);
         $user = User::create($input);
-        $success['token'] =  $user->createToken('CannaPlan')-> accessToken;
-        $success['name'] =  $user->name;
-        return response()->json(['success'=>$success], $this-> successStatus);
+        $user['token']=  $user->createToken('CannaPlan')-> accessToken;
+        return response()->success($user,'User Registered Successfully');
     }
     /**
      * details api
@@ -140,6 +129,6 @@ class UserController extends Controller
     public function details()
     {
         $user = Auth::user();
-        return response()->json(['success' => $user], $this-> successStatus);
+        return response()->json(['success' => $user]);
     }
 }
