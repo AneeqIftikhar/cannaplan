@@ -25,6 +25,13 @@ class CreateUsersTable extends Migration
                 $table->timestamps();
             });
         }
+        else
+        {
+            Schema::table('users', function (Blueprint $table) {
+                $table->softDeletes();
+            });
+
+        }
 
 
     }

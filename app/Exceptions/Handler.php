@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
 
-
+use Illuminate\Database\QueryException;
 class Handler extends ExceptionHandler
 {
     /**
@@ -48,9 +48,18 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        $debugEnabled = config('app.debug');
         if($exception instanceof AuthenticationException)
         {
             return response()->token_error('Please Login Again To Get New Token');
+        }
+        else if ($exception instanceof QueryException) {
+            if ($debugEnabled) {
+                $message = $exception->getMessage();
+            } else {
+                $message = 'Internal Server Error';
+            }
+            return response()->fail($message);
         }
         return parent::render($request, $exception);
     }

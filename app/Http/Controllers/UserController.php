@@ -90,13 +90,16 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function login(){
-        if(Auth::attempt(['email' => request('email'), 'password' => request('password')])){
-            $user = Auth::user();
-            $token =  $user->createToken('CannaPlan')-> accessToken;
-            return response()->success(array('token'=> $token),'Logged In SuccessFully');
+        $user = User::get_user_from_email( request('email'));
+        if(!$user) {
+            return response()->fail('Email Not Found');
+        }
+        else if($user=User::authenticate_user_with_password(request('email') , request('password'))){
+
+            return response()->success($user,'Logged In SuccessFully');
         }
         else{
-            return response()->fail('LogIn Failed');
+            return response()->fail('Incorrect Email Or Password');
         }
     }
     /**
@@ -106,6 +109,7 @@ class UserController extends Controller
      */
     public function register(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'first_name' => 'required',
             'last_name' => 'required',
@@ -114,6 +118,11 @@ class UserController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->error(['error'=>$validator->errors()]);
+        }
+        $user = User::get_user_from_email( request('email'));
+        if($user)
+        {
+            return response()->fail('Email Already Registered');
         }
         $input = $request->all();
         $input['password'] = bcrypt($input['password']);
@@ -126,9 +135,14 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function details()
-    {
-        $user = Auth::user();
-        return response()->json(['success' => $user]);
+    public function details($id){
+        if(User::authenticate_user_with_token($id)) {
+            $user = Auth::user();
+            return response()->json(['success' => $user]);
+        }
+        else {
+            return response()->fail("Not Authorized");
+        }
+
     }
 }
