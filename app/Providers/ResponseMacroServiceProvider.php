@@ -52,6 +52,13 @@ class ResponseMacroServiceProvider extends ServiceProvider
             'data' => '',
           ]);
       });
+        Response::macro('token_error', function ($message='Empty') {
+            return Response::json([
+                'status'  => 'token_error',
+                'message' => $message,
+                'data' => '',
+            ]);
+        });
     }
 
     /**
