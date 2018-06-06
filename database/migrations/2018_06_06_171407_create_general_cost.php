@@ -13,8 +13,8 @@ class CreateGeneralCost extends Migration
      */
     public function up()
     {
-        if (!Schema::hasTable('forecast')) {
-            Schema::create('forecast', function (Blueprint $table) {
+        if (!Schema::hasTable('general_cost')) {
+            Schema::create('general_cost', function (Blueprint $table) {
                 $table->increments('id');
                 $table->integer('amount');
                 $table->date('cost_start_date');
@@ -33,6 +33,6 @@ class CreateGeneralCost extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('forecast');
+        Schema::dropIfExists('general_cost');
     }
 }
