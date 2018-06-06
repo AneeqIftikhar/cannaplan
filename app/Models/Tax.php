@@ -48,4 +48,10 @@ class Tax extends Model
     {
         return $this->hasMany('CannaPlan\Models\RevenueTax');
     }
+    /* many to many relation*/
+    public function revenues()
+    {
+        return $this->belongsToMany('CannaPlan\Models\Revenue', 'revenue_tax',
+            'tax_id', 'revenue_id');
+    }
 }

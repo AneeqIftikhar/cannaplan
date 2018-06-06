@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $forecast_id
@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Asset extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 

@@ -2,6 +2,7 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
@@ -134,6 +135,11 @@ class UserController extends Controller
         else {
             return response()->fail("Not Authorized");
         }
+
+    }
+    public function test(){
+        $curreny=Currency::all();
+        return response()->success($curreny,"All Currencies");
 
     }
 }

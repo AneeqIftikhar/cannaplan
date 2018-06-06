@@ -3,7 +3,12 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\Relation;
+Relation::morphMap([
+    'chart'=>'CannaPlan\Models\Chart',
+    'table'=>'CannaPlan\Models\Table',
+    'topic'=>'CannaPlan\Models\Topic'
+]);
 /**
  * @property int $id
  * @property int $section_id
@@ -37,5 +42,9 @@ class SectionContent extends Model
     public function section()
     {
         return $this->belongsTo('CannaPlan\Models\Section');
+    }
+    public function content()
+    {
+        return $this->morphTo();
     }
 }

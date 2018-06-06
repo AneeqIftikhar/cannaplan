@@ -25,5 +25,8 @@ class Topic extends Model
      * @var array
      */
     protected $fillable = ['description', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
-
+    public function contents()
+    {
+        return $this->morphMany('CannaPlan\Models\SectionContent', 'content');
+    }
 }

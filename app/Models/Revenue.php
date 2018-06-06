@@ -3,7 +3,12 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\Relation;
+Relation::morphMap([
+    'unit_sale'=>'CannaPlan\Models\UnitSale',
+    'billable'=>'CannaPlan\Models\Billable',
+    'revenue_only'=>'CannaPlan\Models\RevenueOnly'
+]);
 /**
  * @property int $id
  * @property int $company_id
@@ -54,5 +59,16 @@ class Revenue extends Model
     public function revenueTaxes()
     {
         return $this->hasMany('CannaPlan\Models\RevenueTax');
+    }
+    /* many to many relation*/
+    public function taxes()
+    {
+        return $this->belongsToMany('CannaPlan\Models\Tax', 'revenue_tax',
+            'revenue_id', 'tax_id');
+    }
+
+    public function earning()
+    {
+        return $this->morphTo();
     }
 }
