@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
 use CannaPlan\User;
+use CannaPlan\Http\Requests\RegisterUserPost;
 class UserController extends Controller
 {
     /**
@@ -107,18 +108,8 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function register(Request $request)
+    public function register(RegisterUserPost $request)
     {
-
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response()->error(['error'=>$validator->errors()]);
-        }
         $user = User::get_user_from_email( request('email'));
         if($user)
         {
