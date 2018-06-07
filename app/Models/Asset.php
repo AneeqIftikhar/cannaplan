@@ -38,7 +38,7 @@ class Asset extends Model
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'name', 'amount_type', 'amount', 'start_date', 'asset_duration_id', 'asset_duration_value'];
+    protected $fillable = ['forecast_id', 'name', 'amount_type', 'amount', 'start_date', 'asset_duration_id', 'asset_duration_type '];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
