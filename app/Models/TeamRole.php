@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $pitch_id
@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TeamRole extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -29,7 +31,7 @@ class TeamRole extends Model
     /**
      * @var array
      */
-    protected $fillable = ['pitch_id', 'name', 'job_title', 'biography', 'image', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['pitch_id', 'name', 'job_title', 'biography', 'image'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

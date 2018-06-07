@@ -28,7 +28,7 @@ class Billable extends Model
     /**
      * @var array
      */
-    protected $fillable = ['hour', 'revenue_start_date', 'hourly_rate', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['hour', 'revenue_start_date', 'hourly_rate'];
     public function earnings()
     {
         return $this->morphMany('CannaPlan\Models\Revenue', 'earning');

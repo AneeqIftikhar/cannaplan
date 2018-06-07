@@ -23,7 +23,6 @@ class CreateSection extends Migration
                 $table->foreign('chapter_id')->references('id')->on('chapter')->onDelete('cascade');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

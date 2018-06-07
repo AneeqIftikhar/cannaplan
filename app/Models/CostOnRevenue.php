@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $revenue_id
@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class CostOnRevenue extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -26,7 +28,7 @@ class CostOnRevenue extends Model
     /**
      * @var array
      */
-    protected $fillable = ['revenue_id', 'amount', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['revenue_id', 'amount'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -34,5 +36,9 @@ class CostOnRevenue extends Model
     public function revenue()
     {
         return $this->belongsTo('CannaPlan\Models\Revenue');
+    }
+    public function direct_costs()
+    {
+        return $this->morphMany('CannaPlan\Models\DirectCost', 'direct_cost');
     }
 }

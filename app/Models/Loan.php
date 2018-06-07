@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property string $receive_date
@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Loan extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -27,6 +29,9 @@ class Loan extends Model
     /**
      * @var array
      */
-    protected $fillable = ['receive_date', 'receive_amount', 'interest_rate', 'interest_months', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
-
+    protected $fillable = ['receive_date', 'receive_amount', 'interest_rate', 'interest_months'];
+    public function funds()
+    {
+        return $this->morphMany('CannaPlan\Models\Financing', 'fund');
+    }
 }

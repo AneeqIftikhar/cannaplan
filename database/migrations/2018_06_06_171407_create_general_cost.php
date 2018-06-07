@@ -20,7 +20,6 @@ class CreateGeneralCost extends Migration
                 $table->date('cost_start_date');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

@@ -30,7 +30,7 @@ class Chapter extends Model
     /**
      * @var array
      */
-    protected $fillable = ['plan_id', 'name', 'order', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['plan_id', 'name', 'order'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

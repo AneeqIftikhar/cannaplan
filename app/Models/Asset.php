@@ -4,6 +4,11 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\Relation;
+Relation::morphMap([
+    'current'=>'CannaPlan\Models\Current',
+    'long_term'=>'CannaPlan\Models\LongTerm'
+]);
 /**
  * @property int $id
  * @property int $forecast_id
@@ -33,7 +38,7 @@ class Asset extends Model
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'name', 'amount_type', 'amount', 'start_date', 'asset_duration_id', 'asset_duration_value', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['forecast_id', 'name', 'amount_type', 'amount', 'start_date', 'asset_duration_id', 'asset_duration_value'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -41,5 +46,9 @@ class Asset extends Model
     public function forecast()
     {
         return $this->belongsTo('CannaPlan\Models\Forecast');
+    }
+    public function asset_duration()
+    {
+        return $this->morphTo();
     }
 }

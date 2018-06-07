@@ -23,7 +23,6 @@ class CreateCostOnRevenue extends Migration
                 $table->integer('amount');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

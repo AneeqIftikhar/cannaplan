@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $revenue_id
@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class RevenueTax extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -27,7 +29,7 @@ class RevenueTax extends Model
     /**
      * @var array
      */
-    protected $fillable = ['revenue_id', 'tax_id', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['revenue_id', 'tax_id'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

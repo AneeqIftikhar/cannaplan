@@ -23,7 +23,6 @@ class CreateChapter extends Migration
                 $table->foreign('plan_id')->references('id')->on('plan')->onDelete('cascade');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

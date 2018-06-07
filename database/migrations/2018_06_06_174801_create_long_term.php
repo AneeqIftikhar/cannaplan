@@ -22,7 +22,6 @@ class CreateLongTerm extends Migration
                 $table->date('selling_date');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

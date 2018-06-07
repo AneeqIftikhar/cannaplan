@@ -21,7 +21,6 @@ class CreatePlan extends Migration
                 $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

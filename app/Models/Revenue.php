@@ -1,7 +1,7 @@
 <?php
 
 namespace CannaPlan\Models;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 Relation::morphMap([
@@ -25,6 +25,8 @@ Relation::morphMap([
  */
 class Revenue extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -35,7 +37,7 @@ class Revenue extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'name', 'earning_id', 'earning_type', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['company_id', 'name', 'earning_id', 'earning_type'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

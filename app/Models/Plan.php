@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $company_id
@@ -26,7 +26,7 @@ class Plan extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['company_id'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

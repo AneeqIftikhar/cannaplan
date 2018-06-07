@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property float $year
@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class LongTerm extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -27,6 +29,9 @@ class LongTerm extends Model
     /**
      * @var array
      */
-    protected $fillable = ['year', 'will_sell', 'selling_amount', 'selling_date', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
-
+    protected $fillable = ['year', 'will_sell', 'selling_amount', 'selling_date'];
+    public function asset_durations()
+    {
+        return $this->morphMany('CannaPlan\Models\Asset', 'asset_duration');
+    }
 }

@@ -19,7 +19,6 @@ class CreateCurrent extends Migration
                 $table->integer('month');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

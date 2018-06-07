@@ -26,7 +26,7 @@ class Chart extends Model
     /**
      * @var array
      */
-    protected $fillable = ['name', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['name'];
     public function contents()
     {
         return $this->morphMany('CannaPlan\Models\SectionContent', 'content');

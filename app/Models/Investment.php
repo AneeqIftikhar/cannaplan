@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property string $amount_type
@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Investment extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -26,6 +28,9 @@ class Investment extends Model
     /**
      * @var array
      */
-    protected $fillable = ['amount_type', 'amount', 'start_date', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
-
+    protected $fillable = ['amount_type', 'amount', 'start_date'];
+    public function funds()
+    {
+        return $this->morphMany('CannaPlan\Models\Financing', 'fund');
+    }
 }

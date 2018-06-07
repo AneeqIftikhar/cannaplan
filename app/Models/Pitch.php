@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $company_id
@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Pitch extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -41,7 +43,7 @@ class Pitch extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'company_name', 'logo', 'headlights', 'problem', 'solution', 'funds_required', 'funds_usage_description', 'sales_channel', 'marketing_activities', 'forecast_revenue', 'forecast_cost', 'forecast_type', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['company_id', 'company_name', 'logo', 'headlights', 'problem', 'solution', 'funds_required', 'funds_usage_description', 'sales_channel', 'marketing_activities', 'forecast_revenue', 'forecast_cost', 'forecast_type'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

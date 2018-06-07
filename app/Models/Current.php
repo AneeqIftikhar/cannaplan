@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $month
@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Current extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -24,6 +26,10 @@ class Current extends Model
     /**
      * @var array
      */
-    protected $fillable = ['month', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['month'];
+    public function asset_durations()
+    {
+        return $this->morphMany('CannaPlan\Models\Asset', 'asset_duration');
+    }
 
 }

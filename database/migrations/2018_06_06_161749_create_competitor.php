@@ -24,7 +24,6 @@ class CreateCompetitor extends Migration
                 $table->string('advantage','255');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

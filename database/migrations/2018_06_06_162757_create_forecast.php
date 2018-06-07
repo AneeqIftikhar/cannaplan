@@ -24,7 +24,6 @@ class CreateForecast extends Migration
                 $table->integer('burden_rate');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

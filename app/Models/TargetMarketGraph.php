@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $pitch_id
@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TargetMarketGraph extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -28,7 +30,7 @@ class TargetMarketGraph extends Model
     /**
      * @var array
      */
-    protected $fillable = ['pitch_id', 'segment_name', 'segment_prospect', 'prospect_cost', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['pitch_id', 'segment_name', 'segment_prospect', 'prospect_cost'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

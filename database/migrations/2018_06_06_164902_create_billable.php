@@ -21,7 +21,6 @@ class CreateBillable extends Migration
                 $table->integer('hourly_rate');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

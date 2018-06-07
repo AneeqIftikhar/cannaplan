@@ -26,7 +26,6 @@ class CreateFinancing extends Migration
                 $table->string('fund_type','255');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

@@ -27,7 +27,6 @@ class CreateTax extends Migration
                 $table->string('sales_payable_time', '100');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

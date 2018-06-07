@@ -26,7 +26,6 @@ class CreateSectionContent extends Migration
                 $table->string('content_type' , '50');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

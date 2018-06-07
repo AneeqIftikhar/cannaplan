@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $unit_sold
@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class UnitSale extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -26,7 +28,7 @@ class UnitSale extends Model
     /**
      * @var array
      */
-    protected $fillable = ['unit_sold', 'revenue_start_date', 'unit_price', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['unit_sold', 'revenue_start_date', 'unit_price'];
     public function earnings()
     {
         return $this->morphMany('CannaPlan\Models\Revenue', 'earning');

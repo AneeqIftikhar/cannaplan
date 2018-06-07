@@ -34,7 +34,6 @@ class CreatePitch extends Migration
                 $table->string('forecast_type','100');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

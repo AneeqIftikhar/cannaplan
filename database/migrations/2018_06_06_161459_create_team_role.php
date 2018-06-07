@@ -26,7 +26,6 @@ class CreateTeamRole extends Migration
                 $table->string('image','100');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

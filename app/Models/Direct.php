@@ -3,7 +3,12 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\Relation;
+Relation::morphMap([
+    'general_cost'=>'CannaPlan\Models\GeneralCost',
+    'cost_on_revenue'=>'CannaPlan\Models\CostOnRevenue'
+]);
 /**
  * @property int $id
  * @property string $name
@@ -16,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Direct extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -26,6 +33,13 @@ class Direct extends Model
     /**
      * @var array
      */
-    protected $fillable = ['name', 'direct_cost_id', 'direct_cost_type', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
-
+    protected $fillable = ['name', 'direct_cost_id', 'direct_cost_type'];
+    public function charges()
+    {
+        return $this->morphMany('CannaPlan\Models\Cost', 'charge');
+    }
+    public function direct_cost()
+    {
+        return $this->morphTo();
+    }
 }

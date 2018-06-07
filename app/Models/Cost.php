@@ -3,7 +3,12 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\Relation;
+Relation::morphMap([
+    'direct'=>'CannaPlan\Models\Direct',
+    'labor'=>'CannaPlan\Models\Labor'
+]);
 /**
  * @property int $id
  * @property int $forecast_id
@@ -17,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Cost extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -27,7 +34,7 @@ class Cost extends Model
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'charge_id', 'charge_type', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['forecast_id', 'charge_id', 'charge_type'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -35,5 +42,9 @@ class Cost extends Model
     public function forecast()
     {
         return $this->belongsTo('CannaPlan\Models\Forecast');
+    }
+    public function charge()
+    {
+        return $this->morphTo();
     }
 }

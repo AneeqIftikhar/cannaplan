@@ -4,6 +4,7 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletes;
 Relation::morphMap([
     'chart'=>'CannaPlan\Models\Chart',
     'table'=>'CannaPlan\Models\Table',
@@ -24,6 +25,8 @@ Relation::morphMap([
  */
 class SectionContent extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -34,7 +37,7 @@ class SectionContent extends Model
     /**
      * @var array
      */
-    protected $fillable = ['section_id', 'name', 'order', 'content_id', 'content_type', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['section_id', 'name', 'order', 'content_id', 'content_type'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

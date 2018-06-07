@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $company_id
@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Forecast extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -33,7 +35,7 @@ class Forecast extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'name', 'burden_rate', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['company_id', 'name', 'burden_rate'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

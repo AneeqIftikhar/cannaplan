@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $chapter_id
@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Section extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -28,7 +30,7 @@ class Section extends Model
     /**
      * @var array
      */
-    protected $fillable = ['chapter_id', 'name', 'order', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['chapter_id', 'name', 'order'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

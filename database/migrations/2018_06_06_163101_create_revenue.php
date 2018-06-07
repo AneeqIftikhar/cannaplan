@@ -26,7 +26,6 @@ class CreateRevenue extends Migration
                 $table->string('earning_type' , '50');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

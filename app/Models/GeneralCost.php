@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property int $amount
@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class GeneralCost extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -25,6 +27,9 @@ class GeneralCost extends Model
     /**
      * @var array
      */
-    protected $fillable = ['amount', 'cost_start_date', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
-
+    protected $fillable = ['amount', 'cost_start_date'];
+    public function direct_costs()
+    {
+        return $this->morphMany('CannaPlan\Models\DirectCost', 'direct_cost');
+    }
 }

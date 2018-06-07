@@ -3,7 +3,7 @@
 namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property float $annual_interest
@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Other extends Model
 {
+    use SoftDeletes;
+    protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
      * 
@@ -28,7 +30,7 @@ class Other extends Model
     /**
      * @var array
      */
-    protected $fillable = ['annual_interest', 'is_payable', 'start_date', 'deleted_at', 'remember_token', 'created_at', 'updated_at'];
+    protected $fillable = ['annual_interest', 'is_payable', 'start_date'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -44,5 +46,9 @@ class Other extends Model
     public function payments()
     {
         return $this->hasMany('CannaPlan\Models\Payment');
+    }
+    public function funds()
+    {
+        return $this->morphMany('CannaPlan\Models\Financing', 'fund');
     }
 }
