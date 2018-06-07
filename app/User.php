@@ -29,11 +29,11 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
-    protected function get_user_from_email($email){
+    public static function get_user_from_email($email){
         return User::where('email', $email)->first();
     }
 
-    protected function authenticate_user_with_password($email,$password){
+    public static function authenticate_user_with_password($email,$password){
         //return response()->success( Auth::attempt(['email' => $email, 'password' => $password]),'Logged In SuccessFully');
         if(Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = Auth::user();
@@ -45,7 +45,7 @@ class User extends Authenticatable
             return false;
         }
     }
-    protected function authenticate_user_with_token($user_id){
+    public static function authenticate_user_with_token($user_id){
         $user=User::where('id','=',$user_id)->first();
         $user2 = Auth::user();
         if($user->id==$user2->id) {
