@@ -4,6 +4,10 @@ namespace CannaPlan\Http\Controllers\Auth;
 
 use CannaPlan\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
+use Illuminate\Http\Request;
+use CannaPlan\User;
+use CannaPlan\Helpers\Email;
+use Illuminate\Support\Facades\Mail;
 
 class ForgotPasswordController extends Controller
 {
@@ -28,5 +32,20 @@ class ForgotPasswordController extends Controller
     public function __construct()
     {
         $this->middleware('guest');
+    }
+
+    public function getResetToken(Request $request)
+    {
+        $this->validate($request, ['email' => 'required|email']);
+
+        $user = User::where('email', $request->input('email'))->first();
+        if (!$user) {
+            return response()->fail('User Not Found');
+        }
+        $token = $this->broker()->createToken($user);
+        $data=["token"=>$token];
+        Email::sendMail('emails/forgot_password',$data, "FORGOT PASSWORD",'huzaifa.tariq8050@gmail.com');
+        return response()->success($token,'Token');
+
     }
 }
