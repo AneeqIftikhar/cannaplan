@@ -21,7 +21,6 @@ class CreateCurrency extends Migration
                 $table->string('code','100');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

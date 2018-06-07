@@ -35,7 +35,6 @@ class CreateRevenueOnly extends Migration
                 $table->integer('amount_y_3');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

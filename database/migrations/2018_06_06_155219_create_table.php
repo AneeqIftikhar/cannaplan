@@ -19,7 +19,6 @@ class CreateTable extends Migration
                 $table->string('name','100');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

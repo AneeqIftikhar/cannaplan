@@ -24,7 +24,6 @@ class CreateRevenueTax extends Migration
                 $table->foreign('tax_id')->references('id')->on('tax')->onDelete('cascade');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

@@ -160,6 +160,7 @@ return [
         CannaPlan\Providers\EventServiceProvider::class,
         CannaPlan\Providers\RouteServiceProvider::class,
         CannaPlan\Providers\ResponseMacroServiceProvider::class,
+        Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class,
 
     ],
 

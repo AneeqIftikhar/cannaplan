@@ -24,7 +24,6 @@ class CreateCost extends Migration
                 $table->string('charge_type' , '50');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

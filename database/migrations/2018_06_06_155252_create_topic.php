@@ -19,7 +19,6 @@ class CreateTopic extends Migration
                 $table->text('description');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

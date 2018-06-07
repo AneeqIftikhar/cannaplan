@@ -22,7 +22,6 @@ class CreateDirect extends Migration
                 $table->string('direct_cost_type' , '50');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

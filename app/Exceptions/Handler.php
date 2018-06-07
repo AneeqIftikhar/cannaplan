@@ -59,7 +59,12 @@ class Handler extends ExceptionHandler
             } else {
                 $message = 'Internal Server Error';
             }
+
             return response()->fail($message);
+        }
+        else if ($exception instanceof \Illuminate\Validation\ValidationException) {
+            return response()->fail( $exception->errors());
+
         }
         return parent::render($request, $exception);
     }

@@ -21,17 +21,12 @@ class CreateUsersTable extends Migration
                 $table->string('email','100')->unique();
                 $table->string('password','100');
                 $table->string('status','100');
+                $table->softDeletes();
                 $table->rememberToken();
                 $table->timestamps();
             });
         }
-        else
-        {
-            Schema::table('users', function (Blueprint $table) {
-                $table->softDeletes();
-            });
 
-        }
 
 
     }

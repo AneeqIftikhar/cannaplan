@@ -25,7 +25,6 @@ class CreateTargetMarketGraph extends Migration
                 $table->integer('prospect_cost');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

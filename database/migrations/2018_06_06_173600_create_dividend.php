@@ -26,7 +26,6 @@ class CreateDividend extends Migration
                 $table->date('start_date');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

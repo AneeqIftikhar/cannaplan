@@ -29,7 +29,6 @@ class CreateAsset extends Migration
                 $table->string('asset_duration_value','100');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

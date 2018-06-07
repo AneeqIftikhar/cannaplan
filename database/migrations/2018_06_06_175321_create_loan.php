@@ -22,7 +22,6 @@ class CreateLoan extends Migration
                 $table->integer('interest_months');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

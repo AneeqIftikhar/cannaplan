@@ -25,7 +25,6 @@ class CreateLabor extends Migration
                 $table->float('annual_raise_percent');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }

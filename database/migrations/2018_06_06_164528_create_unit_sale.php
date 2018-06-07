@@ -21,7 +21,6 @@ class CreateUnitSale extends Migration
                 $table->integer('unit_price');
 
                 $table->softDeletes();
-                $table->rememberToken();
                 $table->timestamps();
             });
         }
