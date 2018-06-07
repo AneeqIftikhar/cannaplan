@@ -26,7 +26,7 @@ class CreateAsset extends Migration
                 $table->date('start_date');
 
                 $table->integer('asset_duration_id');
-                $table->string('asset_duration_value','100');
+                $table->string('asset_duration_type','100');
 
                 $table->softDeletes();
                 $table->timestamps();
