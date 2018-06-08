@@ -22,8 +22,8 @@ class CreateTeamRole extends Migration
 
                 $table->string('name','100');
                 $table->string('job_title','100');
-                $table->string('biography','255');
-                $table->string('image','100');
+                $table->string('biography','255')->nullable();
+                $table->string('image','100')->nullable();
 
                 $table->softDeletes();
                 $table->timestamps();
