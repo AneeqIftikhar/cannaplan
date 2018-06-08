@@ -28,6 +28,15 @@ class CompanyController extends Controller
     {
         $input = $request->all();
         $company = Company::create($input);
+        if($company)
+        {
+            //creating pitch with pitch company name as comapnys orignal company name
+            //creating plan with dummy chapters,sections and topics/charts/tables
+        }
+        else
+        {
+            return response()->fail('Company Could Not be Created');
+        }
         return response()->success($company,'Company Created Successfully');
     }
 
