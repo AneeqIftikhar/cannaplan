@@ -20,18 +20,18 @@ class CreatePitch extends Migration
                 $table->integer('company_id')->unsigned();
                 $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
 
-                $table->string('company_name','255');
-                $table->string('logo','255');
-                $table->string('headlights','255');
-                $table->string('problem','255');
-                $table->string('solution','255');
-                $table->integer('funds_required');
-                $table->string('funds_usage_description','255');
-                $table->string('sales_channel','255');
-                $table->string('marketing_activities','255');
-                $table->string('forecast_revenue','255');
-                $table->string('forecast_cost','255');
-                $table->string('forecast_type','100');
+                $table->string('company_name','255')->nullable();
+                $table->string('logo','255')->nullable();
+                $table->string('headline','255')->nullable();
+                $table->string('problem','255')->nullable();
+                $table->string('solution','255')->nullable();
+                $table->integer('funds_required')->nullable();
+                $table->string('funds_usage_description','255')->nullable();
+                $table->string('sales_channel','255')->nullable();
+                $table->string('marketing_activities','255')->nullable();
+                $table->string('forecast_revenue','255')->nullable();
+                $table->string('forecast_cost','255')->nullable();
+                $table->string('forecast_type','100')->nullable();
 
                 $table->softDeletes();
                 $table->timestamps();
