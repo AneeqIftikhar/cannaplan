@@ -32,8 +32,12 @@ Route::group(['middleware' => ['cors']], function () {
     Route::resource('company', 'CompanyController');
     Route::resource('milestone' , 'MilestoneController');
     Route::resource('target_marget_graph' , 'TargetMargetGraphController');
-    Route::resource('pitch', 'PitchController');
     Route::resource('team_role', 'TeamRoleController');
+
+    /*Pitch Routes*/
+    Route::resource('update_pitch','PitchController@updatePitch');
+    Route::resource('pitch', 'PitchController');
+
 
 });
 
