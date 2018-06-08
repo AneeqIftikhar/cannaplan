@@ -30,6 +30,11 @@ Route::group(['middleware' => ['cors']], function () {
     Route::post('password/reset', 'Auth\ResetPasswordController@reset');
 
     Route::resource('company', 'CompanyController');
+    Route::resource('milestone' , 'MilestoneController');
+    Route::resource('target_marget_graph' , 'TargetMargetGraphController');
+    Route::resource('pitch', 'PitchController');
+    Route::resource('team_role', 'TeamRoleController');
+
 });
 
 

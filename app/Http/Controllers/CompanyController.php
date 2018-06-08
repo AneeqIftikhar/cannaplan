@@ -5,6 +5,7 @@ namespace CannaPlan\Http\Controllers;
 use CannaPlan\Models\Company;
 use Illuminate\Http\Request;
 use CannaPlan\Http\Requests\CompanyRequest;
+
 class CompanyController extends Controller
 {
     /**
