@@ -81,7 +81,7 @@ class CompanyController extends Controller
         if($company){
             return response()->success($company,'Company Fetched Successfully');
         }
-        else{
+        else {
             return response()->fail("Company Not Found");
         }
 
