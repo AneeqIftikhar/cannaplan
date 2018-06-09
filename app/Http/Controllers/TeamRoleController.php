@@ -69,7 +69,7 @@ class TeamRoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(TeamRoleRequest $request, $id)
+    public function updateTeamRole(TeamRoleRequest $request, $id)
     {
         $input_array=$request->all();
         if ($request->hasFile('image')) {

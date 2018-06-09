@@ -4,6 +4,7 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use CannaPlan\Models\Milestone;
 /**
  * @property int $id
  * @property int $currency_id
@@ -86,5 +87,12 @@ class Company extends Model
     public function revenues()
     {
         return $this->hasMany('CannaPlan\Models\Revenue');
+    }
+
+    public function getMilestonesOfCompany(){
+        $pitches=$this->pitches;
+        $milestones=$pitches[0]->milestones;
+
+        return $milestones;
     }
 }
