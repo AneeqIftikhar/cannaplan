@@ -77,6 +77,7 @@ class CompanyController extends Controller
      */
     public function show($id)
     {
+        //Authorization to be added
         $company = Company::find($id);
         if($company){
             return response()->success($company,'Company Fetched Successfully');
