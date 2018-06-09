@@ -2,6 +2,7 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Company;
 use CannaPlan\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+
     }
 
     /**

@@ -26,6 +26,10 @@ class User extends Authenticatable
      *
      * @var array
      */
+    public function companies()
+    {
+        return $this->hasMany('CannaPlan\Models\Company');
+    }
     protected $hidden = [
         'password', 'remember_token',
     ];
