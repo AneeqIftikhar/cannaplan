@@ -28,7 +28,6 @@ class MilestoneRequest extends FormRequest
             'due_date' => 'required',
             'responsible' => 'required|max:100',
             'details' => 'required|max:255',
-            'monthly_detail' => 'required',
             'email_reminder' => 'required',
             'prospect_cost' => 'required',
         ];

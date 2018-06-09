@@ -45,7 +45,7 @@ class TargetMargetGraphController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(TargetMargetGraphRequest $request, $id)
+    public function updateTargetMargetGraph(TargetMargetGraphRequest $request, $id)
     {
         $target_marget_graph = TargetMarketGraph::where('id', $id)->update($request->all());
         if($target_marget_graph){

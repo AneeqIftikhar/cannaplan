@@ -56,7 +56,7 @@ class MilestoneController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(MilestoneRequest $request, $id)
+    public function updateMilestone(MilestoneRequest $request, $id)
     {
         $milestone = Milestone::where('id', $id)->update($request->all());
         if($milestone){
