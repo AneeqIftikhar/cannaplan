@@ -38,21 +38,27 @@ class CompanyController extends Controller
         {
             DB::beginTransaction();
             $input = $request->all();
-            $company = Company::create($input);
-            if($company)
-            {
-                //creating pitch with pitch company name as comapnys orignal company name
-                $company->pitches()->create(['company_name'=>$request->input('title')]);
-                //creating plan with dummy chapters,sections and topics/charts/tables
+            $user=Auth::user();
+            if($user) {
+                $company = $user->companies()->create($input);
+                if($company) {
+                    //creating pitch with pitch company name as comapnys orignal company name
+                    $company->pitches()->create(['company_name'=>$request->input('title')]);
 
-                DB::commit();
-                return response()->success($company,'Company Created Successfully');
+                    //creating plan with dummy chapters,sections and topics/charts/tables
+
+                    DB::commit();
+                    return response()->success($company,'Company Created Successfully');
+                }
+                else {
+                    DB::rollback();
+                    return response()->fail('Company Could Not be Created');
+                }
             }
-            else
-            {
-                DB::rollback();
-                return response()->fail('Company Could Not be Created');
+            else {
+                return response()->fail('Invalid Request');
             }
+
         }
         catch (\PDOException $ex) {
             DB::rollback();
@@ -77,13 +83,13 @@ class CompanyController extends Controller
      */
     public function show($id)
     {
-        //Authorization to be added
-        $company = Company::find($id);
-        if($company){
-            return response()->success($company,'Company Fetched Successfully');
-        }
-        else {
-            return response()->fail("Company Not Found");
+        if(Company::is_user_company($id)!==false) {
+            $company = Company::find($id);
+            if ($company) {
+                return response()->success($company, 'Company Fetched Successfully');
+            } else {
+                return response()->fail("No Company In User Profile With This Identifier");
+            }
         }
 
     }
@@ -99,13 +105,21 @@ class CompanyController extends Controller
      */
     public function update(CompanyRequest $request, $id)
     {
-        $company=Company::where('id', $id)->update($request->all());
-        if($company) {
-            return response()->success($request->all(),'Company Updated Successfully');
+        if(Company::is_user_company($id)!==false)
+        {
+            $company=Company::where('id', $id)->update($request->all());
+            if($company) {
+                return response()->success($request->all(),'Company Updated Successfully');
+            }
+            else {
+                return response()->fail("Company Update Failed");
+            }
         }
-        else {
-            return response()->fail("Company Update Failed");
+        else
+        {
+            return response()->fail("Not Authorized to Update This Company");
         }
+
 
 
     }
@@ -118,13 +132,21 @@ class CompanyController extends Controller
      */
     public function destroy($id)
     {
-        $company=Company::destroy($id);
-        if($company){
-            return response()->success([],'Company Deleted Successfully');
+        if(Company::is_user_company($id)!==false)
+        {
+            $company=Company::destroy($id);
+            if($company){
+                return response()->success([],'Company Deleted Successfully');
+            }
+            else {
+                return response()->fail("Company Deletion Failed");
+            }
         }
-        else {
-            return response()->fail("Company Deletion Failed");
+        else
+        {
+            return response()->fail("Not Authorized to Delete This Company");
         }
+
 
     }
 }
