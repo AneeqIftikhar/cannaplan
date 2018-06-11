@@ -90,20 +90,20 @@ class Company extends Model
         return $this->hasMany('CannaPlan\Models\Revenue');
     }
 
-    public function getMilestonesOfCompany(){
-        $pitches=$this->pitches;
+    public static function getMilestonesOfCompany($compnay){
+        $pitches=$compnay->pitches;
         $milestones=$pitches[0]->milestones;
 
         return $milestones;
     }
     //return company if company exists and return false if id is not related to any company
-    public static function is_user_company($id) {
+    public static function is_user_company($company_id) {
         $user=Auth::user();
         $user_companies=$user->companies;
         foreach ($user_companies as $com) {
-            if($com->id==$id)
+            if($com->id==$company_id  )
             {
-                return $com;
+                return true;
             }
         }
         return false;

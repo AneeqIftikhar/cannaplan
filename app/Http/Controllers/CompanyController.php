@@ -83,12 +83,13 @@ class CompanyController extends Controller
      */
     public function show($id)
     {
-        $company = Company::is_user_company($id);
-        if($company){
-            return response()->success($company,'Company Fetched Successfully');
-        }
-        else {
-            return response()->fail("No Company In User Profile With This Identifier");
+        if(Company::is_user_company($id)!==false) {
+            $company = Company::find($id);
+            if ($company) {
+                return response()->success($company, 'Company Fetched Successfully');
+            } else {
+                return response()->fail("No Company In User Profile With This Identifier");
+            }
         }
 
     }
