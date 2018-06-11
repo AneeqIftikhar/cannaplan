@@ -84,4 +84,11 @@ class Pitch extends Model
     {
         return $this->hasMany('CannaPlan\Models\TeamRole');
     }
+
+    public static function is_user_pitch($id){
+        $company=Pitch::find($id)->company;
+        $verify=Company::is_user_company($company);
+
+        return $verify;
+    }
 }

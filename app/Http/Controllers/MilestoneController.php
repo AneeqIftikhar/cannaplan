@@ -4,6 +4,7 @@ namespace CannaPlan\Http\Controllers;
 
 use Illuminate\Http\Request;
 use CannaPlan\Models\Milestone;
+use CannaPlan\Models\Pitch;
 use CannaPlan\Http\Requests\MilestoneRequest;
 
 class MilestoneController extends Controller
@@ -58,7 +59,9 @@ class MilestoneController extends Controller
      */
     public function updateMilestone(MilestoneRequest $request, $id)
     {
+        Company::is_user_company(Pitch::is_user_pitch($id));
         $milestone = Milestone::where('id', $id)->update($request->all());
+
         if($milestone){
             return response()->success($request->all(),'Milestone Updated Successfully');
         }
