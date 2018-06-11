@@ -5,6 +5,7 @@ namespace CannaPlan\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use CannaPlan\Models\Milestone;
+use Illuminate\Support\Facades\Auth;
 /**
  * @property int $id
  * @property int $currency_id
@@ -94,5 +95,17 @@ class Company extends Model
         $milestones=$pitches[0]->milestones;
 
         return $milestones;
+    }
+    //return company if company exists and return false if id is not related to any company
+    public static function is_user_company($id) {
+        $user=Auth::user();
+        $user_companies=$user->companies;
+        foreach ($user_companies as $com) {
+            if($com->id==$id)
+            {
+                return $com;
+            }
+        }
+        return false;
     }
 }

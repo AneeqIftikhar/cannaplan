@@ -30,7 +30,6 @@ class CompanyRequest extends FormRequest
             'length_of_forecast' => 'required',
             'monthly_detail' => 'required',
             'currency_id' => 'required',
-            'user_id' => 'required',
         ];
     }
 }
