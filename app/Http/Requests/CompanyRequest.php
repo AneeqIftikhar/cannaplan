@@ -28,7 +28,6 @@ class CompanyRequest extends FormRequest
             'business_stage' => 'required',
             'start_of_forecast' => 'required',
             'length_of_forecast' => 'required',
-            'monthly_detail' => 'required',
             'currency_id' => 'required',
         ];
     }

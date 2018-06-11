@@ -40,7 +40,7 @@ class Company extends Model
     /**
      * @var array
      */
-    protected $fillable = ['currency_id', 'user_id', 'title', 'business_stage', 'start_of_forecast', 'length_of_forecast', 'monthly_detail'];
+    protected $fillable = ['currency_id', 'user_id', 'title', 'business_stage', 'start_of_forecast', 'length_of_forecast'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
