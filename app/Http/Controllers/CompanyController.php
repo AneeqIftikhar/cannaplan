@@ -4,6 +4,7 @@ namespace CannaPlan\Http\Controllers;
 
 use CannaPlan\Models\Company;
 use CannaPlan\Models\Pitch;
+use CannaPlan\Models\Plan;
 use Illuminate\Http\Request;
 use CannaPlan\Http\Requests\CompanyRequest;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,8 @@ class CompanyController extends Controller
                 if($company) {
                     //creating pitch with pitch company name as comapnys orignal company name
                     $company->pitches()->create(['company_name'=>$request->input('title')]);
-
+                    $plan=$company->plans()->create([]);
+                    Plan::add_entries_in_plan_module($plan);
                     //creating plan with dummy chapters,sections and topics/charts/tables
 
                     DB::commit();
