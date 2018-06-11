@@ -139,7 +139,7 @@ class UserController extends Controller
 
     }
     public function test(){
-        $curreny=Currency::all();
+        $curreny=Currency::orderBy('name', 'asc')->get();
         return response()->success($curreny,"All Currencies");
 
     }

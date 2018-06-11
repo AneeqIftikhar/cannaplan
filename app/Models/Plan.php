@@ -1,7 +1,7 @@
 <?php
 
 namespace CannaPlan\Models;
-
+use CannaPlan\Helpers\PlanData;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 /**
@@ -42,5 +42,25 @@ class Plan extends Model
     public function chapters()
     {
         return $this->hasMany('CannaPlan\Models\Chapter');
+    }
+    public static function add_entries_in_plan_module($plan)
+    {
+        $data=json_decode(PlanData::get_json_data() , true);
+
+        for ($i=0;$i<sizeof($data['chapter']);$i++)
+        {
+            $chap=$plan->chapters()->create(["name"=>$data['chapter'][$i]['name'],"order"=>$data['chapter'][$i]["order"]]);
+            for ($j=0;$j<sizeof($data['chapter'][$i]['section']);$j++)
+            {
+                $section=$chap->sections()->create(["name"=>$data['chapter'][$i]['section'][$j]['name'],"order"=>$data['chapter'][$i]['section'][$j]["order"]]);
+                for ($k=0;$k<sizeof($data['chapter'][$i]['section'][$j]['section_content']);$k++)
+                {
+                    $section->sectionContents()->create($data['chapter'][$i]['section'][$j]['section_content'][$k]);
+                }
+            }
+
+        }
+
+
     }
 }

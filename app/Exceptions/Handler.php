@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
         $debugEnabled = config('app.debug');
         if($exception instanceof AuthenticationException)
         {
-            return response()->token_error('Please Login Again To Get New Token');
+            return response()->token_error('Please Login Again To Get New Token: '.$exception->getMessage());
         }
         else if ($exception instanceof QueryException) {
             if ($debugEnabled) {
