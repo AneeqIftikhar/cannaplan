@@ -16,6 +16,9 @@
 <body style="font-family: Arial; font-size: 12px;">
 <div>
     <p>
+        Hello {{$data["name"]}},
+    </p>
+    <p>
         You have requested a password reset, please follow the link below to reset your password.
     </p>
     <p>
@@ -26,7 +29,7 @@
     <table>
         <tr>
             <td style="background-color: #4ecdc4;border-color: #4c5764;border: 2px solid #45b7af;padding: 10px;text-align: center;">
-                <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href='www.something.com/forgot_password?token={{$data["token"]}}&email={{$data["email"]}}'>
+                <a style="display: block;color: #ffffff;font-size: 12px;text-decoration: none;text-transform: uppercase;" href='http://192.168.100.18/login?token={{$data["token"]}}&email={{$data["email"]}}'>
                     Click here to reset you password
                 </a>
             </td>

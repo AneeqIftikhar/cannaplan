@@ -43,9 +43,9 @@ class ForgotPasswordController extends Controller
             return response()->fail('User Not Found');
         }
         $token = $this->broker()->createToken($user);
-        $data=array('token'=>$token, 'email' => $user->email);
+        $data=array('token'=>$token, 'email' => $user->email,'name'=>$user->first_name);
         Email::sendMail('emails/forgot_password',array('data' => $data), "FORGOT PASSWORD",$user->email);
-        return response()->success($token,'Token');
+        return response()->success([],'Email Sent Successfully');
 
     }
 }
