@@ -21,6 +21,17 @@ class User extends Authenticatable
     ];
     protected $dates=['deleted_at'];
 
+    public static function boot() {
+        parent::boot();
+
+        static::deleting(function($user) {
+            foreach ($user->companies()->get() as $company) {
+                $company->delete();
+            }
+        });
+
+    }
+
     /**
      * The attributes that should be hidden for arrays.
      *

@@ -36,7 +36,11 @@ class Plan extends Model
             $table->created_by = Auth::user()->id;
         });
 
-
+        static::deleting(function($plan) {
+            foreach ($plan->chapters()->get() as $chapter) {
+                $chapter->delete();
+            }
+        });
     }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

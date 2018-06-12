@@ -20,6 +20,7 @@ class Section extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
+
     public static function boot() {
         parent::boot();
 
@@ -28,7 +29,11 @@ class Section extends Model
             $table->created_by = Auth::user()->id;
         });
 
-
+        static::deleting(function($sections) {
+            foreach ($sections->sectionContents()->get() as $sectionContent) {
+                $sectionContent->delete();
+            }
+        });
     }
     /**
      * The table associated with the model.

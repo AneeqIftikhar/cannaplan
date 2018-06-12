@@ -49,7 +49,17 @@ class Company extends Model
             $table->created_by = Auth::user()->id;
         });
 
-
+        static::deleting(function($company) {
+            foreach ($company->pitches()->get() as $pitch) {
+                $pitch->delete();
+            }
+            foreach ($company->plans()->get() as $plan) {
+                $plan->delete();
+            }
+            foreach ($company->forecasts()->get() as $forecast) {
+                $forecast->delete();
+            }
+        });
     }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -93,11 +103,7 @@ class Company extends Model
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function revenues()
-    {
-        return $this->hasMany('CannaPlan\Models\Revenue');
-    }
+*/
 
     public static function getMilestonesOfCompany($compnay){
         $pitches=$compnay->pitches;

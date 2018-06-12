@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 class Chapter extends Model
 {
     use SoftDeletes;
+
     public static function boot() {
         parent::boot();
 
@@ -28,7 +29,11 @@ class Chapter extends Model
             $table->created_by = Auth::user()->id;
         });
 
-
+        static::deleting(function($chapter) {
+            foreach ($chapter->sections()->get() as $section) {
+                $section->delete();
+            }
+        });
     }
     protected $dates=['deleted_at'];
     /**

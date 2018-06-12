@@ -17,8 +17,8 @@ class CreateRevenue extends Migration
             Schema::create('revenue', function (Blueprint $table) {
                 $table->increments('id');
 
-                $table->integer('company_id')->unsigned();
-                $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
+                $table->integer('forecast_id')->unsigned();
+                $table->foreign('forecast_id')->references('id')->on('forecast')->onDelete('cascade');
 
                 $table->string('name','255');
 
