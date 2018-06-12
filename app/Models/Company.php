@@ -45,7 +45,7 @@ class Company extends Model
         parent::boot();
 
         // create a event to happen on saving
-        static::created(function($table)  {
+        static::creating(function($table)  {
             $table->created_by = Auth::user()->id;
         });
 

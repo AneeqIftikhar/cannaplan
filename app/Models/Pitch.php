@@ -1,7 +1,7 @@
 <?php
 
 namespace CannaPlan\Models;
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 /**
@@ -45,6 +45,16 @@ class Pitch extends Model
      */
     protected $fillable = ['company_id', 'company_name', 'logo', 'headline', 'problem', 'solution', 'funds_required', 'funds_usage_description', 'sales_channel', 'marketing_activities', 'forecast_revenue', 'forecast_cost', 'forecast_type', 'created_by'];
 
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+
+
+    }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

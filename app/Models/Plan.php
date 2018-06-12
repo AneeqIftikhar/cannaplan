@@ -4,6 +4,7 @@ namespace CannaPlan\Models;
 use CannaPlan\Helpers\PlanData;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 /**
  * @property int $id
  * @property int $company_id
@@ -27,7 +28,16 @@ class Plan extends Model
      * @var array
      */
     protected $fillable = ['company_id'];
+    public static function boot() {
+        parent::boot();
 
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+
+
+    }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
