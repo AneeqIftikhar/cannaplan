@@ -22,6 +22,8 @@ class CreateSection extends Migration
                 $table->integer('chapter_id')->unsigned();
                 $table->foreign('chapter_id')->references('id')->on('chapter')->onDelete('cascade');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

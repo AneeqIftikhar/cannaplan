@@ -22,6 +22,8 @@ class CreateCostOnRevenue extends Migration
 
                 $table->integer('amount');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

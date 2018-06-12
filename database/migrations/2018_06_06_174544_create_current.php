@@ -18,6 +18,8 @@ class CreateCurrent extends Migration
                 $table->increments('id');
                 $table->integer('month');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

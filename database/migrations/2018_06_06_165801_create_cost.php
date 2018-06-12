@@ -23,6 +23,8 @@ class CreateCost extends Migration
                 $table->integer('charge_id');
                 $table->string('charge_type' , '50');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

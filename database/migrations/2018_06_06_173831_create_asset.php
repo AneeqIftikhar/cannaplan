@@ -28,6 +28,8 @@ class CreateAsset extends Migration
                 $table->integer('asset_duration_id');
                 $table->string('asset_duration_type','100');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

@@ -24,6 +24,8 @@ class CreateLabor extends Migration
                 $table->integer('start_date');
                 $table->float('annual_raise_percent');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

@@ -36,6 +36,10 @@ class CreateFunding extends Migration
                 $table->integer('amount_y_1');
                 $table->integer('amount_y_2');
                 $table->integer('amount_y_3');
+                $table->integer('amount_y_4');
+                $table->integer('amount_y_5');
+
+                $table->integer('created_by')->nullable();
 
                 $table->softDeletes();
                 $table->timestamps();

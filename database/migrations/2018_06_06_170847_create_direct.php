@@ -21,6 +21,8 @@ class CreateDirect extends Migration
                 $table->integer('direct_cost_id');
                 $table->string('direct_cost_type' , '50');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

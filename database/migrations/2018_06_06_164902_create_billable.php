@@ -20,6 +20,8 @@ class CreateBillable extends Migration
                 $table->date('revenue_start_date');
                 $table->integer('hourly_rate');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

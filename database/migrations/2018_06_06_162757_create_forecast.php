@@ -23,6 +23,8 @@ class CreateForecast extends Migration
                 $table->string('name','255');
                 $table->integer('burden_rate');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

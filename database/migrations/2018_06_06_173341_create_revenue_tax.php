@@ -23,6 +23,8 @@ class CreateRevenueTax extends Migration
                 $table->integer('tax_id')->unsigned();
                 $table->foreign('tax_id')->references('id')->on('tax')->onDelete('cascade');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

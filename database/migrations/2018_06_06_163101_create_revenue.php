@@ -25,6 +25,8 @@ class CreateRevenue extends Migration
                 $table->integer('earning_id');
                 $table->string('earning_type' , '50');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

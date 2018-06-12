@@ -33,6 +33,8 @@ class CreatePitch extends Migration
                 $table->string('forecast_cost','255')->nullable();
                 $table->string('forecast_type','100')->nullable();
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

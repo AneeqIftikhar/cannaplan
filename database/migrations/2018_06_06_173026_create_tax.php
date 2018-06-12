@@ -26,6 +26,8 @@ class CreateTax extends Migration
                 $table->float('sales_tax');
                 $table->string('sales_payable_time', '100');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

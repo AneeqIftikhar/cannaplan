@@ -20,6 +20,8 @@ class CreateUnitSale extends Migration
                 $table->date('revenue_start_date');
                 $table->integer('unit_price');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

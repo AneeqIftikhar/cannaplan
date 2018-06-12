@@ -20,6 +20,8 @@ class CreateCurrency extends Migration
                 $table->string('symbol','10');
                 $table->string('code','100');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

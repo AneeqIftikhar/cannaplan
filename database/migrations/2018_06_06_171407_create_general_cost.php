@@ -19,6 +19,8 @@ class CreateGeneralCost extends Migration
                 $table->integer('amount');
                 $table->date('cost_start_date');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });
