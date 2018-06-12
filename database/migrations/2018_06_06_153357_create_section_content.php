@@ -25,6 +25,8 @@ class CreateSectionContent extends Migration
                 $table->integer('content_id');
                 $table->string('content_type' , '50');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

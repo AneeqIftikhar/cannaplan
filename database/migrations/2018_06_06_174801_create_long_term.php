@@ -21,6 +21,8 @@ class CreateLongTerm extends Migration
                 $table->integer('selling_amount');
                 $table->date('selling_date');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

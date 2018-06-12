@@ -21,6 +21,8 @@ class CreateLoan extends Migration
                 $table->integer('interest_rate');
                 $table->integer('interest_months');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

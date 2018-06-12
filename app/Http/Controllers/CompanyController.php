@@ -43,7 +43,7 @@ class CompanyController extends Controller
             if($user) {
                 $company = $user->companies()->create($input);
                 if($company) {
-                    //creating pitch with pitch company name as comapnys orignal company name
+                    //creating pitch with pitch company name as company's orignal company name
                     $company->pitches()->create(['company_name'=>$request->input('title')]);
                     $plan=$company->plans()->create([]);
                     Plan::add_entries_in_plan_module($plan);

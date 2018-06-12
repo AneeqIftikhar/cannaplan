@@ -24,6 +24,8 @@ class CreateTargetMarketGraph extends Migration
                 $table->integer('segment_prospect');
                 $table->integer('prospect_cost');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

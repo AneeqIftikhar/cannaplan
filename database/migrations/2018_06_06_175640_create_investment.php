@@ -20,6 +20,8 @@ class CreateInvestment extends Migration
                 $table->integer('amount');
                 $table->date('start_date');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

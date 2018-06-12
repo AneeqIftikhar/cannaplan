@@ -25,6 +25,8 @@ class CreateTeamRole extends Migration
                 $table->string('biography','255')->nullable();
                 $table->string('image','100')->nullable();
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

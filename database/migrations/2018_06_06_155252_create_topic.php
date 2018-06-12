@@ -18,6 +18,8 @@ class CreateTopic extends Migration
                 $table->increments('id');
                 $table->text('description');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

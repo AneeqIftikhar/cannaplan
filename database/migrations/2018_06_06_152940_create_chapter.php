@@ -22,6 +22,8 @@ class CreateChapter extends Migration
                 $table->integer('plan_id')->unsigned();
                 $table->foreign('plan_id')->references('id')->on('plan')->onDelete('cascade');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

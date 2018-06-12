@@ -25,6 +25,8 @@ class CreateFinancing extends Migration
                 $table->integer('fund_id');
                 $table->string('fund_type','255');
 
+                $table->integer('created_by')->nullable();
+
                 $table->softDeletes();
                 $table->timestamps();
             });

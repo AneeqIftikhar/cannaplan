@@ -4,7 +4,6 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use CannaPlan\Models\Milestone;
 use Illuminate\Support\Facades\Auth;
 /**
  * @property int $id
@@ -40,8 +39,18 @@ class Company extends Model
     /**
      * @var array
      */
-    protected $fillable = ['currency_id', 'user_id', 'title', 'business_stage', 'start_of_forecast', 'length_of_forecast'];
+    protected $fillable = ['currency_id', 'user_id', 'title', 'business_stage', 'start_of_forecast', 'length_of_forecast', 'created_by'];
 
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::created(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+
+
+    }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
