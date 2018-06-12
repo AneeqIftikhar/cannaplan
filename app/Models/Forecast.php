@@ -37,12 +37,35 @@ class Forecast extends Model
      */
     protected $fillable = ['company_id', 'name', 'burden_rate'];
 
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+
+        static::deleting(function($forecast) {
+            foreach ($forecast->revenues()->get() as $revenue) {
+                $revenue->delete();
+            }
+            foreach ($forecast->assets()->get() as $asset) {
+                $asset->delete();
+            }
+        });
+    }
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function company()
     {
         return $this->belongsTo('CannaPlan\Models\Company');
+    }
+
+    public function revenues()
+    {
+        return $this->hasMany('CannaPlan\Models\Revenue');
     }
 
     /**

@@ -27,6 +27,7 @@ class SectionContent extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
+
     public static function boot() {
         parent::boot();
 
@@ -34,8 +35,6 @@ class SectionContent extends Model
         static::creating(function($table)  {
             $table->created_by = Auth::user()->id;
         });
-
-
     }
     /**
      * The table associated with the model.

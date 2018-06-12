@@ -134,7 +134,8 @@ class CompanyController extends Controller
      */
     public function destroy($id)
     {
-        if(Company::is_user_company($id)!==false)
+        //return response()->success($id." ".Auth::user(),'Company Deleted Successfully');
+        if(Company::is_user_company($id)!=false)
         {
             $company=Company::destroy($id);
             if($company){

@@ -53,7 +53,20 @@ class Pitch extends Model
             $table->created_by = Auth::user()->id;
         });
 
-
+        static::deleting(function($pitch) {
+            foreach ($pitch->competitors()->get() as $competitor) {
+                $competitor->delete();
+            }
+            foreach ($pitch->milestones()->get() as $milestone) {
+                $milestone->delete();
+            }
+            foreach ($pitch->teamRoles()->get() as $teamRole) {
+                $teamRole->delete();
+            }
+            foreach ($pitch->targetMarketGraphs()->get() as $targetMarketGraph) {
+                $targetMarketGraph->delete();
+            }
+        });
     }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

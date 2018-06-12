@@ -42,9 +42,9 @@ class Revenue extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function company()
+    public function forecast()
     {
-        return $this->belongsTo('CannaPlan\Models\Company');
+        return $this->belongsTo('CannaPlan\Models\Forecast');
     }
 
     /**
