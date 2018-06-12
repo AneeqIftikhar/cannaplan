@@ -3,6 +3,8 @@
 namespace CannaPlan\Http\Controllers;
 
 use Illuminate\Http\Request;
+use CannaPlan\Models\Revenue;
+use Illuminate\Support\Facades\Auth;
 
 class RevenueController extends Controller
 {
@@ -13,7 +15,15 @@ class RevenueController extends Controller
      */
     public function index()
     {
-        //
+        $user=Auth::user();
+        if($user) {
+            $revenue=Revenue::where('created_by',$user->id);
+            return response()->success($revenue,"Revenue Streams Fetched Successfull");
+        }
+        else{
+            return response()->fail("User Not Authenticated");
+        }
+
     }
 
 
@@ -25,7 +35,7 @@ class RevenueController extends Controller
      */
     public function store(Request $request)
     {
-          
+            
     }
 
     /**
