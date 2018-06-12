@@ -1,7 +1,7 @@
 <?php
 
 namespace CannaPlan\Models;
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,6 +27,16 @@ class SectionContent extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+
+
+    }
     /**
      * The table associated with the model.
      * 
