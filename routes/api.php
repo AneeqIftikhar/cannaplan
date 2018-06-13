@@ -22,6 +22,7 @@ Route::group(['middleware' => ['cors']], function () {
     Route::post('login','UserController@login');
     Route::post('register','UserController@register');
     Route::get('get_currency','UserController@test');
+    Route::get('add_currency','UserController@addCurrency');
     Route::post('password/email', 'Auth\ForgotPasswordController@getResetToken');
     Route::post('password/reset', 'Auth\ResetPasswordController@reset');
     Route::group(['middleware' => ['auth:api']], function () {

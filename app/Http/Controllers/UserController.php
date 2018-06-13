@@ -6,6 +6,7 @@ use CannaPlan\Models\Company;
 use CannaPlan\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Validator;
 use CannaPlan\User;
 use CannaPlan\Http\Requests\RegisterUserPost;
@@ -141,6 +142,16 @@ class UserController extends Controller
     public function test(){
         $curreny=Currency::orderBy('name', 'asc')->get();
         return response()->success($curreny,"All Currencies");
+
+    }
+    public function addCurrency(){
+
+        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" ,['Dollars', 'USD', '$']);
+        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Pounds', 'GBP', '£']);
+        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Euro', 'EUR', '€']);
+        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Yen', 'JPY', '¥']);
+        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Rupees', 'NPR', '₨']);
+
 
     }
 }
