@@ -29,8 +29,8 @@ class Billable extends Model
      * @var array
      */
     protected $fillable = ['hour', 'revenue_start_date', 'hourly_rate'];
-    public function earnings()
+    public function revenues()
     {
-        return $this->morphMany('CannaPlan\Models\Revenue', 'earning');
+        return $this->morphMany('CannaPlan\Models\Revenue', 'revenuable');
     }
 }

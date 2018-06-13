@@ -29,8 +29,8 @@ class UnitSale extends Model
      * @var array
      */
     protected $fillable = ['unit_sold', 'revenue_start_date', 'unit_price'];
-    public function earnings()
+    public function revenues()
     {
-        return $this->morphMany('CannaPlan\Models\Revenue', 'earning');
+        return $this->morphMany('CannaPlan\Models\Revenue', 'revenuable');
     }
 }
