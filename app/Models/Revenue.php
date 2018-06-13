@@ -37,7 +37,7 @@ class Revenue extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'name', 'revenuable_id', 'revenuable_type'];
+    protected $fillable = ['forecast_id', 'name', 'revenuable_id', 'revenuable_type'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

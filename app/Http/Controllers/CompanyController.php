@@ -3,6 +3,7 @@
 namespace CannaPlan\Http\Controllers;
 
 use CannaPlan\Models\Company;
+use CannaPlan\Models\Forecast;
 use CannaPlan\Models\Pitch;
 use CannaPlan\Models\Plan;
 use Illuminate\Http\Request;
@@ -48,6 +49,8 @@ class CompanyController extends Controller
                     $plan=$company->plans()->create([]);
                     Plan::add_entries_in_plan_module($plan);
                     //creating plan with dummy chapters,sections and topics/charts/tables
+                    $company->forecasts()->create(['name'=>'Original Forecast','burden_rate'=>'20']);
+
 
                     DB::commit();
                     return response()->success($company,'Company Created Successfully');
