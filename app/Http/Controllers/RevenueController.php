@@ -2,6 +2,9 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Forecast;
+use CannaPlan\Models\RevenueOnly;
+use CannaPlan\Models\UnitSale;
 use Illuminate\Http\Request;
 use CannaPlan\Models\Revenue;
 use CannaPlan\Models\Billable;
@@ -38,10 +41,40 @@ class RevenueController extends Controller
 
 
         $input = $request->all();
-        $revenue=new billable();
-        $rev= $revenue->revenues()->create($input);
+        $forecast=Forecast::find($input['forecast_id']);
+        if($forecast)
+        {
+            if($input['revenue_type']=="billable")
+            {
+                $billable=Billable::create(['hour'=>$input['hour'],'revenue_start_date'=>$input['revenue_start_date'],'hourly_rate'=>$input['hourly_rate']]);
+                $revenue=new Revenue();
+                $revenue->name=$input['name'];
+                $revenue->forecast_id=$forecast->id;
+                $billable->revenues()->save($revenue);
 
-        return response()->success($rev,'Revenue Created Successfully');
+            }
+            else if($input['revenue_type']=="unit_sale")
+            {
+                $unit_sale=UnitSale::create(['unit_sold'=>$input['unit_sold'],'revenue_start_date'=>$input['revenue_start_date'],'unit_price'=>$input['unit_price']]);
+                $revenue=new Revenue();
+                $revenue->name=$input['name'];
+                $revenue->forecast_id=$forecast->id;
+                $unit_sale->revenues()->save($revenue);
+            }
+            else if($input['revenue_type']=="revenue_only")
+            {
+                $revenue_only=RevenueOnly::create(['type'=>$input['type'],'start_date'=>$input['start_date'],
+                    'amount_m_1'=>$input['amount_m_1']]);
+                $revenue=new Revenue();
+                $revenue->name=$input['name'];
+                $revenue->forecast_id=$forecast->id;
+                $revenue_only->revenues()->save($revenue);
+
+            }
+            return response()->success($revenue,'Revenue Created Successfully');
+
+        }
+
 
     }
 

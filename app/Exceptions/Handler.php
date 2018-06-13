@@ -7,6 +7,8 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
 
 use Illuminate\Database\QueryException;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
+
 class Handler extends ExceptionHandler
 {
     /**
@@ -64,6 +66,15 @@ class Handler extends ExceptionHandler
         }
         else if ($exception instanceof \Illuminate\Validation\ValidationException) {
             return response()->fail( $exception->errors());
+
+        }
+        else if ($exception instanceof FatalThrowableError) {
+            if ($debugEnabled) {
+                $message = "FatalThrowableError: ".$exception->getMessage();
+            } else {
+                $message = 'Internal Server Error';
+            }
+            return response()->fail($message);
 
         }
         return parent::render($request, $exception);

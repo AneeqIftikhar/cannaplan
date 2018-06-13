@@ -73,6 +73,10 @@ Route::group(['middleware' => ['cors']], function () {
         /*Topic Routes*/
         Route::resource('topic', 'TopicController');
         Route::post('update_topic/{id}','TopicController@updateTopic');
+
+        /*Revenue Routes*/
+        Route::resource('revenue', 'RevenueController');
+        Route::post('update_revenue/{id}','RevenueController@updateRevenue');
     });
 
 });
