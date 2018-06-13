@@ -39,7 +39,7 @@ class Company extends Model
     /**
      * @var array
      */
-    protected $fillable = ['currency_id', 'user_id', 'title', 'business_stage', 'start_of_forecast', 'length_of_forecast', 'created_by'];
+    protected $fillable = ['currency_id', 'user_id', 'title', 'business_stage', 'start_of_forecast', 'length_of_forecast'];
 
     public static function boot() {
         parent::boot();

@@ -43,8 +43,8 @@ class RevenueOnly extends Model
      * @var array
      */
     protected $fillable = ['type', 'start_date', 'amount_m_1', 'amount_m_2', 'amount_m_3', 'amount_m_4', 'amount_m_5', 'amount_m_6', 'amount_m_7', 'amount_m_8', 'amount_m_9', 'amount_m_10', 'amount_m_11', 'amount_m_12', 'amount_y_1', 'amount_y_2', 'amount_y_3'];
-    public function earnings()
+    public function revenues()
     {
-        return $this->morphMany('CannaPlan\Models\Revenue', 'earning');
+        return $this->morphMany('CannaPlan\Models\Revenue', 'revenuable');
     }
 }

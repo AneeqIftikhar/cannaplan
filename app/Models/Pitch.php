@@ -43,7 +43,7 @@ class Pitch extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'company_name', 'logo', 'headline', 'problem', 'solution', 'funds_required', 'funds_usage_description', 'sales_channel', 'marketing_activities', 'forecast_revenue', 'forecast_cost', 'forecast_type', 'created_by'];
+    protected $fillable = ['company_id', 'company_name', 'logo', 'headline', 'problem', 'solution', 'funds_required', 'funds_usage_description', 'sales_channel', 'marketing_activities', 'forecast_revenue', 'forecast_cost', 'forecast_type'];
 
     public static function boot() {
         parent::boot();

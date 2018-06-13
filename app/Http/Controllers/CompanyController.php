@@ -71,10 +71,6 @@ class CompanyController extends Controller
             return response()->fail($ex->getMessage());
 
         }
-
-
-
-
     }
 
     /**
@@ -134,7 +130,6 @@ class CompanyController extends Controller
      */
     public function destroy($id)
     {
-        //return response()->success($id." ".Auth::user(),'Company Deleted Successfully');
         if(Company::is_user_company($id)!=false)
         {
             $company=Company::destroy($id);

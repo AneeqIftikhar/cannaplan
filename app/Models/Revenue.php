@@ -37,7 +37,7 @@ class Revenue extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'name', 'earning_id', 'earning_type'];
+    protected $fillable = ['company_id', 'name', 'revenuable_id', 'revenuable_type'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -69,7 +69,7 @@ class Revenue extends Model
             'revenue_id', 'tax_id');
     }
 
-    public function earning()
+    public function revenuable()
     {
         return $this->morphTo();
     }
