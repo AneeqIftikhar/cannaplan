@@ -6,6 +6,7 @@ use CannaPlan\Helpers\Helper;
 use CannaPlan\Http\Requests\TeamRoleRequest;
 use CannaPlan\Models\TeamRole;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TeamRoleController extends Controller
 {
@@ -82,6 +83,35 @@ class TeamRoleController extends Controller
         else{
             return response()->fail('Team Role Update Failed');
         }
+    }
+
+    public function updateOrder(Request $request)
+    {
+        DB::beginTransaction();
+        $ids = $request->id;
+        $orders=$request->order;
+        for($i=0 ; $i<count($ids) ; $i++)
+        {
+            if(TeamRole::where('id', $ids[$i])->first())
+            {
+                if($orders[$i]>count($ids) || $orders[$i]<1)
+                {
+                    DB::rollback();
+                    return response()->fail('Order Number Is Not Correct');
+                }
+                else{
+                    $team_roles[] = TeamRole::where('id', $ids[$i])->update(['order'=> $orders[$i]]);
+                }
+            }
+            else{
+                DB::rollback();
+                return response()->fail('Could Not Find A Team Role');
+            }
+
+        }
+        DB::commit();
+        return response()->success([],'Team Roles Order Updated Successfully');
+
     }
 
     /**

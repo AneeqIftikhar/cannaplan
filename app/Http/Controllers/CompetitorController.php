@@ -5,6 +5,7 @@ use CannaPlan\Models\Competitor;
 use CannaPlan\Http\Requests\CompetitorRequest;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CompetitorController extends Controller
 {
@@ -45,7 +46,7 @@ class CompetitorController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(CompetitorRequest $request, $id)
+    public function updateCompetitor(CompetitorRequest $request, $id)
     {
         $competitor = Competitor::where('id', $id)->update($request->all());
         if($competitor){
@@ -54,6 +55,35 @@ class CompetitorController extends Controller
         else{
             return response()->fail('Competitor Not Found');
         }
+
+    }
+
+    public function updateOrder(Request $request)
+    {
+        DB::beginTransaction();
+        $ids = $request->id;
+        $orders=$request->order;
+        for($i=0 ; $i<count($ids) ; $i++)
+        {
+            if(Competitor::where('id', $ids[$i])->first())
+            {
+                if($orders[$i]>count($ids) || $orders[$i]<1)
+                {
+                    DB::rollback();
+                    return response()->fail('Order Number Is Not Correct');
+                }
+                else{
+                    $competitor[] = Competitor::where('id', $ids[$i])->update(['order'=> $orders[$i]]);
+                }
+            }
+            else{
+                DB::rollback();
+                return response()->fail('Could Not Find A Competitor');
+            }
+
+        }
+        DB::commit();
+        return response()->success([],'Competitor Order Updated Successfully');
 
     }
 

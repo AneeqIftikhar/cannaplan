@@ -23,6 +23,8 @@ class CreateCompetitor extends Migration
                 $table->string('name','255');
                 $table->string('advantage','255');
 
+                $table->integer('order');
+
                 $table->integer('created_by')->nullable();
 
                 $table->softDeletes();
