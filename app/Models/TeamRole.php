@@ -31,7 +31,7 @@ class TeamRole extends Model
     /**
      * @var array
      */
-    protected $fillable = ['pitch_id', 'name', 'job_title', 'biography', 'image'];
+    protected $fillable = ['pitch_id', 'name', 'job_title', 'biography', 'image' , 'order'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

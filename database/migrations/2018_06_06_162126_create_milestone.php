@@ -26,6 +26,8 @@ class CreateMilestone extends Migration
                 $table->boolean('email_reminder');
                 $table->integer('prospect_cost');
 
+                $table->boolean('completed')->default(false);
+
                 $table->integer('created_by')->nullable();
 
                 $table->softDeletes();

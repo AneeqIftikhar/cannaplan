@@ -89,9 +89,6 @@ class PitchController extends Controller
     public function destroy($id)
     {
         $pitch = Pitch::find($id);
-//        $pitch->competitors->delete();
-//        $pitch->targetMarketGraphs->delete();
-//        $pitch->teamRoles->delete();
         $pitch->delete();
         return response()->success([],'Pitch Deleted Successfully');
     }

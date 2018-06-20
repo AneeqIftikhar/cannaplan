@@ -29,7 +29,7 @@ class Competitor extends Model
     /**
      * @var array
      */
-    protected $fillable = ['pitch_id', 'name', 'advantage'];
+    protected $fillable = ['pitch_id', 'name', 'advantage' , 'order'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

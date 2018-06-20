@@ -34,6 +34,10 @@ Route::group(['middleware' => ['cors']], function () {
         Route::resource('company', 'CompanyController');
         Route::post('update_company/{id}', 'CompanyController@updateCompany');
 
+        /*Pitch Routes*/
+        Route::resource('pitch', 'PitchController');
+        Route::post('update_pitch/{id}','PitchController@updatePitch');
+
         /*Milestone Routes*/
         Route::resource('milestone' , 'MilestoneController');
         Route::post('update_milestone/{id}' , 'MilestoneController@updateMilestone');
@@ -45,10 +49,12 @@ Route::group(['middleware' => ['cors']], function () {
         /*Team Role Routes*/
         Route::resource('team_role', 'TeamRoleController');
         Route::post('update_team_role/{id}' , 'TeamRoleController@updateTeamRole');
+        Route::post('update_team_role_order' , 'TeamRoleController@updateOrder');
 
-        /*Pitch Routes*/
-        Route::resource('pitch', 'PitchController');
-        Route::post('update_pitch/{id}','PitchController@updatePitch');
+        /*Competitor Routes*/
+        Route::resource('competitor', 'CompetitorController');
+        Route::post('update_competitor/{id}' , 'CompetitorController@updateCompetitor');
+        Route::post('update_competitor_order' , 'CompetitorController@updateOrder');
 
         /*Chapter Routes*/
         Route::resource('chapter', 'ChapterController');
