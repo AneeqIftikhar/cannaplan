@@ -32,6 +32,15 @@ class Revenue extends Model
      * 
      * @var string
      */
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+
+    }
     protected $table = 'revenue';
 
     /**
