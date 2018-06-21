@@ -60,6 +60,6 @@ class Section extends Model
      */
     public function sectionContents()
     {
-        return $this->hasMany('CannaPlan\Models\SectionContent');
+        return $this->hasMany('CannaPlan\Models\SectionContent')->orderBy('order');
     }
 }

@@ -55,7 +55,7 @@ class Plan extends Model
      */
     public function chapters()
     {
-        return $this->hasMany('CannaPlan\Models\Chapter');
+        return $this->hasMany('CannaPlan\Models\Chapter')->orderBy('order');
     }
     public static function add_entries_in_plan_module($plan)
     {
@@ -77,4 +77,5 @@ class Plan extends Model
 
 
     }
+
 }

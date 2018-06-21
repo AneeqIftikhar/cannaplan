@@ -2,65 +2,47 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Plan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PlanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
+
+    //Plan is created inside company creation
+//    public function store(Request $request)
+//    {
+//        //
+//    }
 
 
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $plan=Plan::find($id);
+        $user=Auth::user();
+        if($plan && $plan->created_by==$user->id)
+        {
+
+            $plan = Plan::where('id',$id)->with(['chapters','chapters.sections','chapters.sections.sectionContents','chapters.sections.sectionContents.content'])->first();
+
+            return response()->success($plan,'Plan Fetched Successfully');
+        }
+        else
+        {
+            return response()->fail('User Not Authorized');
+        }
     }
 
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
+   //Nothing To update In Plan
+//    public function update(Request $request, $id)
+//    {
+//        //
+//    }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
+    //Plan Can not be deleted
+//    public function destroy($id)
+//    {
+//        //
+//    }
 }
