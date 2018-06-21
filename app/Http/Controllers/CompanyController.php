@@ -61,7 +61,7 @@ class CompanyController extends Controller
                 }
             }
             else {
-                return response()->fail('Invalid Request');
+                return response()->fail('Server Error');
             }
 
         }

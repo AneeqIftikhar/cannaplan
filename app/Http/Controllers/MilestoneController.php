@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use CannaPlan\Models\Milestone;
 use CannaPlan\Models\Pitch;
 use CannaPlan\Http\Requests\MilestoneRequest;
+use Illuminate\Support\Facades\Auth;
 
 class MilestoneController extends Controller
 {
@@ -27,9 +28,20 @@ class MilestoneController extends Controller
      */
     public function store(MilestoneRequest $request)
     {
-        $input = $request->all();
-        $milestone = Milestone::create($input);
-        return response()->success($milestone,'Milestone Created Successfully');
+        if(Pitch::find($request->input('pitch_id'))){
+            if(Pitch::is_user_pitch($request->input('pitch_id'))!=false) {
+                $input = $request->all();
+                $milestone = Milestone::create($input);
+                return response()->success($milestone,'Milestone Created Successfully');
+            }
+            else{
+                return response()->fail("No Pitch In Company With This Identifier");
+            }
+        }
+        else{
+            return response()->fail("Pitch Not Found");
+        }
+
     }
 
     /**
@@ -40,13 +52,18 @@ class MilestoneController extends Controller
      */
     public function show($id)
     {
+        $user=Auth::user();
+
         $milestone = Milestone::find($id);
-        if($milestone) {
+
+        if($milestone &&$user->id==$milestone->created_by) {
             return response()->success($milestone,'Milestone Fetched Successfully');
         }
         else{
-            return response()->fail('Milestone Not Found');
+            return response()->fail('User Not Authorized');
         }
+
+
     }
 
 
@@ -59,14 +76,16 @@ class MilestoneController extends Controller
      */
     public function updateMilestone(MilestoneRequest $request, $id)
     {
-        Company::is_user_company(Pitch::is_user_pitch($id));
-        $milestone = Milestone::where('id', $id)->update($request->all());
+        $user=Auth::user();
+        $milestone=Milestone::find($id);
+        if($milestone && $milestone->id==$user->id) {
+            $milestone = Milestone::where('id', $id)->update($request->all());
 
-        if($milestone){
             return response()->success($request->all(),'Milestone Updated Successfully');
+
         }
         else{
-            return response()->fail('Milestone Not Found');
+            return response()->fail('User Not Authorized');
         }
 
     }
@@ -79,13 +98,17 @@ class MilestoneController extends Controller
      */
     public function destroy($id)
     {
-        $milestone = Milestone::destroy($id);
+        $user=Auth::user();
+        $milestone=Milestone::find($id);
+        if($milestone && $milestone->id==$user->id) {
+            $milestone = Milestone::destroy($id);
 
-        if($milestone){
             return response()->success([],'Milestone Deleted Successfully');
+
         }
         else{
-            return response()->fail('Milestone Not Found');
+            return response()->fail('User Not Authorized');
         }
+
     }
 }

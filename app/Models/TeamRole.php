@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property int $pitch_id
@@ -27,6 +29,14 @@ class TeamRole extends Model
      * @var string
      */
     protected $table = 'team_role';
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+    }
 
     /**
      * @var array
