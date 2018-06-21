@@ -9,42 +9,66 @@ class PlanData
         $json=array();
         $json["chapter"]=array(
             0=>[
-                "name"=>"chap 1",
+                "name"=>"Executive Summary",
                 "order"=>"1",
                 "section"=>array(
                     0=>[
-                        "name"=>"sec 1",
+                        "name"=>"Opportunity",
                         "order"=>"1",
                         "section_content"=>array(
                             0=>[
-                                "name"=>"content 1",
+                                "name"=>"Problem",
                                 "order"=>"1",
-                                "content_type"=>"chart",
+                                "content_type"=>"topic",
                                 "content_id"=>"1"
                             ],
                             1=>[
-                                "name"=>"content 2",
+                                "name"=>"Solution",
                                 "order"=>"2",
-                                "content_type"=>"table",
+                                "content_type"=>"topic",
+                                "content_id"=>"1"
+                            ],
+                            2=>[
+                                "name"=>"Market",
+                                "order"=>"3",
+                                "content_type"=>"topic",
+                                "content_id"=>"1"
+                            ],
+                            3=>[
+                                "name"=>"Competition",
+                                "order"=>"4",
+                                "content_type"=>"topic",
+                                "content_id"=>"1"
+                            ],
+                            4=>[
+                                "name"=>"Why Us?",
+                                "order"=>"5",
+                                "content_type"=>"topic",
                                 "content_id"=>"1"
                             ]
                         )
 
                     ],
                     1=>[
-                        "name"=>"sec 2",
+                        "name"=>"Expectations",
                         "order"=>"2",
                         "section_content"=>array(
                             0=>[
-                                "name"=>"content 3",
+                                "name"=>"Forecast",
                                 "order"=>"1",
                                 "content_type"=>"topic",
                                 "content_id"=>"1"
                             ],
                             1=>[
-                                "name"=>"content 4",
+                                "name"=>"Financial Highlights by Year",
                                 "order"=>"2",
-                                "content_type"=>"table",
+                                "content_type"=>"chart",
+                                "content_id"=>"1"
+                            ],
+                            2=>[
+                                "name"=>"Financing Needed",
+                                "order"=>"3",
+                                "content_type"=>"topic",
                                 "content_id"=>"1"
                             ]
                         )
@@ -52,42 +76,55 @@ class PlanData
                     )
                 ],
             1=>[
-                "name"=>"chap 2",
+                "name"=>"Opportunity",
                 "order"=>"2",
                 "section"=>array(
                     0=>[
-                        "name"=>"sec 3",
+                        "name"=>"Problem & Solution",
                         "order"=>"1",
                         "section_content"=>array(
                             0=>[
-                                "name"=>"content 5",
+                                "name"=>"Problem Worth Solving",
                                 "order"=>"1",
                                 "content_type"=>"table",
                                 "content_id"=>"3"
                             ],
                             1=>[
-                                "name"=>"content 6",
+                                "name"=>"Our solution",
                                 "order"=>"2",
                                 "content_type"=>"chart",
                                 "content_id"=>"2"
                             ]
+
                         )
                     ],
                     1=>[
-                        "name"=>"sec 4",
+                        "name"=>"Target Market",
                         "order"=>"2",
                         "section_content"=>array(
                             0=>[
-                                "name"=>"content 7",
+                                "name"=>"Market Size & Segments",
+                                "order"=>"1",
+                                "content_type"=>"table",
+                                "content_id"=>"3"
+                            ]
+                        )
+                    ],
+                    2=>[
+                        "name"=>"Competition",
+                        "order"=>"3",
+                        "section_content"=>array(
+                            0=>[
+                                "name"=>"Current alternatives",
                                 "order"=>"1",
                                 "content_type"=>"table",
                                 "content_id"=>"3"
                             ],
                             1=>[
-                                "name"=>"content 8",
+                                "name"=>"Our advantages",
                                 "order"=>"2",
-                                "content_type"=>"chart",
-                                "content_id"=>"2"
+                                "content_type"=>"table",
+                                "content_id"=>"3"
                             ]
                         )
                     ]
