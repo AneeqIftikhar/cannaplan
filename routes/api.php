@@ -38,6 +38,10 @@ Route::group(['middleware' => ['cors']], function () {
         Route::resource('pitch', 'PitchController');
         Route::post('update_pitch/{id}','PitchController@updatePitch');
 
+        /*Plan Routes*/
+        Route::resource('plan', 'PlanController');
+
+
         /*Milestone Routes*/
         Route::resource('milestone' , 'MilestoneController');
         Route::post('update_milestone/{id}' , 'MilestoneController@updateMilestone');
@@ -57,8 +61,10 @@ Route::group(['middleware' => ['cors']], function () {
         Route::post('update_competitor_order' , 'CompetitorController@updateOrder');
 
         /*Chapter Routes*/
-        Route::resource('chapter', 'ChapterController');
+        //Resource Routes For Chapter Not Being Used For Now
+        //Route::resource('chapter', 'ChapterController');
         Route::post('update_chapter/{id}','ChapterController@updateChapter');
+        Route::post('update_order_chapter','ChapterController@updateOrder');
 
         /*Section Routes*/
         Route::resource('section', 'SectionController');

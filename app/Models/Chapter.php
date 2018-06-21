@@ -61,6 +61,6 @@ class Chapter extends Model
      */
     public function sections()
     {
-        return $this->hasMany('CannaPlan\Models\Section');
+        return $this->hasMany('CannaPlan\Models\Section')->orderBy('order');
     }
 }

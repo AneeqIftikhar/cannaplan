@@ -5,85 +5,110 @@ namespace CannaPlan\Http\Controllers;
 use Illuminate\Http\Request;
 use CannaPlan\Http\Requests\ChapterRequest;
 use CannaPlan\Models\Chapter;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ChapterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
 
-    }
+//Commenting store function as there will be prefilled chapters which are only there to be edited
+//user will not be able to add new chapter for initial version of the app
+//    public function store(ChapterRequest $request)
+//    {
+//        $input = $request->all();
+//        $chapter = Chapter::create($input);
+//        return response()->success($chapter,'Chapter Created Successfully');
+//    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(ChapterRequest $request)
-    {
-        $input = $request->all();
-        $chapter = Chapter::create($input);
-        return response()->success($chapter,'Chapter Created Successfully');
-    }
+   //We would not be needing show function for chapter
+//    public function show($id)
+//    {
+//        $chapter = Chapter::find($id);
+//        if($chapter) {
+//            return response()->success($chapter,'Chapter Fetched Successfully');
+//        }
+//        else{
+//            return response()->fail('Chapter Not Found');
+//        }
+//    }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+
+
+    public function updateChapter(Request $request, $id)
     {
         $chapter = Chapter::find($id);
-        if($chapter) {
-            return response()->success($chapter,'Chapter Fetched Successfully');
+        $user=Auth::user();
+        if($chapter && $user->id==$chapter->created_by)
+        {
+            $chapter = Chapter::where('id', $id)->update($request->all());
+            if($chapter){
+                return response()->success($request->all(),'Chapter Updated Successfully');
+            }
+            else{
+                return response()->fail('Chapter Not Found');
+            }
         }
-        else{
-            return response()->fail('Chapter Not Found');
+        else
+        {
+            return response()->fail('User Not Authorized');
         }
+
+
     }
-
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function updateChapter(ChapterRequest $request, $id)
+    public function updateOrder(Request $request)
     {
-        $chapter = Chapter::where('id', $id)->update($request->all());
+        try
+        {
+            DB::beginTransaction();
+            $ids = $request->id;
+            $orders=$request->order;
+            $user=Auth::user();
+            for($i=0 ; $i<count($ids) ; $i++)
+            {
+                $chapter=Chapter::find($ids[$i]);
+                if($chapter && $user->id==$chapter->created_by)
+                {
+                    if($orders[$i]>count($ids) || $orders[$i]<1)
+                    {
+                        DB::rollback();
+                        return response()->fail('Order Number Is Not Correct');
+                    }
+                    else{
+                        Chapter::where('id', $ids[$i])->update(['order'=> $orders[$i]]);
+                    }
+                }
+                else{
+                    DB::rollback();
+                    return response()->fail('User Not Authorized');
+                }
 
-        if($chapter){
-            return response()->success($request->all(),'Chapter Updated Successfully');
+            }
+            DB::commit();
+            return response()->success([],'Chapter Order Updated Successfully');
         }
-        else{
-            return response()->fail('Chapter Not Found');
+        catch (\PDOException $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
         }
+        catch (\Exception $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
+
+        }
+
 
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $chapter = Chapter::destroy($id);
-
-        if($chapter){
-            return response()->success([],'Chapter Deleted Successfully');
-        }
-        else{
-            return response()->fail('Chapter Not Found');
-        }
-    }
+//    Delition of chapter is not included in this phase
+//    public function destroy($id)
+//    {
+//        $chapter = Chapter::destroy($id);
+//
+//        if($chapter){
+//            return response()->success([],'Chapter Deleted Successfully');
+//        }
+//        else{
+//            return response()->fail('Chapter Not Found');
+//        }
+//    }
 }
