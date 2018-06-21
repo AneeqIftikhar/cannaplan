@@ -7,6 +7,8 @@ use CannaPlan\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
+//use Illuminate\Routing\Route;
 use Validator;
 use CannaPlan\User;
 use CannaPlan\Http\Requests\RegisterUserPost;
@@ -93,18 +95,45 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function login(){
+    public function login(Request $request){
         $user = User::get_user_from_email( request('email'));
         if(!$user) {
             return response()->fail('Email Not Found');
         }
-        else if($user=User::authenticate_user_with_password(request('email') , request('password'))){
+        $request->request->add([
+            'client_id' => '2',
+            'client_secret' => '7M29ixSNSALN1TpvphDVmdA6dVRKCGN6q49z3AmX',
+            'grant_type' => 'password',
+            'username' => request('email')
+        ]);
+        $tokenRequest = Request::create('/oauth/token', 'POST', $request->all());
 
-            return response()->success($user,'Logged In SuccessFully');
-        }
-        else{
+        $response_token =  Route::dispatch($tokenRequest);
+        $response_token = json_decode($response_token->getContent());
+        if(isset($response_token->error))
+        {
             return response()->fail('Incorrect Email Or Password');
         }
+        $user['token']=$response_token->access_token;
+        $user['refresh_token']=$response_token->refresh_token;
+
+        return response()->success($user,'Logged In SuccessFully');
+//        else if($user=User::authenticate_user_with_password(request('email') , request('password'))){
+//
+//            return response()->success($user,'Logged In SuccessFully');
+//        }
+//        else{
+//            return response()->fail('Incorrect Email Or Password');
+//        }
+    }
+    public function logout()
+    {
+        $user=Auth::user();
+        $userTokens=$user->tokens;
+        foreach($userTokens as $token) {
+            $token->delete();
+        }
+        return response()->success([],'Logged Out SuccessFully');
     }
     /**
      * Register api
@@ -123,6 +152,19 @@ class UserController extends Controller
         $user = User::create($input);
         $user['token']=  $user->createToken('CannaPlan')-> accessToken;
         return response()->success($user,'User Registered Successfully');
+    }
+    public function getAuthUser()
+    {
+        $user = Auth::user();
+        if($user)
+        {
+            return response()->success($user,'User Fetched Successfully');
+        }
+        else
+        {
+            return response()->token_error("Not Authorized");
+        }
+
     }
     /**
      * details api
