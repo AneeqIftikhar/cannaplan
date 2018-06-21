@@ -4,6 +4,7 @@ namespace CannaPlan\Models;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Auth;
 Relation::morphMap([
     'unit_sale'=>'CannaPlan\Models\UnitSale',
     'billable'=>'CannaPlan\Models\Billable',

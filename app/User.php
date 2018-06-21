@@ -1,9 +1,10 @@
 <?php
 
 namespace CannaPlan;
-
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Carbon;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
@@ -52,13 +53,12 @@ class User extends Authenticatable
         //return response()->success( Auth::attempt(['email' => $email, 'password' => $password]),'Logged In SuccessFully');
         if(Auth::attempt(['email' => $email, 'password' => $password])) {
             $user = Auth::user();
-            $token =  $user->createToken('CannaPlan')-> accessToken;
-            $user['token']=$token;
             return $user;
         }
         else{
             return false;
         }
+
     }
     public static function authenticate_user_with_token($user_id){
         $user=User::where('id','=',$user_id)->first();
