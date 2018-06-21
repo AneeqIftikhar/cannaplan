@@ -51,39 +51,14 @@ class User extends Authenticatable
 
     public static function authenticate_user_with_password($email,$password){
         //return response()->success( Auth::attempt(['email' => $email, 'password' => $password]),'Logged In SuccessFully');
-//        if(Auth::attempt(['email' => $email, 'password' => $password])) {
-//            $user = Auth::user();
-//            $userTokens=$user->tokens;
-//            foreach($userTokens as $token) {
-//                $token->delete();
-//            }
-//
-//
-//
-//            $tokenResult =  $user->createToken('CannaPlan');
-//
-//            $token = $tokenResult->token;
-//            $token->expires_at = Carbon::now()->addMinutes(1);
-//            $token->save();
-//
-//            $user['token']=$tokenResult->accessToken;
-//            unset($user['tokens']);
-//            return $user;
-//        }
-//        else{
-//            return false;
-//        }
-        $array=[
-            'client_id' => '2',
-            'client_secret' => '7M29ixSNSALN1TpvphDVmdA6dVRKCGN6q49z3AmX',
-            'grant_type' => 'password',
-            'username' => $email,
-            'password' => $password
-        ];
-        $tokenRequest = request::create('/oauth/token', 'POST', $array);
+        if(Auth::attempt(['email' => $email, 'password' => $password])) {
+            $user = Auth::user();
+            return $user;
+        }
+        else{
+            return false;
+        }
 
-        $token =  \Route::dispatch($tokenRequest);
-        return $token;
     }
     public static function authenticate_user_with_token($user_id){
         $user=User::where('id','=',$user_id)->first();

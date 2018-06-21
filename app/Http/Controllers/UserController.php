@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Validator;
 use CannaPlan\User;
 use CannaPlan\Http\Requests\RegisterUserPost;
+use CannaPlan\Client;
 class UserController extends Controller
 {
     /**
@@ -100,32 +101,41 @@ class UserController extends Controller
         if(!$user) {
             return response()->fail('Email Not Found');
         }
-        $request->request->add([
-            'client_id' => '2',
-            'client_secret' => '7M29ixSNSALN1TpvphDVmdA6dVRKCGN6q49z3AmX',
-            'grant_type' => 'password',
-            'username' => request('email')
-        ]);
-        $tokenRequest = Request::create('/oauth/token', 'POST', $request->all());
+        else if($user=User::authenticate_user_with_password(request('email') , request('password')))
+        {
+            $userTokens=$user->tokens;
+            foreach($userTokens as $token) {
+                $token->delete();
+            }
+            $client = Client::where('password_client', 1)->first();
+            $request->request->add([
+                'client_id' => $client->id,
+                'client_secret' => $client->secret,
+                'grant_type' => 'password',
+                'username' => request('email')
+            ]);
+            $tokenRequest = Request::create('/oauth/token', 'POST', $request->all());
 
-        $response_token =  Route::dispatch($tokenRequest);
-        $response_token = json_decode($response_token->getContent());
-        if(isset($response_token->error))
+            $response_token =  Route::dispatch($tokenRequest);
+            $response_token = json_decode($response_token->getContent());
+            if(isset($response_token->error))
+            {
+                return response()->fail('Incorrect Email Or Password');
+            }
+            $user['token']=$response_token->access_token;
+            $user['refresh_token']=$response_token->refresh_token;
+            $user['expire_time']=$response_token->expires_in;
+
+            return response()->success($user,'Logged In SuccessFully');
+        }
+        else
         {
             return response()->fail('Incorrect Email Or Password');
         }
-        $user['token']=$response_token->access_token;
-        $user['refresh_token']=$response_token->refresh_token;
 
-        return response()->success($user,'Logged In SuccessFully');
-//        else if($user=User::authenticate_user_with_password(request('email') , request('password'))){
-//
-//            return response()->success($user,'Logged In SuccessFully');
-//        }
-//        else{
-//            return response()->fail('Incorrect Email Or Password');
-//        }
+
     }
+    //logout is not currently used as inside login we are deleting users expired tokens.
     public function logout()
     {
         $user=Auth::user();
@@ -140,8 +150,18 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function register(RegisterUserPost $request)
+    public function register(Request $request)
     {
+        $validator = Validator::make($request->all(),  [
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->fail($validator->errors());
+        }
         $user = User::get_user_from_email( request('email'));
         if($user)
         {
@@ -150,8 +170,29 @@ class UserController extends Controller
         $input = $request->all();
         $input['password'] = bcrypt($input['password']);
         $user = User::create($input);
-        $user['token']=  $user->createToken('CannaPlan')-> accessToken;
-        return response()->success($user,'User Registered Successfully');
+        if($user)
+        {
+            $client = Client::where('password_client', 1)->first();
+            $request->request->add([
+                'client_id' => $client->id,
+                'client_secret' => $client->secret,
+                'grant_type' => 'password',
+                'username' => request('email')
+            ]);
+            $tokenRequest = Request::create('/oauth/token', 'POST',$request->all());
+            //return $tokenRequest;
+            $response_token =  Route::dispatch($tokenRequest);
+            $response_token = json_decode($response_token->getContent());
+            if(isset($response_token->error))
+            {
+                return response()->fail($response_token->message);
+            }
+            $user['token']=$response_token->access_token;
+            $user['refresh_token']=$response_token->refresh_token;
+
+            return response()->success($user,'User Registered Successfully');
+        }
+
     }
     public function getAuthUser()
     {
