@@ -81,7 +81,7 @@ class Pitch extends Model
      */
     public function competitors()
     {
-        return $this->hasMany('CannaPlan\Models\Competitor');
+        return $this->hasMany('CannaPlan\Models\Competitor')->orderBy('order');
     }
 
     /**
@@ -105,12 +105,12 @@ class Pitch extends Model
      */
     public function teamRoles()
     {
-        return $this->hasMany('CannaPlan\Models\TeamRole');
+        return $this->hasMany('CannaPlan\Models\TeamRole')->orderBy('order');
     }
 
     public static function is_user_pitch($id){
         $company=Pitch::find($id)->company;
-        $verify=Company::is_user_company($company);
+        $verify=Company::is_user_company($company->id);
 
         return $verify;
     }

@@ -23,17 +23,19 @@ class PitchController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(PitchRequest $request)
-    {
-        $pitch=Pitch::create($request->all());
-        if($pitch) {
-            return response()->success($pitch,'Pitch Created Successfully');
-        }
-        else {
-            return response()->fail('Pitch Could Not be Created');
-        }
 
-    }
+    //Pitch is created in company so we dont need it
+//    public function store(PitchRequest $request)
+//    {
+//        $pitch=Pitch::create($request->all());
+//        if($pitch) {
+//            return response()->success($pitch,'Pitch Created Successfully');
+//        }
+//        else {
+//            return response()->fail('Pitch Could Not be Created');
+//        }
+//
+//    }
 
     /**
      * Display the specified resource.

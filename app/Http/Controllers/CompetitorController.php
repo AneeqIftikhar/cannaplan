@@ -16,9 +16,19 @@ class CompetitorController extends Controller
 
     public function store(CompetitorRequest $request)
     {
-        $input = $request->all();
-        $competitor = Competitor::create($input);
-        return response()->success($competitor,'Competitor Created Successfully');
+        if(Pitch::find($request->input('pitch_id'))){
+            if(Pitch::is_user_pitch($request->input('pitch_id'))!=false) {
+                $input = $request->all();
+                $competitor = Competitor::create($input);
+                return response()->success($competitor,'Competitor Created Successfully');
+            }
+            else{
+                return response()->fail("No Pitch In Company With This Identifier");
+            }
+        }
+        else{
+            return response()->fail("Pitch Not Found");
+        }
     }
 
     /**
@@ -29,13 +39,17 @@ class CompetitorController extends Controller
      */
     public function show($id)
     {
+        $user=Auth::user();
+
         $competitor = Competitor::find($id);
-        if($competitor) {
+
+        if($competitor && $user->id==$competitor->created_by) {
             return response()->success($competitor,'Competitor Fetched Successfully');
         }
         else{
-            return response()->fail('Competitor Not Found');
+            return response()->fail('User Not Authorized');
         }
+
     }
 
 
@@ -48,42 +62,60 @@ class CompetitorController extends Controller
      */
     public function updateCompetitor(CompetitorRequest $request, $id)
     {
-        $competitor = Competitor::where('id', $id)->update($request->all());
-        if($competitor){
+        $user=Auth::user();
+        $competitor=Competitor::find($id);
+        if($competitor && $competitor->id==$user->id) {
+            $competitor = Competitor::where('id', $id)->update($request->all());
+
             return response()->success($request->all(),'Competitor Updated Successfully');
+
         }
         else{
-            return response()->fail('Competitor Not Found');
+            return response()->fail('User Not Authorized');
         }
 
     }
 
     public function updateOrder(Request $request)
     {
-        DB::beginTransaction();
-        $ids = $request->id;
-        $orders=$request->order;
-        for($i=0 ; $i<count($ids) ; $i++)
+        try
         {
-            if(Competitor::where('id', $ids[$i])->first())
+            DB::beginTransaction();
+            $ids = $request->id;
+            $orders=$request->order;
+            for($i=0 ; $i<count($ids) ; $i++)
             {
-                if($orders[$i]>count($ids) || $orders[$i]<1)
-                {
-                    DB::rollback();
-                    return response()->fail('Order Number Is Not Correct');
+                $user=Auth::user();
+                $competitor=Competitor::find($ids[$i]);
+                if($competitor && $competitor->id==$user->id) {
+
+                    if($orders[$i]>count($ids) || $orders[$i]<1)
+                    {
+                        DB::rollback();
+                        return response()->fail('Order Number Is Not Correct');
+                    }
+                    else{
+                        Competitor::where('id', $ids[$i])->update(['order'=> $orders[$i]]);
+                    }
+
                 }
                 else{
-                    $competitor[] = Competitor::where('id', $ids[$i])->update(['order'=> $orders[$i]]);
+                    return response()->fail('User Not Authorized');
                 }
+
             }
-            else{
-                DB::rollback();
-                return response()->fail('Could Not Find A Competitor');
-            }
+            DB::commit();
+            return response()->success([],'Competitor Order Updated Successfully');
+        }
+        catch (\PDOException $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
+        }
+        catch (\Exception $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
 
         }
-        DB::commit();
-        return response()->success([],'Competitor Order Updated Successfully');
 
     }
 
@@ -95,13 +127,17 @@ class CompetitorController extends Controller
      */
     public function destroy($id)
     {
-        $competitor = Competitor::destroy($id);
+        $user=Auth::user();
+        $competitor=Competitor::find($id);
+        if($competitor && $competitor->id==$user->id) {
+            $competitor = Competitor::destroy($id);
 
-        if($competitor){
             return response()->success([],'Competitor Deleted Successfully');
+
         }
         else{
-            return response()->fail('Competitor Not Found');
+            return response()->fail('User Not Authorized');
         }
+
     }
 }

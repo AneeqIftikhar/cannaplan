@@ -15,9 +15,20 @@ class TargetMargetGraphController extends Controller
 
     public function store(TargetMargetGraphRequest $request)
     {
-        $input = $request->all();
-        $target_marget_graph = TargetMarketGraph::create($input);
-        return response()->success($target_marget_graph,'Target Market Graph Created Successfully');
+        if(Pitch::find($request->input('pitch_id'))){
+            if(Pitch::is_user_pitch($request->input('pitch_id'))!=false) {
+                $input = $request->all();
+                $target_marget_graph = TargetMarketGraph::create($input);
+                return response()->success($target_marget_graph,'Target Market Graph Created Successfully');
+            }
+            else{
+                return response()->fail("No Pitch In Company With This Identifier");
+            }
+        }
+        else{
+            return response()->fail("Pitch Not Found");
+        }
+
     }
 
     /**
@@ -28,13 +39,17 @@ class TargetMargetGraphController extends Controller
      */
     public function show($id)
     {
+        $user=Auth::user();
+
         $target_marget_graph = TargetMarketGraph::find($id);
-        if($target_marget_graph) {
+
+        if($target_marget_graph && $user->id==$target_marget_graph->created_by) {
             return response()->success($target_marget_graph,'Target Market Graph Fetched Successfully');
         }
         else{
-            return response()->fail('Target Market Graph Not Found');
+            return response()->fail('User Not Authorized');
         }
+
     }
 
 
@@ -47,12 +62,16 @@ class TargetMargetGraphController extends Controller
      */
     public function updateTargetMargetGraph(TargetMargetGraphRequest $request, $id)
     {
-        $target_marget_graph = TargetMarketGraph::where('id', $id)->update($request->all());
-        if($target_marget_graph){
+        $user=Auth::user();
+        $target_marget_graph=TargetMarketGraph::find($id);
+        if($target_marget_graph && $target_marget_graph->id==$user->id) {
+            $target_marget_graph = TargetMarketGraph::where('id', $id)->update($request->all());
+
             return response()->success($request->all(),'Target Market Graph Updated Successfully');
+
         }
         else{
-            return response()->fail('Target Market Graph Not Found');
+            return response()->fail('User Not Authorized');
         }
 
     }
@@ -65,13 +84,17 @@ class TargetMargetGraphController extends Controller
      */
     public function destroy($id)
     {
-        $target_marget_graph = TargetMarketGraph::destroy($id);
+        $user=Auth::user();
+        $target_marget_graph=TargetMarketGraph::find($id);
+        if($target_marget_graph && $target_marget_graph->id==$user->id) {
+            $target_marget_graph = TargetMarketGraph::destroy($id);
 
-        if($target_marget_graph){
+
             return response()->success([],'Target Market Graph Deleted Successfully');
+
         }
         else{
-            return response()->fail('Target Market Graph Not Found');
+            return response()->fail('User Not Authorized');
         }
     }
 }

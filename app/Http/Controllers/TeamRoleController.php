@@ -30,18 +30,22 @@ class TeamRoleController extends Controller
      */
     public function store(TeamRoleRequest $request)
     {
-        $input_array=$request->all();
-        if ($request->hasFile('image')) {
-            $input_array['image']=Helper::uploadImage($request->image);
-        }
-        $team_role=TeamRole::create($input_array);
-        if($team_role) {
-            return response()->success($team_role,'Team Role Added Successfully');
+        if(Pitch::find($request->input('pitch_id'))){
+            $input_array=$request->all();
+            if ($request->hasFile('image')) {
+                $input_array['image']=Helper::uploadImage($request->image);
+            }
+            $team_role=TeamRole::create($input_array);
+            if($team_role) {
+                return response()->success($team_role,'Team Role Added Successfully');
+            }
+            else{
+                return response()->fail('Team Could Not Be Added');
+            }
         }
         else{
-            return response()->fail('Team Could Not Be Added');
+            return response()->fail("Pitch Not Found");
         }
-
     }
 
     /**
@@ -52,13 +56,17 @@ class TeamRoleController extends Controller
      */
     public function show($id)
     {
+        $user=Auth::user();
+
         $team_role = TeamRole::find($id);
-        if($team_role) {
+
+        if($team_role && $user->id==$team_role->created_by) {
             return response()->success($team_role,'Team Role Fetched Successfully');
         }
-        else {
-            return response()->fail('Team Role Could Not be Fetched');
+        else{
+            return response()->fail('User Not Authorized');
         }
+
     }
 
 
@@ -72,45 +80,62 @@ class TeamRoleController extends Controller
      */
     public function updateTeamRole(TeamRoleRequest $request, $id)
     {
-        $input_array=$request->all();
-        if ($request->hasFile('image')) {
-            $input_array['image']=Helper::uploadImage($request->image);
-        }
-        $team_role=TeamRole::where('id', $id)->update($input_array);
-        if($team_role) {
+        $user=Auth::user();
+        $team_role=TeamRole::find($id);
+        if($team_role && $team_role->id==$user->id) {
+            $input_array=$request->all();
+            if ($request->hasFile('image')) {
+                $input_array['image']=Helper::uploadImage($request->image);
+            }
+            $team_role=TeamRole::where('id', $id)->update($input_array);
+
             return response()->success([],'Team Role Updated Successfully');
+
         }
         else{
-            return response()->fail('Team Role Update Failed');
+            return response()->fail('User Not Authorized');
         }
     }
 
     public function updateOrder(Request $request)
     {
-        DB::beginTransaction();
-        $ids = $request->id;
-        $orders=$request->order;
-        for($i=0 ; $i<count($ids) ; $i++)
+        try
         {
-            if(TeamRole::where('id', $ids[$i])->first())
+            DB::beginTransaction();
+            $ids = $request->id;
+            $orders=$request->order;
+            for($i=0 ; $i<count($ids) ; $i++)
             {
-                if($orders[$i]>count($ids) || $orders[$i]<1)
-                {
-                    DB::rollback();
-                    return response()->fail('Order Number Is Not Correct');
+                $user=Auth::user();
+                $team_role=TeamRole::find($ids[$i]);
+                if($team_role && $team_role->id==$user->id) {
+                    if($orders[$i]>count($ids) || $orders[$i]<1)
+                    {
+                        DB::rollback();
+                        return response()->fail('Order Number Is Not Correct');
+                    }
+                    else{
+                        TeamRole::where('id', $ids[$i])->update(['order'=> $orders[$i]]);
+                    }
                 }
                 else{
-                    $team_roles[] = TeamRole::where('id', $ids[$i])->update(['order'=> $orders[$i]]);
+                    return response()->fail('User Not Authorized');
                 }
+
+
             }
-            else{
-                DB::rollback();
-                return response()->fail('Could Not Find A Team Role');
-            }
+            DB::commit();
+            return response()->success([],'Team Roles Order Updated Successfully');
+        }
+        catch (\PDOException $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
+        }
+        catch (\Exception $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
 
         }
-        DB::commit();
-        return response()->success([],'Team Roles Order Updated Successfully');
 
     }
 
@@ -122,12 +147,16 @@ class TeamRoleController extends Controller
      */
     public function destroy($id)
     {
-        $team_role = TeamRole::destroy($id);
-        if($team_role){
+        $user=Auth::user();
+        $team_role=TeamRole::find($id);
+        if($team_role && $team_role->id==$user->id) {
+            $team_role = TeamRole::destroy($id);
+
             return response()->success([],'Pitch Deleted Successfully');
+
         }
         else{
-            return response()->fail ('Team Role Deletion Failed');
+            return response()->fail('User Not Authorized');
         }
 
     }
