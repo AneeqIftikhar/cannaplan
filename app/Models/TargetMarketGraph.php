@@ -40,7 +40,8 @@ class TargetMarketGraph extends Model
     /**
      * @var array
      */
-    protected $fillable = ['pitch_id', 'segment_name', 'segment_prospect', 'prospect_cost'];
+    protected $fillable = ['segment_name', 'segment_prospect', 'prospect_cost'];
+    protected $guarded = ['id','pitch_id','created_by'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

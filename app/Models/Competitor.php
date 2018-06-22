@@ -39,7 +39,8 @@ class Competitor extends Model
     /**
      * @var array
      */
-    protected $fillable = ['pitch_id', 'name', 'advantage' , 'order'];
+    protected $fillable = ['name', 'advantage' , 'order'];
+    protected $guarded = ['id','pitch_id','created_by'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

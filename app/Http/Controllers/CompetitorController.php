@@ -4,8 +4,11 @@ namespace CannaPlan\Http\Controllers;
 use CannaPlan\Models\Competitor;
 use CannaPlan\Http\Requests\CompetitorRequest;
 
+use CannaPlan\Models\Pitch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Input;
 
 class CompetitorController extends Controller
 {
@@ -16,18 +19,21 @@ class CompetitorController extends Controller
 
     public function store(CompetitorRequest $request)
     {
-        if(Pitch::find($request->input('pitch_id'))){
-            if(Pitch::is_user_pitch($request->input('pitch_id'))!=false) {
-                $input = $request->all();
-                $competitor = Competitor::create($input);
+        $pitch=Pitch::find($request->input('pitch_id'));
+        if($pitch && $pitch->created_by==Auth::user()->id){
+            $input = $request->all();
+            $competitor=$pitch->competitors()->create($input);
+
+            if($competitor) {
                 return response()->success($competitor,'Competitor Created Successfully');
             }
             else{
-                return response()->fail("No Pitch In Company With This Identifier");
+                return response()->fail('Competitor Could Not Be Added');
             }
+
         }
         else{
-            return response()->fail("Pitch Not Found");
+            return response()->fail('User Not Authorized');
         }
     }
 
@@ -64,10 +70,12 @@ class CompetitorController extends Controller
     {
         $user=Auth::user();
         $competitor=Competitor::find($id);
-        if($competitor && $competitor->id==$user->id) {
-            $competitor = Competitor::where('id', $id)->update($request->all());
+        if($competitor && $competitor->created_by==$user->id) {
+            //$competitor = Competitor::where('id', $id)->update($request->all());
 
-            return response()->success($request->all(),'Competitor Updated Successfully');
+            $competitor->update(Input::all());
+
+            return response()->success($competitor,'Competitor Updated Successfully');
 
         }
         else{
@@ -87,7 +95,7 @@ class CompetitorController extends Controller
             {
                 $user=Auth::user();
                 $competitor=Competitor::find($ids[$i]);
-                if($competitor && $competitor->id==$user->id) {
+                if($competitor && $competitor->created_by==$user->id) {
 
                     if($orders[$i]>count($ids) || $orders[$i]<1)
                     {
@@ -129,7 +137,7 @@ class CompetitorController extends Controller
     {
         $user=Auth::user();
         $competitor=Competitor::find($id);
-        if($competitor && $competitor->id==$user->id) {
+        if($competitor && $competitor->created_by==$user->id) {
             $competitor = Competitor::destroy($id);
 
             return response()->success([],'Competitor Deleted Successfully');

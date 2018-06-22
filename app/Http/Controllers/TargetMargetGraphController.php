@@ -2,9 +2,12 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Pitch;
 use Illuminate\Http\Request;
 use CannaPlan\Models\TargetMarketGraph;
 use CannaPlan\Http\Requests\TargetMargetGraphRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Input;
 
 class TargetMargetGraphController extends Controller
 {
@@ -15,18 +18,19 @@ class TargetMargetGraphController extends Controller
 
     public function store(TargetMargetGraphRequest $request)
     {
-        if(Pitch::find($request->input('pitch_id'))){
-            if(Pitch::is_user_pitch($request->input('pitch_id'))!=false) {
-                $input = $request->all();
-                $target_marget_graph = TargetMarketGraph::create($input);
+        $pitch=Pitch::find($request->input('pitch_id'));
+        if($pitch && $pitch->created_by==Auth::user()->id){
+            $input = $request->all();
+            $target_marget_graph=$pitch->targetMargetGraphs()->create($input);
+            if($target_marget_graph) {
                 return response()->success($target_marget_graph,'Target Market Graph Created Successfully');
             }
             else{
-                return response()->fail("No Pitch In Company With This Identifier");
+                return response()->fail('Target Market Graph Could Not Be Added');
             }
         }
         else{
-            return response()->fail("Pitch Not Found");
+            return response()->fail('User Not Authorized');
         }
 
     }
@@ -64,10 +68,12 @@ class TargetMargetGraphController extends Controller
     {
         $user=Auth::user();
         $target_marget_graph=TargetMarketGraph::find($id);
-        if($target_marget_graph && $target_marget_graph->id==$user->id) {
-            $target_marget_graph = TargetMarketGraph::where('id', $id)->update($request->all());
+        if($target_marget_graph && $target_marget_graph->created_by==$user->id) {
+            //$target_marget_graph = TargetMarketGraph::where('id', $id)->update($request->all());
 
-            return response()->success($request->all(),'Target Market Graph Updated Successfully');
+            $target_marget_graph->update(Input::all());
+
+            return response()->success($target_marget_graph,'Target Market Graph Updated Successfully');
 
         }
         else{
@@ -86,7 +92,7 @@ class TargetMargetGraphController extends Controller
     {
         $user=Auth::user();
         $target_marget_graph=TargetMarketGraph::find($id);
-        if($target_marget_graph && $target_marget_graph->id==$user->id) {
+        if($target_marget_graph && $target_marget_graph->created_by==$user->id) {
             $target_marget_graph = TargetMarketGraph::destroy($id);
 
 
