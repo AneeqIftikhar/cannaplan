@@ -6,6 +6,9 @@ use CannaPlan\Http\Requests\PitchRequest;
 use CannaPlan\Models\Pitch;
 use Illuminate\Http\Request;
 use CannaPlan\Helpers\Helper;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Input;
+
 class PitchController extends Controller
 {
     /**
@@ -45,16 +48,19 @@ class PitchController extends Controller
      */
     public function show($id)
     {
+        $user=Auth::user();
+
         $pitch = Pitch::find($id);
-        if($pitch) {
+        if($pitch && $user->id == $pitch->created_by) {
             $pitch->competitors;
             $pitch->milestones;
             $pitch->targetMarketGraphs;
             $pitch->teamRoles;
             return response()->success($pitch,'Pitch Fetched Successfully');
+
         }
-        else {
-            return response()->fail('Pitch Could Not be Fetched');
+        else{
+            return response()->fail('User Not Authorized');
         }
 
     }
@@ -68,16 +74,23 @@ class PitchController extends Controller
      */
     public function updatePitch(PitchRequest $request, $id)
     {
-        $input_array=$request->all();
-        if ($request->hasFile('logo')) {
-            $input_array['logo']=Helper::uploadImage($request->logo);
-        }
-        $pitch=Pitch::where('id', $id)->update($input_array);
-        if($pitch) {
-            return response()->success([],'Pitch Updated Successfully');
+        $user=Auth::user();
+
+        $pitch = Pitch::find($id);
+        if($pitch && $user->id == $pitch->created_by) {
+            $input_array=$request->all();
+            if ($request->hasFile('logo')) {
+                Helper::deleteImage($pitch->logo);
+                $input_array['logo']=Helper::uploadImage($request->logo);
+            }
+            //$pitch=Pitch::where('id', $id)->update($input_array);
+
+            $pitch->update(Input::all());
+
+            return response()->success($pitch,'Pitch Updated Successfully');
         }
         else{
-            return response()->fail('Pitch Update Failed');
+            return response()->fail('User Not Authorized');
         }
 
     }
@@ -88,10 +101,19 @@ class PitchController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
-        $pitch = Pitch::find($id);
-        $pitch->delete();
-        return response()->success([],'Pitch Deleted Successfully');
-    }
+    // It is not needed
+//    public function destroy($id)
+//    {
+//        $user=Auth::user();
+//
+//        $pitch = Pitch::find($id);
+//        if($pitch && $user->id == $pitch->created_by) {
+//            $pitch = Pitch::find($id);
+//            $pitch->delete();
+//            return response()->success([],'Pitch Deleted Successfully');
+//        }
+//        else{
+//            return response()->fail('User Not Authorized');
+//        }
+//    }
 }

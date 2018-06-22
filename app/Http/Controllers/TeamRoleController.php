@@ -4,9 +4,12 @@ namespace CannaPlan\Http\Controllers;
 
 use CannaPlan\Helpers\Helper;
 use CannaPlan\Http\Requests\TeamRoleRequest;
+use CannaPlan\Models\Pitch;
 use CannaPlan\Models\TeamRole;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Input;
 
 class TeamRoleController extends Controller
 {
@@ -30,21 +33,24 @@ class TeamRoleController extends Controller
      */
     public function store(TeamRoleRequest $request)
     {
-        if(Pitch::find($request->input('pitch_id'))){
+        $pitch=Pitch::find($request->input('pitch_id'));
+        if($pitch && $pitch->created_by==Auth::user()->id){
             $input_array=$request->all();
             if ($request->hasFile('image')) {
                 $input_array['image']=Helper::uploadImage($request->image);
             }
-            $team_role=TeamRole::create($input_array);
+            $team_role=$pitch->teamRoles()->create($input_array);
             if($team_role) {
                 return response()->success($team_role,'Team Role Added Successfully');
             }
             else{
                 return response()->fail('Team Could Not Be Added');
             }
+
+
         }
         else{
-            return response()->fail("Pitch Not Found");
+            return response()->fail('User Not Authorized');
         }
     }
 
@@ -82,14 +88,17 @@ class TeamRoleController extends Controller
     {
         $user=Auth::user();
         $team_role=TeamRole::find($id);
-        if($team_role && $team_role->id==$user->id) {
+        if($team_role && $team_role->created_by==$user->id) {
             $input_array=$request->all();
             if ($request->hasFile('image')) {
+                Helper::deleteImage($team_role->image);
                 $input_array['image']=Helper::uploadImage($request->image);
             }
-            $team_role=TeamRole::where('id', $id)->update($input_array);
+            //$team_role=TeamRole::where('id', $id)->update($input_array);
 
-            return response()->success([],'Team Role Updated Successfully');
+            $team_role->update(Input::all());
+
+            return response()->success($team_role,'Team Role Updated Successfully');
 
         }
         else{
@@ -108,7 +117,7 @@ class TeamRoleController extends Controller
             {
                 $user=Auth::user();
                 $team_role=TeamRole::find($ids[$i]);
-                if($team_role && $team_role->id==$user->id) {
+                if($team_role && $team_role->created_by==$user->id) {
                     if($orders[$i]>count($ids) || $orders[$i]<1)
                     {
                         DB::rollback();
@@ -149,7 +158,7 @@ class TeamRoleController extends Controller
     {
         $user=Auth::user();
         $team_role=TeamRole::find($id);
-        if($team_role && $team_role->id==$user->id) {
+        if($team_role && $team_role->created_by==$user->id) {
             $team_role = TeamRole::destroy($id);
 
             return response()->success([],'Pitch Deleted Successfully');
