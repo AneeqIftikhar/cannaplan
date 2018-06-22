@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use CannaPlan\Http\Requests\CompanyRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Input;
+
 class CompanyController extends Controller
 {
     /**
@@ -104,13 +106,14 @@ class CompanyController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(CompanyRequest $request, $id)
+    public function updateCompany(CompanyRequest $request, $id)
     {
         if(Company::is_user_company($id)!==false)
         {
-            $company=Company::where('id', $id)->update($request->all());
+            $company = Company::find($id);
             if($company) {
-                return response()->success($request->all(),'Company Updated Successfully');
+                $company->update(Input::all());
+                return response()->success($company,'Company Updated Successfully');
             }
             else {
                 return response()->fail("Company Update Failed");

@@ -15,7 +15,8 @@ class CreateTable extends Migration
     {
         if (!Schema::hasTable('table')) {
             Schema::create('table', function (Blueprint $table) {
-                $table->increments('id');
+                $table->integer('id')->unsigned();
+                $table->primary('id');
                 $table->string('name','100');
 
                 $table->integer('created_by')->nullable();

@@ -58,9 +58,9 @@ class SectionController extends Controller
      */
     public function updateSection(SectionRequest $request, $id)
     {
-        $section = Section::where('id', $id)->update($request->all());
-
+        $section = Section::find($id);
         if($section){
+            $section->update($request->all());
             return response()->success($request->all(),'Section Updated Successfully');
         }
         else{

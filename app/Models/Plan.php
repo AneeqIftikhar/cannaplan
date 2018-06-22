@@ -27,7 +27,8 @@ class Plan extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id'];
+    protected $fillable = [];
+    protected $guarded = ['id','company_id','created_by'];
     public static function boot() {
         parent::boot();
 

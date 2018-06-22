@@ -40,7 +40,8 @@ class ChapterController extends Controller
         $user=Auth::user();
         if($chapter && $user->id==$chapter->created_by)
         {
-            $chapter = Chapter::where('id', $id)->update($request->all());
+            $chapter = Chapter::find($id);
+            $chapter->update($request->all());
             if($chapter){
                 return response()->success($request->all(),'Chapter Updated Successfully');
             }

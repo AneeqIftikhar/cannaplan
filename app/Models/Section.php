@@ -46,6 +46,7 @@ class Section extends Model
      * @var array
      */
     protected $fillable = ['chapter_id', 'name', 'order'];
+    protected $guarded = ['id','created_by'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

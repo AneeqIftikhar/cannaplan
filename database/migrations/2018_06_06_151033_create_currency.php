@@ -15,7 +15,8 @@ class CreateCurrency extends Migration
     {
         if (!Schema::hasTable('currency')) {
             Schema::create('currency', function (Blueprint $table) {
-                $table->increments('id');
+                $table->integer('id')->unsigned();
+                $table->primary('id');
                 $table->string('name','255');
                 $table->string('symbol','10');
                 $table->string('code','100');

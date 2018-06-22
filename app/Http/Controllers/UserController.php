@@ -2,6 +2,7 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Chart;
 use CannaPlan\Models\Company;
 use CannaPlan\Models\Currency;
 use Illuminate\Http\Request;
@@ -229,11 +230,51 @@ class UserController extends Controller
     }
     public function addCurrency(){
 
-        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" ,['Dollars', 'USD', '$']);
-        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Pounds', 'GBP', '£']);
-        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Euro', 'EUR', '€']);
-        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Yen', 'JPY', '¥']);
-        DB::insert("INSERT INTO currency (name, code, symbol) VALUES (?,?,?)" , ['Rupees', 'NPR', '₨']);
+        $chart=Chart::all();
+        if($chart->count()==0)
+        {
+            //Insert Into Currency
+            DB::insert("INSERT INTO currency (id,name, code, symbol) VALUES (?,?,?,?)" ,['1','Dollars', 'USD', '$']);
+            DB::insert("INSERT INTO currency (id,name, code, symbol) VALUES (?,?,?,?)" , ['2','Pounds', 'GBP', '£']);
+            DB::insert("INSERT INTO currency (id,name, code, symbol) VALUES (?,?,?,?)" , ['3','Euro', 'EUR', '€']);
+            DB::insert("INSERT INTO currency (id,name, code, symbol) VALUES (?,?,?,?)" , ['4','Yen', 'JPY', '¥']);
+            DB::insert("INSERT INTO currency (id,name, code, symbol) VALUES (?,?,?,?)" , ['5','Rupees', 'NPR', '₨']);
+
+            // Insert Into Charts
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['1','Cash Flow']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['2','Cash Flow by Month']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['3','Cash Flow by Year']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['4','Expenses']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['5','Expenses by Month']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['6','Expenses by Year']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['7','Financial Highlights (Year 1)']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['8','Financial Highlights by Year']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['9','Gross Margin by Month']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['10','Gross Margin by Year']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['11','Net Profit (or Loss)']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['12','Net Profit (or Loss) by Month']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['13','Net Profit (or Loss) by Year']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['14','Revenue']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['15','Revenue by Month']);
+            DB::insert("INSERT INTO chart (id,name) VALUES (?,?)" ,['16','Revenue by Year']);
+
+            // Insert Into Table Entries
+            DB::insert("INSERT INTO `table`(`id`,`name`) VALUES ('1','Milestones Table')");
+            DB::insert("INSERT INTO `table`(`id`,`name`) VALUES ('2','Personal Table')");
+            DB::insert("INSERT INTO `table`(`id`,`name`) VALUES ('3','Projected Balance Sheet')");
+            DB::insert("INSERT INTO `table`(`id`,`name`) VALUES ('4','Projected Cash Flow Statement')");
+            DB::insert("INSERT INTO `table`(`id`,`name`) VALUES ('5','Projected Profit Loss')");
+            DB::insert("INSERT INTO `table`(`id`,`name`) VALUES ('6','Revenue Forecast Table')");
+
+
+            return response()->success($chart,"All Currencies");
+        }
+        else
+        {
+            return response()->fail("Already Added");
+        }
+
+
 
 
     }

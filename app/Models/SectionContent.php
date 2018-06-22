@@ -46,7 +46,8 @@ class SectionContent extends Model
     /**
      * @var array
      */
-    protected $fillable = ['section_id', 'name', 'order', 'content_id', 'content_type'];
+    protected $fillable = ['section_id', 'name', 'order' , 'content_type'];
+    protected $guarded = ['id','created_by','content_id'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

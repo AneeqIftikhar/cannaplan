@@ -46,8 +46,8 @@ class Chapter extends Model
     /**
      * @var array
      */
-    protected $fillable = ['plan_id', 'name', 'order'];
-
+    protected $fillable = ['name', 'order'];
+    protected $guarded = ['id','plan_id','created_by'];
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
