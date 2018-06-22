@@ -15,7 +15,8 @@ class CreateTopic extends Migration
     {
         if (!Schema::hasTable('topic')) {
             Schema::create('topic', function (Blueprint $table) {
-                $table->increments('id');
+                $table->integer('id')->unsigned();
+                $table->primary('id');
                 $table->text('description');
 
                 $table->integer('created_by')->nullable();

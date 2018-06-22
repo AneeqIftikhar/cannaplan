@@ -89,6 +89,8 @@ Route::group(['middleware' => ['cors']], function () {
         /*Revenue Routes*/
         Route::resource('revenue', 'RevenueController');
         Route::post('update_revenue/{id}','RevenueController@updateRevenue');
+        Route::get('get_revenue_by_forecast/{id}','RevenueController@getRevenueByForecast');
+
     });
 
 });

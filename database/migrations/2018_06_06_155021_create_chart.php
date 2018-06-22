@@ -15,7 +15,8 @@ class CreateChart extends Migration
     {
         if (!Schema::hasTable('chart')) {
             Schema::create('chart', function (Blueprint $table) {
-                $table->increments('id');
+                $table->integer('id')->unsigned();
+                $table->primary('id');
                 $table->string('name','100');
 
                 $table->integer('created_by')->nullable();

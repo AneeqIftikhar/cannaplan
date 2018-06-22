@@ -22,8 +22,8 @@ class CreateRevenue extends Migration
 
                 $table->string('name','255');
 
-                $table->integer('revenuable_id');
-                $table->string('revenuable_type' , '50');
+                $table->integer('revenuable_id')->nullable();
+                $table->string('revenuable_type' , '50')->nullable();
 
                 $table->integer('created_by')->nullable();
 

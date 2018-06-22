@@ -47,8 +47,8 @@ class Revenue extends Model
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'name', 'revenuable_id', 'revenuable_type'];
-
+    protected $fillable = [ 'name', 'revenuable_id', 'revenuable_type'];
+    protected $guarded = ['id','forecast_id','created_by'];
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
