@@ -19,6 +19,10 @@ class Helper
     public static function deleteImage($image_path){
         if(public_path($image_path)) {
             unlink(public_path($image_path));
-         }
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }

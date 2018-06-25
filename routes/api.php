@@ -37,6 +37,8 @@ Route::group(['middleware' => ['cors']], function () {
         /*Pitch Routes*/
         Route::resource('pitch', 'PitchController');
         Route::post('update_pitch/{id}','PitchController@updatePitch');
+        Route::post('delete_logo/{id}','PitchController@deleteLogo');
+        Route::get('get_pitch_by_company/{id}','PitchController@getPitchByCompany');
 
         /*Plan Routes*/
         Route::resource('plan', 'PlanController');
@@ -91,6 +93,13 @@ Route::group(['middleware' => ['cors']], function () {
         Route::post('update_revenue/{id}','RevenueController@updateRevenue');
         Route::get('get_revenue_by_forecast/{id}','RevenueController@getRevenueByForecast');
 
+        /*Expense Routes*/
+        Route::resource('expense' , 'ExpenseController');
+        Route::post('update_expense/{id}','ExpenseController@updateExpense');
+
+        /*Dividend Routes*/
+        Route::resource('dividend' , 'DividendController');
+            Route::post('update_dividend/{id}','DividendController@updateDividend');
     });
 
 });

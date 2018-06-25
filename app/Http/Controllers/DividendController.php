@@ -2,7 +2,12 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Http\Requests\DividendRequest;
+use CannaPlan\Models\Dividend;
+use CannaPlan\Models\Forecast;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Input;
 
 class DividendController extends Controller
 {
@@ -24,9 +29,23 @@ class DividendController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(DividendRequest $request)
     {
-        //
+        $forecast=Forecast::find($request->input('forecast_id'));
+        if($forecast && $forecast->created_by==Auth::user()->id){
+            $input = $request->all();
+            $dividend=$forecast->dividends()->create($input);
+
+            if($dividend) {
+                return response()->success($dividend,'Dividend Created Successfully');
+            }
+            else{
+                return response()->fail('Dividend Could Not Be Added');
+            }
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 
     /**
@@ -37,7 +56,17 @@ class DividendController extends Controller
      */
     public function show($id)
     {
-        //
+        $user=Auth::user();
+
+        $dividend = Dividend::find($id);
+
+        if($dividend && $user->id==$dividend->created_by) {
+            return response()->success($dividend,'Dividend Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+
     }
 
 
@@ -49,9 +78,20 @@ class DividendController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function updateDividend(Request $request, $id)
+    public function updateDividend(DividendRequest $request, $id)
     {
-        //
+        $user=Auth::user();
+        $dividend=Dividend::find($id);
+        if($dividend && $dividend->created_by==$user->id) {
+
+            $dividend->update(Input::all());
+
+            return response()->success($dividend,'Dividend Updated Successfully');
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 
     /**
@@ -62,6 +102,17 @@ class DividendController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user=Auth::user();
+        $dividend=Dividend::find($id);
+        if($dividend && $dividend->created_by==$user->id) {
+            $dividend = Dividend::destroy($id);
+
+            return response()->success([],'Dividend Deleted Successfully');
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+
     }
 }

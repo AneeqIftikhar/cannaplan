@@ -5,6 +5,8 @@ namespace CannaPlan\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Auth;
+
 Relation::morphMap([
     'current'=>'CannaPlan\Models\Current',
     'long_term'=>'CannaPlan\Models\LongTerm'
@@ -35,11 +37,22 @@ class Asset extends Model
      */
     protected $table = 'asset';
 
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+
+
+    }
+
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'name', 'amount_type', 'amount', 'start_date', 'asset_duration_id', 'asset_duration_type '];
-
+    protected $fillable = ['name', 'amount_type', 'amount', 'start_date', 'asset_duration_id', 'asset_duration_type '];
+    protected $guarded = ['id','forecast_id','created_by'];
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

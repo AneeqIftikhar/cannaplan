@@ -17,6 +17,8 @@ class CreatePitch extends Migration
             Schema::create('pitch', function (Blueprint $table) {
                 $table->increments('id');
 
+                $table->boolean('is_started')->default(false);
+
                 $table->integer('company_id')->unsigned();
                 $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
 
@@ -27,11 +29,17 @@ class CreatePitch extends Migration
                 $table->string('solution','255')->nullable();
                 $table->integer('funds_required')->nullable();
                 $table->string('funds_usage_description','255')->nullable();
-                $table->string('sales_channel','255')->nullable();
+                $table->string('sales_channels','255')->nullable();
                 $table->string('marketing_activities','255')->nullable();
                 $table->string('forecast_revenue','255')->nullable();
                 $table->string('forecast_cost','255')->nullable();
                 $table->string('forecast_type','100')->nullable();
+
+                $table->boolean('funding_needs_is_hidden')->default(false);
+                $table->boolean('sales_channels_is_hidden')->default(false);
+                $table->boolean('marketing_activities_is_hidden')->default(false);
+                $table->boolean('milestones_is_hidden')->default(false);
+                $table->boolean('team_and_key_roles_is_hidden')->default(false);
 
                 $table->integer('created_by')->nullable();
 

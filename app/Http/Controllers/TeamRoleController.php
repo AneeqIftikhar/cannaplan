@@ -161,7 +161,7 @@ class TeamRoleController extends Controller
         if($team_role && $team_role->created_by==$user->id) {
             $team_role = TeamRole::destroy($id);
 
-            return response()->success([],'Pitch Deleted Successfully');
+            return response()->success([],'Team Role Deleted Successfully');
 
         }
         else{

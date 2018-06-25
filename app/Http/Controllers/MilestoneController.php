@@ -81,7 +81,7 @@ class MilestoneController extends Controller
     {
         $user=Auth::user();
         $milestone=Milestone::find($id);
-        if($milestone && $milestone->id==$user->id) {
+        if($milestone && $milestone->created_by==$user->id) {
             //$milestone = Milestone::where('id', $id)->update($request->all());
 
             $milestone->update(Input::all());

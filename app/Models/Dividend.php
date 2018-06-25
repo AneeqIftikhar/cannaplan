@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property int $forecast_id
@@ -21,6 +23,15 @@ class Dividend extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
+
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+    }
     /**
      * The table associated with the model.
      * 
@@ -31,8 +42,8 @@ class Dividend extends Model
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'name', 'amount_type', 'amount', 'start_date'];
-
+    protected $fillable = ['name', 'amount_type', 'amount', 'start_date'];
+    protected $guarded = ['id','forecast_id','created_by'];
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

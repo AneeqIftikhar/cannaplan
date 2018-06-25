@@ -63,7 +63,7 @@ class CompanyController extends Controller
                 }
             }
             else {
-                return response()->fail('Server Error');
+                return response()->fail("User Not Authorized");
             }
 
         }
@@ -94,6 +94,9 @@ class CompanyController extends Controller
                 return response()->fail("No Company In User Profile With This Identifier");
             }
         }
+        else{
+            return response()->fail("User Not Authorized");
+        }
 
     }
 
@@ -121,7 +124,7 @@ class CompanyController extends Controller
         }
         else
         {
-            return response()->fail("Not Authorized to Update This Company");
+            return response()->fail("User Not Authorized");
         }
 
 
@@ -148,7 +151,7 @@ class CompanyController extends Controller
         }
         else
         {
-            return response()->fail("Not Authorized to Delete This Company");
+            return response()->fail("User Not Authorized");
         }
 
 

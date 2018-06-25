@@ -2,7 +2,11 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Asset;
+use CannaPlan\Models\Forecast;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Input;
 
 class AssetController extends Controller
 {
@@ -26,7 +30,21 @@ class AssetController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $forecast=Forecast::find($request->input('forecast_id'));
+        if($forecast && $forecast->created_by==Auth::user()->id){
+            $input = $request->all();
+            $asset=$forecast->assets()->create($input);
+
+            if($asset) {
+                return response()->success($asset,'Asset Created Successfully');
+            }
+            else{
+                return response()->fail('Asset Could Not Be Added');
+            }
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 
     /**
@@ -37,8 +55,19 @@ class AssetController extends Controller
      */
     public function show($id)
     {
-        //
+        $user=Auth::user();
+
+        $asset = Asset::find($id);
+
+        if($asset && $user->id==$asset->created_by) {
+            return response()->success($asset,'Asset Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+
     }
+
 
 
     /**
@@ -50,7 +79,18 @@ class AssetController extends Controller
      */
     public function updateAsset(Request $request, $id)
     {
-        //
+        $user=Auth::user();
+        $asset=Asset::find($id);
+        if($asset && $asset->created_by==$user->id) {
+
+            $asset->update(Input::all());
+
+            return response()->success($asset,'Asset Updated Successfully');
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 
     /**
@@ -61,6 +101,17 @@ class AssetController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user=Auth::user();
+        $asset=Asset::find($id);
+        if($asset && $asset->created_by==$user->id) {
+            $asset = Asset::destroy($id);
+
+            return response()->success([],'Asset Deleted Successfully');
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+
     }
 }

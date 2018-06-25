@@ -17,6 +17,8 @@ class CreatePlan extends Migration
             Schema::create('plan', function (Blueprint $table) {
                 $table->increments('id');
 
+                $table->boolean('is_started')->default(false);
+
                 $table->integer('company_id')->unsigned();
                 $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
 
