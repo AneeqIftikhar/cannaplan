@@ -17,7 +17,9 @@ class CreateRevenueOnly extends Migration
             Schema::create('revenue_only', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('type','50');
-                $table->date('start_date');
+                $table->date('revenue_start_date');
+                $table->integer('amount')->nullable();
+                $table->string('amount_duration')->nullable();
                 $table->integer('amount_m_1');
                 $table->integer('amount_m_2');
                 $table->integer('amount_m_3');

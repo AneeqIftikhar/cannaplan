@@ -2,6 +2,7 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Http\Requests\RevenueRequest;
 use CannaPlan\Models\Forecast;
 use CannaPlan\Models\RevenueOnly;
 use CannaPlan\Models\UnitSale;
@@ -36,7 +37,45 @@ class RevenueController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    private function addRevenueHelper($input,$revenue)
+    {
+        if(isset($input['revenue_type']) && $input['revenue_type']=="billable")
+        {
+            $billable=Revenue::addBillable($input['hour'],$input['revenue_start_date'],$input['hourly_rate']);
+            $billable->revenues()->save($revenue);
+            return true;
+        }
+        else if(isset($input['revenue_type']) && $input['revenue_type']=="unit_sale")
+        {
+            $unit_sale=Revenue::addUnitSale($input['unit_sold'],$input['revenue_start_date'],$input['unit_price']);
+            $unit_sale->revenues()->save($revenue);
+            return true;
+        }
+        else if(isset($input['revenue_type']) && $input['revenue_type']=="revenue_only")
+        {
+            if($input['type']=="varying")
+            {
+                $array=array();
+                for($i=1;$i<13;$i++)
+                {
+                    $array['amount_m_'.$i]=$input['amount_m_'.$i];
+                }
+                $revenue_only=Revenue::addRevenueOnlyVarying($input['revenue_start_date'],$array);
+                $revenue_only->revenues()->save($revenue);
+            }
+            else
+            {
+                $revenue_only=Revenue::addRevenueOnlyConstant($input['amount'],$input['amount_duration'],$input['revenue_start_date']);
+                $revenue_only->revenues()->save($revenue);
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public function store(RevenueRequest $request)
     {
 
         $user=Auth::user();
@@ -44,7 +83,13 @@ class RevenueController extends Controller
         $forecast=Forecast::find($input['forecast_id']);
         if($forecast && $forecast->created_by==$user->id)
         {
-            $revenue=Revenue::addRevenue($input);
+            $revenue=new Revenue();
+            $revenue->name=$input['name'];
+            $revenue->forecast_id=$forecast->id;
+            if(!$this->addRevenueHelper($input,$revenue))
+            {
+                $revenue->save();
+            }
             return response()->success($revenue,'Revenue Created Successfully');
 
         }
@@ -90,18 +135,68 @@ class RevenueController extends Controller
     }
 
 
-    public function updateRevenue(Request $request, $id)
+    public function updateRevenue(RevenueRequest $request, $id)
     {
         $input = $request->all();
         $revenue = Revenue::find($id);
         $user=Auth::user();
         if($revenue && $revenue->created_by==$user->id){
-            $revenue=Revenue::updateRevenue($input,$id);
+            //if user has a revenuable already set
+            if($revenuable=$revenue->revenuable)
+            {
+                //if the revenuable is same then it will be updated
+                //else previous will be deleted and new will be inserted
+                if(isset($input['revenue_type']) && $revenue->revenuable_type==$input['revenue_type'])
+                {
+                    if ($input['revenue_type'] == "billable") {
+                        $billable = Revenue::updateBillable($input['hour'], $input['revenue_start_date'], $input['hourly_rate'],$revenuable);
+                    } else if (isset($input['revenue_type']) && $input['revenue_type'] == "unit_sale") {
+                        $unit_sale = Revenue::updateUnitSale($input['unit_sold'], $input['revenue_start_date'], $input['unit_price'],$revenuable);
+
+                    } else if (isset($input['revenue_type']) && $input['revenue_type'] == "revenue_only") {
+                        if ($input['type'] == "varying") {
+                            $array = array();
+                            for ($i = 1; $i < 13; $i++) {
+                                $array['amount_m_' . $i] = $input['amount_m_' . $i];
+                            }
+                            $revenue_only = Revenue::updateRevenueOnlyVarying($input['revenue_start_date'], $array,$revenuable);
+                        } else {
+                            $revenue_only = Revenue::updateRevenueOnlyConstant($input['amount'], $input['amount_duration'], $input['revenue_start_date'],$revenuable);
+                        }
+
+                    }
+                }
+                else
+                {
+                    //deleting previous revenuable
+                    $revenuable->delete();
+                    if(!$this->addRevenueHelper($input,$revenue)) //adding new revenuable
+                    {
+                        if(isset($input['name']))
+                        {
+                            $revenue->name=$input['name'];
+                            $revenue->save();
+                        }
+                    }
+                }
+            }
+            else//revenuable was nerver set
+            {
+                //setting a new revenuable
+                if(!$this->addRevenueHelper($input,$revenue))
+                {
+                    if(isset($input['name']))
+                    {
+                        $revenue->name=$input['name'];
+                        $revenue->save();
+                    }
+                }
+            }
             $revenue->revenuable;
             return response()->success($revenue,'Revenue Updated Successfully');
         }
         else{
-            return response()->fail('Revenue Not Found');
+            return response()->fail('User Not Authorized');
         }
 
     }
@@ -114,13 +209,14 @@ class RevenueController extends Controller
      */
     public function destroy($id)
     {
-        $revenue = Revenue::destroy($id);
-
-        if($revenue){
+        $revenue=Revenue::find($id);
+        $user=Auth::user();
+        if($revenue && $revenue->created_by==$user->id){
+            $revenue->delete();
             return response()->success([],'Revenue Deleted Successfully');
         }
         else{
-            return response()->fail('Revenue Not Found');
+            return response()->fail('User Not Authorized');
         }
     }
 }
