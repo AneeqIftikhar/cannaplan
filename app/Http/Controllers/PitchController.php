@@ -3,6 +3,7 @@
 namespace CannaPlan\Http\Controllers;
 
 use CannaPlan\Http\Requests\PitchRequest;
+use CannaPlan\Models\Company;
 use CannaPlan\Models\Pitch;
 use Illuminate\Http\Request;
 use CannaPlan\Helpers\Helper;
@@ -46,12 +47,31 @@ class PitchController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+//    public function show($id)
+//    {
+//        $user=Auth::user();
+//
+//        $pitch = Pitch::find($id);
+//        if($pitch && $user->id == $pitch->created_by) {
+//            $pitch->competitors;
+//            $pitch->milestones;
+//            $pitch->targetMarketGraphs;
+//            $pitch->teamRoles;
+//            return response()->success($pitch,'Pitch Fetched Successfully');
+//
+//        }
+//        else{
+//            return response()->fail('User Not Authorized');
+//        }
+//
+//    }
+
+    public function getPitchByCompany($id)
     {
         $user=Auth::user();
-
-        $pitch = Pitch::find($id);
-        if($pitch && $user->id == $pitch->created_by) {
+        $company=Company::find($id);
+        if($company && $user->id == $company->created_by) {
+            $pitch = $company->pitches[0];
             $pitch->competitors;
             $pitch->milestones;
             $pitch->targetMarketGraphs;
@@ -64,7 +84,6 @@ class PitchController extends Controller
         }
 
     }
-
     /**
      * Update the specified resource in storage.
      *
@@ -80,7 +99,6 @@ class PitchController extends Controller
         if($pitch && $user->id == $pitch->created_by) {
             $input_array=$request->all();
             if ($request->hasFile('logo')) {
-                Helper::deleteImage($pitch->logo);
                 $input_array['logo']=Helper::uploadImage($request->logo);
             }
             //$pitch=Pitch::where('id', $id)->update($input_array);
@@ -93,6 +111,24 @@ class PitchController extends Controller
             return response()->fail('User Not Authorized');
         }
 
+    }
+
+    public function deleteLogo($id)
+    {
+        $user=Auth::user();
+
+        $pitch = Pitch::find($id);
+        if($pitch && $user->id == $pitch->created_by) {
+             if(Helper::deleteImage($pitch->logo)) {
+                return response()->success($pitch,'Logo Deleted Successfully');
+            }
+            else{
+                return response()->fail('Image Not Found');
+            }
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 
     /**

@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property int $forecast_id
@@ -28,10 +30,20 @@ class Expense extends Model
      */
     protected $table = 'expense';
 
+    public static function boot() {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function($table)  {
+            $table->created_by = Auth::user()->id;
+        });
+    }
+
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'name', 'type', 'amount', 'start_date'];
+    protected $fillable = ['name', 'type', 'amount', 'start_date'];
+    protected $guarded = ['id','forecast_id','created_by'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

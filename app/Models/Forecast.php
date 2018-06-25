@@ -35,7 +35,7 @@ class Forecast extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'name', 'burden_rate'];
+    protected $fillable = ['company_id', 'name', 'burden_rate', 'is_started'];
 
     public static function boot() {
         parent::boot();
