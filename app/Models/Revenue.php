@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 Relation::morphMap([
     'unit_sale'=>'CannaPlan\Models\UnitSale',
     'billable'=>'CannaPlan\Models\Billable',
@@ -39,6 +40,10 @@ class Revenue extends Model
         // create a event to happen on saving
         static::creating(function($table)  {
             $table->created_by = Auth::user()->id;
+        });
+        static::deleting(function($table) {
+
+            $table->revenuable->delete();
         });
 
     }
@@ -82,5 +87,280 @@ class Revenue extends Model
     public function revenuable()
     {
         return $this->morphTo();
+    }
+
+    public static function addRevenue($input)
+    {
+        $forecast=Forecast::find($input['forecast_id']);
+        $revenue=new Revenue();
+        $revenue->name=$input['name'];
+        $revenue->forecast_id=$forecast->id;
+        if(!Revenue::addRevenuable($input,$revenue))
+        {
+            $revenue->save();
+        }
+        return $revenue;
+    }
+    public static function addRevenuable($input,$revenue)
+    {
+        if(isset($input['revenue_type']) && $input['revenue_type']=="billable")
+        {
+            $billable=Billable::create(['hour'=>$input['hour'],'revenue_start_date'=>$input['revenue_start_date'],'hourly_rate'=>$input['hourly_rate']]);
+
+            $billable->revenues()->save($revenue);
+            return true;
+
+        }
+        else if(isset($input['revenue_type']) && $input['revenue_type']=="unit_sale")
+        {
+            $unit_sale=UnitSale::create(['unit_sold'=>$input['unit_sold'],'revenue_start_date'=>$input['revenue_start_date'],'unit_price'=>$input['unit_price']]);
+            $unit_sale->revenues()->save($revenue);
+            return true;
+        }
+        else if(isset($input['revenue_type']) && $input['revenue_type']=="revenue_only")
+        {
+            if($input['type']=="varying")
+            {
+                $total=$input['amount_m_1']+$input['amount_m_2']+$input['amount_m_3']+$input['amount_m_4']+$input['amount_m_5']+$input['amount_m_6']
+                    +$input['amount_m_7']+$input['amount_m_8']+$input['amount_m_9']+$input['amount_m_10']+$input['amount_m_11']+$input['amount_m_12'];
+                $array=array();
+                $array['type']=$input['type'];
+                $array['start_date']=$input['start_date'];
+                $array['amount_m_1']=$input['amount_m_1'];
+                $array['amount_m_2']=$input['amount_m_2'];
+                $array['amount_m_3']=$input['amount_m_3'];
+                $array['amount_m_4']=$input['amount_m_4'];
+                $array['amount_m_5']=$input['amount_m_5'];
+                $array['amount_m_6']=$input['amount_m_6'];
+                $array['amount_m_7']=$input['amount_m_7'];
+                $array['amount_m_8']=$input['amount_m_8'];
+                $array['amount_m_9']=$input['amount_m_9'];
+                $array['amount_m_10']=$input['amount_m_10'];
+                $array[ 'amount_m_11']=$input['amount_m_11'];
+                $array['amount_m_12']=$input['amount_m_12'];
+                $array[ 'amount_y_1']=$total;
+                $array['amount_y_2']=$total;
+                $array['amount_y_3']=$total;
+                $array['amount_y_4']=$total;
+                $array['amount_y_5']=$total;
+
+            }
+            else if($input['type']=="constant")
+            {
+                $amount=$input['amount'];
+                $amount_duration=$input['amount_duration'];
+                $array=array();
+                if($amount_duration=="year")
+                {
+                    $total=$amount;
+                    for($i=1;$i<12;$i++)
+                    {
+                        $array['amount_m_'.$i]=floor(($amount/(13-$i)));
+                        $amount=$amount-floor(($amount/(13-$i)));
+                    }
+                    $array['amount_m_12']=$amount;
+                }
+                else if($amount_duration=="month")
+                {
+                    $total=$amount*12;
+                    for($i=1;$i<13;$i++)
+                    {
+                        $array['amount_m_'.$i]=$amount;
+                    }
+                }
+                $array['amount_y_1']=$total;
+                $array['amount_y_2']=$total;
+                $array['amount_y_3']=$total;
+                $array['amount_y_4']=$total;
+                $array['amount_y_5']=$total;
+                $array['type']=$input['type'];
+                $array['start_date']=$input['start_date'];
+
+
+
+            }
+            $revenue_only=RevenueOnly::create($array);
+            $revenue_only->revenues()->save($revenue);
+            return true;
+
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public static function updateRevenuable($input,$revenuable)
+    {
+        if(isset($input['revenue_type']) && $input['revenue_type']=="billable")
+        {
+            $revenuable->update(['hour'=>$input['hour'],'revenue_start_date'=>$input['revenue_start_date'],'hourly_rate'=>$input['hourly_rate']]);
+
+            return true;
+
+        }
+        else if(isset($input['revenue_type']) && $input['revenue_type']=="unit_sale")
+        {
+            $revenuable->update(['unit_sold'=>$input['unit_sold'],'revenue_start_date'=>$input['revenue_start_date'],'unit_price'=>$input['unit_price']]);
+
+            return true;
+        }
+        else if(isset($input['revenue_type']) && $input['revenue_type']=="revenue_only")
+        {
+            if($input['type']=="varying")
+            {
+                $total=$input['amount_m_1']+$input['amount_m_2']+$input['amount_m_3']+$input['amount_m_4']+$input['amount_m_5']+$input['amount_m_6']
+                    +$input['amount_m_7']+$input['amount_m_8']+$input['amount_m_9']+$input['amount_m_10']+$input['amount_m_11']+$input['amount_m_12'];
+                $array=array();
+                $array['type']=$input['type'];
+                $array['start_date']=$input['start_date'];
+                $array['amount_m_1']=$input['amount_m_1'];
+                $array['amount_m_2']=$input['amount_m_2'];
+                $array['amount_m_3']=$input['amount_m_3'];
+                $array['amount_m_4']=$input['amount_m_4'];
+                $array['amount_m_5']=$input['amount_m_5'];
+                $array['amount_m_6']=$input['amount_m_6'];
+                $array['amount_m_7']=$input['amount_m_7'];
+                $array['amount_m_8']=$input['amount_m_8'];
+                $array['amount_m_9']=$input['amount_m_9'];
+                $array['amount_m_10']=$input['amount_m_10'];
+                $array[ 'amount_m_11']=$input['amount_m_11'];
+                $array['amount_m_12']=$input['amount_m_12'];
+                $array[ 'amount_y_1']=$total;
+                $array['amount_y_2']=$total;
+                $array['amount_y_3']=$total;
+                $array['amount_y_4']=$total;
+                $array['amount_y_5']=$total;
+
+            }
+            else if($input['type']=="constant")
+            {
+                $amount=$input['amount'];
+                $amount_duration=$input['amount_duration'];
+                $array=array();
+                if($amount_duration=="year")
+                {
+                    $total=$amount;
+                    for($i=1;$i<12;$i++)
+                    {
+                        $array['amount_m_'.$i]=floor(($amount/(13-$i)));
+                        $amount=$amount-floor(($amount/(13-$i)));
+                    }
+                    $array['amount_m_12']=$amount;
+                }
+                else if($amount_duration=="month")
+                {
+                    $total=$amount*12;
+                    for($i=1;$i<13;$i++)
+                    {
+                        $array['amount_m_'.$i]=$amount;
+                    }
+                }
+                $array['amount_y_1']=$total;
+                $array['amount_y_2']=$total;
+                $array['amount_y_3']=$total;
+                $array['amount_y_4']=$total;
+                $array['amount_y_5']=$total;
+                $array['type']=$input['type'];
+                $array['start_date']=$input['start_date'];
+
+
+
+            }
+            $revenuable->update($array);
+            return true;
+
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public static function updateRevenue($input,$id)
+    {
+        $revenue = Revenue::find($id);
+        if($revenuable=$revenue->revenuable)
+        {
+            if(isset($input['revenue_type']) && $revenue->revenuable_type==$input['revenue_type'])
+            {
+                Revenue::updateRevenuable($input,$revenuable);
+            }
+            else
+            {
+                $revenuable->delete();
+                if(!Revenue::addRevenuable($input,$revenue))
+                {
+                    if(isset($input['name']))
+                    {
+                        $revenue->name=$input['name'];
+                        $revenue->save();
+                    }
+
+                }
+            }
+        }
+        else
+        {
+            if(!Revenue::addRevenuable($input,$revenue))
+            {
+                if(isset($input['name']))
+                {
+                    $revenue->name=$input['name'];
+                    $revenue->save();
+                }
+
+            }
+
+        }
+        return $revenue;
+    }
+    public static function getRevenueByForecastId($id)
+    {
+        $forecast=Forecast::find($id);
+        $total_arr=array();
+        for ($j = 1; $j < 13; $j++) {
+            $total_arr['amount_m_' . $j] = 0;
+        }
+        for ($j = 1; $j < 6; $j++) {
+            $total_arr['amount_y_' . $j] = 0;
+        }
+        $forecast=$forecast->with(['company','revenues','revenues.revenuable'])->first();
+        for ($i=0;$i<count($forecast->revenues);$i++)
+        {
+            if(isset($forecast->revenues[$i]->revenuable_type)) {
+                if ($forecast->revenues[$i]->revenuable_type !== 'revenue_only') {
+                    $multiplyer = 1;
+                    $multiplicand = 1;
+                    if ($forecast->revenues[$i]->revenuable_type == 'unit_sale') {
+                        $multiplyer = $forecast->revenues[$i]['revenuable']['unit_sold'];
+                        $multiplicand = $forecast->revenues[$i]['revenuable']['unit_price'];
+                    } else {
+                        $multiplyer = $forecast->revenues[$i]['revenuable']['hour'];
+                        $multiplicand = $forecast->revenues[$i]['revenuable']['hourly_rate'];
+                    }
+                    $forecast->revenues[$i]['revenuable']['amount_m_1'] = 250;
+                    for ($j = 1; $j < 13; $j++) {
+                        $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = $multiplyer * $multiplicand;
+                    }
+                    $total = $multiplyer * $multiplicand * 12;
+                    $forecast->revenues[$i]['revenuable']['amount_y_1'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_2'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_3'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_4'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_5'] = $total;
+                }
+                for ($j = 1; $j < 13; $j++) {
+                    $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_m_' . $j];
+                }
+                for ($j = 1; $j < 6; $j++) {
+                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_y_' . $j];
+                }
+
+                $forecast['total'] = $total_arr;
+            }
+
+        }
+        return $forecast;
     }
 }
