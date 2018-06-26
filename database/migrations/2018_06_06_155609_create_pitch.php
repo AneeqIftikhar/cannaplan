@@ -40,8 +40,11 @@ class CreatePitch extends Migration
                 $table->boolean('marketing_activities_is_hidden')->default(false);
                 $table->boolean('milestones_is_hidden')->default(false);
                 $table->boolean('team_and_key_roles_is_hidden')->default(false);
+                $table->boolean('is_published')->default(false);
+                $table->string('publish_key','100')->nullable();
 
                 $table->integer('created_by')->nullable();
+
 
                 $table->softDeletes();
                 $table->timestamps();

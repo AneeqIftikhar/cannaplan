@@ -25,6 +25,8 @@ Route::group(['middleware' => ['cors']], function () {
     Route::get('add_currency','UserController@addCurrency');
     Route::post('password/email', 'Auth\ForgotPasswordController@getResetToken');
     Route::post('password/reset', 'Auth\ResetPasswordController@reset');
+    Route::get('get_pitch_by_publish_key/{publish_key}','PitchController@getPitchByPublishKey');
+
     Route::group(['middleware' => ['auth:api']], function () {
         Route::get('details/{id}','UserController@details');
 
@@ -35,10 +37,11 @@ Route::group(['middleware' => ['cors']], function () {
         Route::post('update_company/{id}', 'CompanyController@updateCompany');
 
         /*Pitch Routes*/
-        Route::resource('pitch', 'PitchController');
         Route::post('update_pitch/{id}','PitchController@updatePitch');
         Route::post('delete_logo/{id}','PitchController@deleteLogo');
         Route::get('get_pitch_by_company/{id}','PitchController@getPitchByCompany');
+        Route::post('publish_pitch_by_company/{id}','PitchController@publishPitchByCompany');
+        Route::post('unpublish_pitch_by_company/{id}','PitchController@unpublishPitchByCompany');
 
         /*Plan Routes*/
         Route::resource('plan', 'PlanController');
