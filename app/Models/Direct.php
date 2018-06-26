@@ -5,6 +5,8 @@ namespace CannaPlan\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Auth;
+
 Relation::morphMap([
     'general_cost'=>'CannaPlan\Models\GeneralCost',
     'cost_on_revenue'=>'CannaPlan\Models\CostOnRevenue'
@@ -34,6 +36,16 @@ class Direct extends Model
      * @var array
      */
     protected $fillable = ['name', 'direct_cost_id', 'direct_cost_type'];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+    }
     public function charges()
     {
         return $this->morphMany('CannaPlan\Models\Cost', 'charge');
