@@ -87,7 +87,7 @@ class CompanyController extends Controller
     public function show($id)
     {
         if(Company::is_user_company($id)!==false) {
-            $company = Company::find($id);
+            $company = Company::find($id)->with('currency')->first();
             if ($company) {
                 return response()->success($company, 'Company Fetched Successfully');
             } else {

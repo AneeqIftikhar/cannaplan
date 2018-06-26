@@ -24,9 +24,9 @@ class CostRequest extends FormRequest
     public function rules()
     {
         $rules=[];
-        $rules['name'] = 'required|max:100';
         if($this->request->has('charges_type') && $this->request->get('charges_type')=='direct')
         {
+            $rules['name'] = 'required|max:100';
             if($this->request->has('direct_cost_type') && $this->request->get('direct_cost_type')=='general_cost')
             {
                 $rules['amount'] = 'required';
@@ -40,11 +40,14 @@ class CostRequest extends FormRequest
         }
         else if ($this->request->has('charges_type') && $this->request->get('charges_type')=='labor')
         {
+            $rules['name'] = 'required|max:100';
             $rules['number_of_employees'] = 'required';
             $rules['labor_type'] = 'required';
             $rules['pay'] = 'required';
             $rules['start_date'] = 'required';
             $rules['staff_role_type'] = 'required|max:100';
+            $rules['annual_raise_percent'] = 'required';
         }
+        return $rules;
     }
 }

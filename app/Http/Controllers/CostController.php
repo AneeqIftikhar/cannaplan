@@ -2,8 +2,11 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Http\Requests\CostRequest;
 use CannaPlan\Models\Cost;
+use CannaPlan\Models\Direct;
 use CannaPlan\Models\Forecast;
+use CannaPlan\Models\Revenue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
@@ -17,14 +20,6 @@ class CostController extends Controller
      */
     public function index()
     {
-        $user=Auth::user();
-        if($user) {
-            $cost=Cost::where('created_by',$user->id);
-            return response()->success($cost,"Cost Fetched Successfully");
-        }
-        else{
-            return response()->fail("User Not Authenticated");
-        }
 
     }
 
@@ -38,23 +33,27 @@ class CostController extends Controller
     {
         if(isset($input['charges_type']) && $input['charges_type']=="direct")
         {
+            $direct=new Direct();
+            $direct->name=$input['name'];
             if(isset($input['direct_cost_type']) && $input['direct_cost_type']=="general_cost")
             {
                 $general_cost=Cost::addGeneral($input['amount'] , $input['cost_start_date']);
-                $general_cost->direct_costs()->save($cost);
+                $general_cost->direct_costs()->save($direct);
+                $direct->charges()->save($cost);
                 return true;
             }
             else if(isset($input['direct_cost_type']) && $input['direct_cost_type']=="cost_on_revenue")
             {
-
+                $cost_on_revenue=Cost::addCostOnRevenue($input['revenue_id'], $input['amount']);
+                $cost_on_revenue->direct_costs()->save($direct);
+                $direct->charges()->save($cost);
+                return true;
             }
-            //$direct=Cost::addDirect();
-            //$direct->charges()->save($cost);
-            return true;
+
         }
         else if(isset($input['charges_type']) && $input['charges_type']=="labor")
         {
-            $labor=Cost::addLabor($input['number_of_employees'], $input['labor_type'], $input['pay'], $input['start_date'], $input['staff_role_type']);
+            $labor=Cost::addLabor($input['name'], $input['number_of_employees'], $input['labor_type'], $input['pay'], $input['start_date'], $input['staff_role_type'], $input['annual_raise_percent']);
             $labor->charges()->save($cost);
             return true;
         }
@@ -63,23 +62,23 @@ class CostController extends Controller
             return false;
         }
     }
-    public function store(Request $request)
+    public function store(CostRequest $request)
     {
-
         $user=Auth::user();
         $input = $request->all();
         $forecast=Forecast::find($input['forecast_id']);
         if($forecast && $forecast->created_by==$user->id)
         {
             $cost=new Cost();
-            $cost->name=$input['name'];
             $cost->forecast_id=$forecast->id;
-            if(!$this->addCostHelper($input,$cost))
-            {
-                $cost->save();
-            }
-            return response()->success($cost,'Cost Created Successfully');
 
+            if($this->addCostHelper($input,$cost))
+            {
+                return response()->success($cost,'Cost Created Successfully');
+            }
+            else{
+                return response()->fail('Something went wrong');
+            }
         }
         else
         {
@@ -97,8 +96,8 @@ class CostController extends Controller
      */
     public function show($id)
     {
-        $cost = Cost::find($id);
-        $cost->charge;
+        $cost = Cost::find($id)->with('charge','charge.direct_cost')->first();
+
         if($cost) {
             return response()->success($cost,'Cost Fetched Successfully');
         }
@@ -106,14 +105,15 @@ class CostController extends Controller
             return response()->fail('Cost Not Found');
         }
     }
+
     public function getCostByForecast($id)
     {
         $user=Auth::user();
         $forecast=Forecast::find($id);
         if($forecast && $forecast->created_by==$user->id)
         {
-            $forecast=Cost::getCostByForecastId($id);
-            return response()->success($forecast,'Cost Fetched Successfully');
+            $cost=Cost::getCostByForecastId($id);
+            return response()->success($cost,'Cost Fetched Successfully');
         }
         else
         {
@@ -123,7 +123,7 @@ class CostController extends Controller
     }
 
 
-    public function updateCost(Request $request, $id)
+    public function updateCost(CostRequest $request, $id)
     {
         $input = $request->all();
         $cost = Cost::find($id);

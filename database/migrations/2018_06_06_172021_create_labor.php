@@ -21,8 +21,8 @@ class CreateLabor extends Migration
                 $table->string('labor_type', '100');
                 $table->string('staff_role_type', '100');
                 $table->float('pay');
-                $table->integer('start_date');
-                $table->float('annual_raise_percent')->nullable();
+                $table->date('start_date');
+                $table->float('annual_raise_percent');
 
                 $table->integer('created_by')->nullable();
 

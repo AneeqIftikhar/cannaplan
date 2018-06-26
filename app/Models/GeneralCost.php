@@ -43,6 +43,6 @@ class GeneralCost extends Model
 
     public function direct_costs()
     {
-        return $this->morphMany('CannaPlan\Models\DirectCost', 'direct_cost');
+        return $this->morphMany('CannaPlan\Models\Direct', 'direct_cost');
     }
 }
