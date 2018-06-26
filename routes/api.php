@@ -107,6 +107,7 @@ Route::group(['middleware' => ['cors']], function () {
         /*Cost Routes*/
         Route::resource('cost' , 'CostController');
         Route::post('update_cost/{id}','CostController@updateCost');
+        Route::get('get_cost_by_forecast/{id}','CostController@getCostByForecast');
     });
 
 });
