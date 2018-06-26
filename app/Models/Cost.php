@@ -45,6 +45,7 @@ class Cost extends Model
         static::deleting(function($table) {
 
             $table->charge->delete();
+            $table->charge->direct_cost->delete();
         });
     }
 
@@ -66,19 +67,65 @@ class Cost extends Model
         return $this->morphTo();
     }
 
-    public static function addDirect()
+    //insertion of costs
+    public static function addCostOnRevenue($revenue_id , $amount)
     {
-
+        $cost_on_revenue=CostOnRevenue::create(['revenue_id'=>$revenue_id , 'amount'=>$amount]);
+        return $cost_on_revenue;
     }
-
-    public static function addLabor($number_of_employees, $labor_type, $pay, $start_date, $staff_role_type)
+    public static function addLabor($name, $number_of_employees, $labor_type, $pay, $start_date, $staff_role_type , $annual_raise_percent)
     {
-        $labor=Labor::create(['number_of_employees'=>$number_of_employees , 'labor_type'=>$labor_type , 'start_date'=>$start_date , 'staff_role_type'=>$staff_role_type]);
+        $labor=Labor::create(['name'=>$name, 'number_of_employees'=>$number_of_employees , 'labor_type'=>$labor_type ,'pay'=>$pay, 'start_date'=>$start_date , 'staff_role_type'=>$staff_role_type, 'annual_raise_percent'=>$annual_raise_percent]);
         return $labor;
     }
-
     public static function addGeneral($amount , $cost_start_date)
     {
+        $general=GeneralCost::create(['amount'=>$amount , 'cost_start_date'=>$cost_start_date]);
+        return $general;
+    }
 
+    public static function getCostByForecastId($id)
+    {
+        $forecast=Forecast::find($id);
+        $total_arr=array();
+        for ($j = 1; $j < 13; $j++) {
+            $total_arr['amount_m_' . $j] = 0;
+        }
+        for ($j = 1; $j < 6; $j++) {
+            $total_arr['amount_y_' . $j] = 0;
+        }
+
+        $forecast=$forecast->with(['company','costs','costs.charge'])->first();
+
+        for ($i=0;$i<count($forecast->costs);$i++)
+        {
+            if($forecast->costs[$i]->charge_type=='direct')
+            {
+                 $forecast->costs[$i]->charge->direct_cost;
+            }
+        }
+
+        for ($i=0;$i<count($forecast->costs);$i++)
+        {
+            if($forecast->costs[$i]->charge_type=='direct')
+            {
+                $forecast->costs[$i]->charge->direct_cost;
+
+                    if($forecast->costs[$i]->charge->direct_cost_type=='general_cost')
+                    {
+                        $forecast->costs[$i]->charge['direct_cost']['amount'];
+                    }
+                    else if($forecast->costs[$i]->charge->direct_cost_type=='cost_on_revenue')
+                    {
+                        $forecast->costs[$i]->charge['direct_cost']['amount'];
+                    }
+
+
+            }
+            else if($forecast->costs[$i]->charge_type=='labor')
+            {
+                $forecast->costs[$i]['charge']['number_of_employees']*$forecast->costs[$i]['charge']['pay'];
+            }
+        }
     }
 }

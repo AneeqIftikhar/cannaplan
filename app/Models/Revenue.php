@@ -255,7 +255,7 @@ class Revenue extends Model
                         $multiplyer = $forecast->revenues[$i]['revenuable']['hour'];
                         $multiplicand = $forecast->revenues[$i]['revenuable']['hourly_rate'];
                     }
-                    $forecast->revenues[$i]['revenuable']['amount_m_1'] = 250;
+                    //$forecast->revenues[$i]['revenuable']['amount_m_1'] = 250;
                     for ($j = 1; $j < 13; $j++) {
                         $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = $multiplyer * $multiplicand;
                     }
