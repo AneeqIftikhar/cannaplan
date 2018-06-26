@@ -43,7 +43,7 @@ class Pitch extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_name', 'logo', 'headline', 'problem', 'solution', 'funds_required', 'funds_usage_description', 'sales_channel', 'marketing_activities', 'forecast_revenue', 'forecast_cost', 'forecast_type' , 'is_started'];
+    protected $fillable = ['company_name', 'logo', 'headline', 'problem', 'solution', 'funds_required', 'funds_usage_description', 'sales_channels', 'marketing_activities', 'forecast_revenue', 'forecast_cost', 'forecast_type' , 'is_started'];
     protected $guarded = ['id','company_id','created_by'];
 
     public static function boot() {
