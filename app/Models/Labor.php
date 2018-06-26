@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property string $name
@@ -33,6 +35,15 @@ class Labor extends Model
      * @var array
      */
     protected $fillable = ['name', 'number_of_employees', 'labor_type', 'staff_role_type', 'pay', 'start_date', 'annual_raise_percent'];
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+    }
     public function charges()
     {
         return $this->morphMany('CannaPlan\Models\Cost', 'charge');
