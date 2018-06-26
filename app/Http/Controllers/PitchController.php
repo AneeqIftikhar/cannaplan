@@ -12,59 +12,6 @@ use Illuminate\Support\Facades\Input;
 
 class PitchController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * Commenting it as we might never use this functionality.
-     *
-//     */
-//    public function index()
-//    {
-//    }
-
-    /**
-     * Store a newly created pitch in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    //Pitch is created in company so we dont need it
-//    public function store(PitchRequest $request)
-//    {
-//        $pitch=Pitch::create($request->all());
-//        if($pitch) {
-//            return response()->success($pitch,'Pitch Created Successfully');
-//        }
-//        else {
-//            return response()->fail('Pitch Could Not be Created');
-//        }
-//
-//    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-//    public function show($id)
-//    {
-//        $user=Auth::user();
-//
-//        $pitch = Pitch::find($id);
-//        if($pitch && $user->id == $pitch->created_by) {
-//            $pitch->competitors;
-//            $pitch->milestones;
-//            $pitch->targetMarketGraphs;
-//            $pitch->teamRoles;
-//            return response()->success($pitch,'Pitch Fetched Successfully');
-//
-//        }
-//        else{
-//            return response()->fail('User Not Authorized');
-//        }
-//
-//    }
 
     public function getPitchByCompany($id)
     {
@@ -84,13 +31,6 @@ class PitchController extends Controller
         }
 
     }
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function updatePitch(PitchRequest $request, $id)
     {
         $user=Auth::user();
@@ -131,25 +71,69 @@ class PitchController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    // It is not needed
-//    public function destroy($id)
-//    {
-//        $user=Auth::user();
-//
-//        $pitch = Pitch::find($id);
-//        if($pitch && $user->id == $pitch->created_by) {
-//            $pitch = Pitch::find($id);
-//            $pitch->delete();
-//            return response()->success([],'Pitch Deleted Successfully');
-//        }
-//        else{
-//            return response()->fail('User Not Authorized');
-//        }
-//    }
+    public function getPitchByPublishKey($publish_key)
+    {
+        $pitch = Pitch::where('publish_key',$publish_key)->where('is_published',true)->first();
+        if($pitch) {
+            $pitch->competitors;
+            $pitch->milestones;
+            $pitch->targetMarketGraphs;
+            $pitch->teamRoles;
+            return response()->success($pitch,'Pitch Fetched Successfully');
+
+        }
+        else{
+            return response()->fail('No Such Key is Published');
+        }
+
+    }
+    public function publishPitchByCompany($id)
+    {
+        $user=Auth::user();
+        $company=Company::find($id);
+        if($company && $user->id == $company->created_by) {
+            $time=time();
+            $pitch = $company->pitches[0];
+            if($pitch->is_published!=true)
+            {
+                $pitch->is_published=true;
+                $pitch->publish_key=$time;
+                $pitch->save();
+                return response()->success(['key'=>$time],'Pitch Fetched Successfully');
+            }
+            else
+            {
+                return response()->fail('Already Published');
+            }
+
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+    }
+    public function unpublishPitchByCompany($id)
+    {
+        $user=Auth::user();
+        $company=Company::find($id);
+        if($company && $user->id == $company->created_by) {
+            $pitch = $company->pitches[0];
+            if($pitch->is_published==true)
+            {
+                $pitch->is_published=false;
+                $pitch->save();
+                return response()->success([],'Stopped Publishing Pitch Successfully');
+            }
+            else
+            {
+                return response()->fail('Pitch Not Published');
+            }
+
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+    }
+
 }
