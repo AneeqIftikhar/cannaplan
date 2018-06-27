@@ -233,7 +233,7 @@ class Revenue extends Model
 
     public static function getRevenueByForecastId($id)
     {
-        $forecast=Forecast::find($id);
+        $forecast=Forecast::where('id',$id)->with(['company','revenues','revenues.revenuable'])->first();
         $total_arr=array();
         for ($j = 1; $j < 13; $j++) {
             $total_arr['amount_m_' . $j] = 0;
@@ -241,7 +241,6 @@ class Revenue extends Model
         for ($j = 1; $j < 6; $j++) {
             $total_arr['amount_y_' . $j] = 0;
         }
-        $forecast=$forecast->with(['company','revenues','revenues.revenuable'])->first();
         for ($i=0;$i<count($forecast->revenues);$i++)
         {
             if(isset($forecast->revenues[$i]->revenuable_type)) {
@@ -273,10 +272,11 @@ class Revenue extends Model
                     $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_y_' . $j];
                 }
 
-                $forecast['total'] = $total_arr;
+
             }
 
         }
+        $forecast['total'] = $total_arr;
         return $forecast;
     }
 }

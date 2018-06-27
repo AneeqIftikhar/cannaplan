@@ -64,4 +64,159 @@ class Asset extends Model
     {
         return $this->morphTo();
     }
+    public static function getAssetByForecast($id)
+    {
+        $forecast = Forecast::where('id', $id)->with(['company', 'assets', 'assets.asset_duration'])->first();
+        $total_current = array();
+        $total_long_term = array();
+        for ($j = 1; $j < 13; $j++) {
+            $total_current['amount_m_' . $j] = 0;
+            $total_long_term['amount_m_' . $j] = 0;
+        }
+        for ($j = 1; $j < 6; $j++) {
+            $total_current['amount_y_' . $j] = 0;
+            $total_long_term['amount_y_' . $j] = 0;
+        }
+        for ($i=0;$i<count($forecast->assets);$i++)
+        {
+            if($forecast->assets[$i]->amount_type=='one_time')
+            {
+                if($forecast->assets[$i]->asset_duration_type=='current')
+                {
+                    if($forecast->assets[$i]->asset_duration->month!=0)
+                    {
+                        /*
+                          double original_value = 103;
+                            double current_value = original_value;
+                            double number_of_periods = 11;
+                            double new_value;
+                            double dep = original_value / number_of_periods;
+                            for (int i = 1; i <=number_of_periods; i++)
+                            {
+                                new_value = current_value - dep;
+                                current_value = new_value;
+                                cout << dep << " - " << round(current_value) << endl;
+                            }
+                         */
+                        $orignal_value=$forecast->assets[$i]->amount;
+                        $decreasing_amount=$forecast->assets[$i]->amount;
+                        $months=$forecast->assets[$i]->asset_duration->month;
+                        $dep=$orignal_value / $months;
+                        for ($j = 1; $j < 13; $j++) {
+                            if($j<$months)
+                            {
+                                $new_value= $decreasing_amount - $dep;
+                                $decreasing_amount=$new_value;
+                                $forecast->assets[$i]['amount_m_' . $j]=round($decreasing_amount);
+                            }
+                            else
+                            {
+                                $forecast->assets[$i]['amount_m_' . $j] = 0;
+                            }
+
+                        }
+                        $forecast->assets[$i]['amount_y_1'] = 0;
+                        $forecast->assets[$i]['amount_y_2'] = 0;
+                        $forecast->assets[$i]['amount_y_3'] = 0;
+                        $forecast->assets[$i]['amount_y_4'] = 0;
+                        $forecast->assets[$i]['amount_y_5'] = 0;
+                    }
+                    else
+                    {
+                        for ($j = 1; $j < 13; $j++) {
+                            $forecast->assets[$i]['amount_m_' . $j] = $forecast->assets[$i]->amount;
+                        }
+                        $forecast->assets[$i]['amount_y_1'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_2'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_3'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_4'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_5'] = $forecast->assets[$i]->amount;
+                    }
+                    for ($j = 1; $j < 13; $j++) {
+                        $total_current['amount_m_' . $j] = $total_current['amount_m_' . $j]+ $forecast->assets[$i]['amount_m_' . $j];
+                    }
+                    for ($j = 1; $j < 6; $j++) {
+                        $total_current['amount_y_' . $j] = $total_current['amount_y_' . $j]+ $forecast->assets[$i]['amount_y_' . $j];
+                    }
+
+                }
+            }
+            else if ($forecast->assets[$i]->amount_type=='constant')
+            {
+                if($forecast->assets[$i]->asset_duration_type=='current')
+                {
+                    if($forecast->assets[$i]->asset_duration->month!=0)
+                    {
+                        /*
+                          double original_value = 103;
+                            double current_value = original_value;
+                            double number_of_periods = 11;
+                            double new_value;
+                            double dep = original_value / number_of_periods;
+                            for (int i = 1; i <=number_of_periods; i++)
+                            {
+                                new_value = current_value - dep;
+                                current_value = new_value;
+                                cout << dep << " - " << round(current_value) << endl;
+                            }
+                         */
+                        $orignal_value=$forecast->assets[$i]->amount;
+                        $decreasing_amount=$forecast->assets[$i]->amount;
+                        $decreasing_amount2=$forecast->assets[$i]->amount;
+                        $months=$forecast->assets[$i]->asset_duration->month;
+                        $dep=$orignal_value / $months;
+                        $final_amount=0;
+                        for ($j = 1; $j < 13; $j++) {
+                            if($j<$months)
+                            {
+                                $new_value= $decreasing_amount - $dep;
+                                $decreasing_amount=$new_value;
+                                $forecast->assets[$i]['amount_m_' . $j]=round($decreasing_amount);
+                                $decreasing_amount2=$orignal_value;
+                                for ($k = 1; $k < $j; $k++) {
+                                    $new_value2= $decreasing_amount2 - $dep;
+                                    $decreasing_amount2=$new_value2;
+                                    $forecast->assets[$i]['amount_m_' . $j]=$forecast->assets[$i]['amount_m_' . $j]+round($decreasing_amount2);
+                                    $final_amount=$forecast->assets[$i]['amount_m_' . $j];
+                                }
+
+                            }
+                            else
+                            {
+                                $forecast->assets[$i]['amount_m_' . $j] = $final_amount;
+                            }
+
+                        }
+                        $forecast->assets[$i]['amount_y_1'] = $final_amount;
+                        $forecast->assets[$i]['amount_y_2'] = $final_amount;
+                        $forecast->assets[$i]['amount_y_3'] = $final_amount;
+                        $forecast->assets[$i]['amount_y_4'] = $final_amount;
+                        $forecast->assets[$i]['amount_y_5'] = $final_amount;
+                    }
+                    else
+                    {
+                        for ($j = 1; $j < 13; $j++) {
+                            $forecast->assets[$i]['amount_m_' . $j] = $forecast->assets[$i]->amount;
+                        }
+                        $forecast->assets[$i]['amount_y_1'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_2'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_3'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_4'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_5'] = $forecast->assets[$i]->amount;
+                    }
+                    for ($j = 1; $j < 13; $j++) {
+                        $total_current['amount_m_' . $j] = $total_current['amount_m_' . $j]+ $forecast->assets[$i]['amount_m_' . $j];
+                    }
+                    for ($j = 1; $j < 6; $j++) {
+                        $total_current['amount_y_' . $j] = $total_current['amount_y_' . $j]+ $forecast->assets[$i]['amount_y_' . $j];
+                    }
+
+                }
+            }
+        }
+
+        $forecast['total_current'] = $total_current;
+        $forecast['total_long_term'] = $total_long_term;
+        return $forecast;
+    }
 }
