@@ -20,7 +20,7 @@ class AssetController extends Controller
      */
     public function index()
     {
-        //
+        
     }
 
 
