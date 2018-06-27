@@ -25,11 +25,11 @@ class MilestoneRequest extends FormRequest
     {
         return [
             'pitch_id' => 'required',
+            'title'=>'required',
             'due_date' => 'required',
             'responsible' => 'required|max:100',
             'details' => 'required|max:255',
-            'email_reminder' => 'required',
-            'prospect_cost' => 'required',
+            'email_reminder' => 'required'
         ];
     }
 }
