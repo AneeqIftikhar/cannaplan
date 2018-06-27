@@ -158,8 +158,19 @@ class TeamRoleController extends Controller
     {
         $user=Auth::user();
         $team_role=TeamRole::find($id);
+        $pitch = $team_role->pitch;
         if($team_role && $team_role->created_by==$user->id) {
+            $deleted_order=$team_role->order;
             $team_role = TeamRole::destroy($id);
+            $all_team_roles=$pitch->team_roles;
+            foreach ($all_team_roles as $team_role)
+            {
+                if($team_role->order>$deleted_order)
+                {
+                    $team_role->order=$team_role->order-1;
+                    $team_role->save();
+                }
+            }
 
             return response()->success([],'Team Role Deleted Successfully');
 
