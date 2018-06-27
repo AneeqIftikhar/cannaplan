@@ -18,8 +18,8 @@ class CreateLongTerm extends Migration
                 $table->increments('id');
                 $table->float('year');
                 $table->boolean('will_sell');
-                $table->integer('selling_amount');
-                $table->date('selling_date');
+                $table->integer('selling_amount')->nullable();
+                $table->date('selling_date')->nullable();
 
                 $table->integer('created_by')->nullable();
 

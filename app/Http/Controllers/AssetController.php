@@ -20,7 +20,7 @@ class AssetController extends Controller
      */
     public function index()
     {
-        //
+        
     }
 
 
@@ -38,6 +38,7 @@ class AssetController extends Controller
         if($forecast && $forecast->created_by==Auth::user()->id){
             $input = $request->all();
             $asset=new Asset();
+            $asset->name=$input['name'];
             $asset->amount_type=$input['amount_type'];
             $asset->amount=$input['amount'];
             $asset->start_date=$input['start_date'];
@@ -45,12 +46,21 @@ class AssetController extends Controller
             if($input['asset_duration']=='current')
             {
                 $current=Current::create(['month'=>$input['month']]);
-                $current->asset_duration()->save($asset);
+                $current->asset_durations()->save($asset);
             }
             else if($input['asset_duration']=='long_term')
             {
-                $long_term=LongTerm::create(['year'=>$input['year'],'will_sell'=>$input['will_sell'],'selling_amount'=>$input['selling_amount'],'selling_date'=>$input['selling_date']]);
-                $long_term->asset_duration()->save($asset);
+                $array=[];
+                $array['year']=$input['year'];
+                $array['will_sell']=$input['will_sell'];
+                if($array['will_sell']==true)
+                {
+                    $array['selling_amount']=$input['selling_amount'];
+                    $array['selling_date']=$input['selling_date'];
+                }
+
+                $long_term=LongTerm::create($array);
+                $long_term->asset_durations()->save($asset);
             }
             $asset->asset_duration;
             return response()->success($asset,'Asset Created Successfully');
@@ -61,12 +71,7 @@ class AssetController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function show($id)
     {
         $user=Auth::user();
@@ -74,6 +79,7 @@ class AssetController extends Controller
         $asset = Asset::find($id);
 
         if($asset && $user->id==$asset->created_by) {
+            $asset=Asset::getAssetByForecast($id);
             return response()->success($asset,'Asset Fetched Successfully');
         }
         else{
@@ -81,7 +87,20 @@ class AssetController extends Controller
         }
 
     }
+    public function getAssetByForecast($id)
+    {
+        $user=Auth::user();
 
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id)
+        {
+            $asset=Asset::getAssetByForecast($id);
+            return response()->success($asset,'Asset Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+    }
 
 
     /**

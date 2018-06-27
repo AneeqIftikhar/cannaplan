@@ -30,16 +30,20 @@ class AssetRequest extends FormRequest
         $rules['amount'] = 'required';
         $rules['start_date'] = 'required';
         $rules['asset_duration'] = 'required';
-        if($rules['asset_duration']=='current')
+        if($this->request->has('asset_duration') && $this->request->get('asset_duration')=='current')
         {
             $rules['month'] = 'required';
         }
-        else if($rules['asset_duration']=='long_term')
+        else if($this->request->has('asset_duration') && $this->request->get('asset_duration')=='long_term')
         {
             $rules['year'] = 'required';
             $rules['will_sell'] = 'required';
-            $rules['selling_amount'] = 'required';
-            $rules['selling_date'] = 'required';
+            if($this->request->has('will_sell') && $this->request->get('will_sell')==true)
+            {
+                $rules['selling_amount'] = 'required';
+                $rules['selling_date'] = 'required';
+            }
+
         }
         return $rules;
     }
