@@ -140,6 +140,41 @@ class Asset extends Model
                     }
 
                 }
+                else if($forecast->assets[$i]->asset_duration_type=='long_term')
+                {
+                    $orignal_value=$forecast->assets[$i]->amount;
+                    $decreasing_amount=$forecast->assets[$i]->amount;
+                    $year=$forecast->assets[$i]->asset_duration->year;
+                    $dep_monthly=$orignal_value / ($year*12);
+                    $dep_yearly=$orignal_value / ($year);
+                    for ($j = 1; $j < 13; $j++)
+                    {
+                        $new_value= $decreasing_amount - $dep_monthly;
+                        $decreasing_amount=$new_value;
+                        $forecast->assets[$i]['amount_m_' . $j]=round($decreasing_amount);
+                    }
+                    $forecast->assets[$i]['amount_y_1']=round($decreasing_amount);
+                    for ($j = 2; $j < 6; $j++)
+                    {
+                        if($j<$year)
+                        {
+                            $new_value= $decreasing_amount - $dep_yearly;
+                            $decreasing_amount=$new_value;
+                            $forecast->assets[$i]['amount_y_' . $j]=round($decreasing_amount);
+                        }
+                        else
+                        {
+                            $forecast->assets[$i]['amount_y_' . $j]=0;
+                        }
+
+                    }
+                    for ($j = 1; $j < 13; $j++) {
+                        $total_long_term['amount_m_' . $j] = $total_long_term['amount_m_' . $j]+ $forecast->assets[$i]['amount_m_' . $j];
+                    }
+                    for ($j = 1; $j < 6; $j++) {
+                        $total_long_term['amount_y_' . $j] = $total_long_term['amount_y_' . $j]+ $forecast->assets[$i]['amount_y_' . $j];
+                    }
+                }
             }
             else if ($forecast->assets[$i]->amount_type=='constant')
             {
@@ -196,13 +231,13 @@ class Asset extends Model
                     else
                     {
                         for ($j = 1; $j < 13; $j++) {
-                            $forecast->assets[$i]['amount_m_' . $j] = $forecast->assets[$i]->amount;
+                            $forecast->assets[$i]['amount_m_' . $j] = $forecast->assets[$i]->amount * $j;
                         }
-                        $forecast->assets[$i]['amount_y_1'] = $forecast->assets[$i]->amount;
-                        $forecast->assets[$i]['amount_y_2'] = $forecast->assets[$i]->amount;
-                        $forecast->assets[$i]['amount_y_3'] = $forecast->assets[$i]->amount;
-                        $forecast->assets[$i]['amount_y_4'] = $forecast->assets[$i]->amount;
-                        $forecast->assets[$i]['amount_y_5'] = $forecast->assets[$i]->amount;
+                        $forecast->assets[$i]['amount_y_1'] = $forecast->assets[$i]->amount * 12;
+                        $forecast->assets[$i]['amount_y_2'] = $forecast->assets[$i]->amount * 12;
+                        $forecast->assets[$i]['amount_y_3'] = $forecast->assets[$i]->amount * 12;
+                        $forecast->assets[$i]['amount_y_4'] = $forecast->assets[$i]->amount * 12;
+                        $forecast->assets[$i]['amount_y_5'] = $forecast->assets[$i]->amount * 12;
                     }
                     for ($j = 1; $j < 13; $j++) {
                         $total_current['amount_m_' . $j] = $total_current['amount_m_' . $j]+ $forecast->assets[$i]['amount_m_' . $j];
@@ -211,6 +246,38 @@ class Asset extends Model
                         $total_current['amount_y_' . $j] = $total_current['amount_y_' . $j]+ $forecast->assets[$i]['amount_y_' . $j];
                     }
 
+                }
+                else if($forecast->assets[$i]->asset_duration_type=='long_term')
+                {
+                    $orignal_value=$forecast->assets[$i]->amount;
+                    $decreasing_amount=$forecast->assets[$i]->amount;
+                    $year=$forecast->assets[$i]->asset_duration->year;
+                    $dep_monthly=$orignal_value / ($year*12);
+                    for ($j = 1; $j < 13; $j++)
+                    {
+                        $new_value= $decreasing_amount - $dep_monthly;
+                        $decreasing_amount=$new_value;
+                        $forecast->assets[$i]['amount_m_' . $j]=round($decreasing_amount);
+                        $decreasing_amount2=$orignal_value;
+                        for ($k = 1; $k < $j; $k++) {
+                            $new_value2= $decreasing_amount2 - $dep_monthly;
+                            $decreasing_amount2=$new_value2;
+                            $forecast->assets[$i]['amount_m_' . $j]=$forecast->assets[$i]['amount_m_' . $j]+round($decreasing_amount2);
+                            $final_amount=$forecast->assets[$i]['amount_m_' . $j];
+                        }
+                    }
+                    $forecast->assets[$i]['amount_y_1']=$final_amount;
+                    $forecast->assets[$i]['amount_y_2'] = $final_amount;
+                    $forecast->assets[$i]['amount_y_3'] = $final_amount;
+                    $forecast->assets[$i]['amount_y_4'] = $final_amount;
+                    $forecast->assets[$i]['amount_y_5'] = $final_amount;
+
+                    for ($j = 1; $j < 13; $j++) {
+                        $total_long_term['amount_m_' . $j] = $total_long_term['amount_m_' . $j]+ $forecast->assets[$i]['amount_m_' . $j];
+                    }
+                    for ($j = 1; $j < 6; $j++) {
+                        $total_long_term['amount_y_' . $j] = $total_long_term['amount_y_' . $j]+ $forecast->assets[$i]['amount_y_' . $j];
+                    }
                 }
             }
         }
