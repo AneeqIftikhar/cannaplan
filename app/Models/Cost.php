@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
+use function Sodium\add;
 
 Relation::morphMap([
     'direct'=>'CannaPlan\Models\Direct',
@@ -89,14 +90,21 @@ class Cost extends Model
         $forecast=Forecast::where('id','=',$id)->with(['company','costs','costs.charge'])->first();
 
         $total_arr=array();
+        $salaries_and_wages_arr=array();
+        $employee_related_expenses_arr=array();
+
+        $burden_rate_percent=$forecast->burden_rate/100;
+
         for ($j = 1; $j < 13; $j++) {
             $total_arr['amount_m_' . $j] = 0;
+            $salaries_and_wages_arr['amount_m_' . $j] = 0;
+            $employee_related_expenses_arr['amount_m_' . $j] = 0;
         }
         for ($j = 1; $j < 6; $j++) {
             $total_arr['amount_y_' . $j] = 0;
+            $salaries_and_wages_arr['amount_y_' . $j] = 0;
+            $employee_related_expenses_arr['amount_y_' . $j] = 0;
         }
-
-
 
         for ($i=0;$i<count($forecast->costs);$i++)
         {
@@ -164,19 +172,52 @@ class Cost extends Model
             {
                 if($forecast->costs[$i]->charge->labor_type=='direct')
                 {
+                    $annual_raise_percent=$forecast->costs[$i]->charge->annual_raise_percent/100;
+
                     for ($j = 1; $j < 13; $j++) {
                         $forecast->costs[$i]->charge['amount_m_' . $j] = $forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay;
-                        $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                        $salaries_and_wages_arr['amount_m_' . $j]=$salaries_and_wages_arr['amount_m_' . $j]+$forecast->costs[$i]->charge['amount_m_' . $j];
+                        $employee_related_expenses_arr['amount_m_' . $j]=$employee_related_expenses_arr['amount_m_' . $j]+round($forecast->costs[$i]->charge['amount_m_' . $j]*$burden_rate_percent);
+                        $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge['amount_m_' . $j]+round($forecast->costs[$i]->charge['amount_m_' . $j]*$burden_rate_percent);
                     }
+                    $total_previous_val=0;
+                    $employee_related_expenses_previous_val=0;
+                    $labor_previous_val=0;
                     for ($j = 1; $j < 6; $j++) {
-                        $forecast->costs[$i]->charge['amount_y_' . $j] = $forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12;
-                        $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                        if ($j > 1 && $forecast->costs[$i]->charge->annual_raise_percent>0) {
+                            $labor_raise=round($labor_previous_val*$annual_raise_percent);
+                            $employee_related_expenses_previous_raise=round($employee_related_expenses_previous_val*$annual_raise_percent);
+
+                            $forecast->costs[$i]->charge['amount_y_' . $j]=$labor_raise+$labor_previous_val;
+                            $salaries_and_wages_arr['amount_y_' . $j]=$salaries_and_wages_arr['amount_y_' . $j]+$forecast->costs[$i]->charge['amount_y_' . $j];
+                            $employee_related_expenses_arr['amount_y_' . $j]=$employee_related_expenses_previous_raise+$employee_related_expenses_previous_val;
+
+                            $labor_previous_val=$forecast->costs[$i]->charge['amount_y_' . $j];
+                            $employee_related_expenses_previous_val=$employee_related_expenses_arr['amount_y_' . $j];
+                        }
+                        else{
+                            $forecast->costs[$i]->charge['amount_y_' . $j] = ($forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay);
+                            $salaries_and_wages_arr['amount_y_' . $j]=$salaries_and_wages_arr['amount_y_' . $j]+$forecast->costs[$i]->charge['amount_y_' . $j];
+                            $employee_related_expenses_arr['amount_y_' . $j]=$employee_related_expenses_arr['amount_y_' . $j]+12*(round($salaries_and_wages_arr['amount_y_' . $j]*$burden_rate_percent));
+
+                            //$total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge['amount_y_' . $j]+round($forecast->costs[$i]->charge['amount_y_' . $j]*$burden_rate_percent);
+
+                            $labor_previous_val=$forecast->costs[$i]->charge['amount_y_' . $j];
+                            //$employee_related_expenses_previous_val=$employee_related_expenses_arr['amount_y_' . $j];
+
+
+                            //$total_previous_val=$total_arr['amount_y_' . $j];
+                        }
+
                     }
                 }
 
             }
-            $forecast['total']=$total_arr;
+
         }
+        $forecast['total']=$total_arr;
+        $forecast['salaries_and_wages']=$salaries_and_wages_arr;
+        $forecast['$employee_related_expenses']=$employee_related_expenses_arr;
         return $forecast;
     }
 }
