@@ -112,6 +112,8 @@ Route::group(['middleware' => ['cors']], function () {
         /*Asset Routes*/
         Route::resource('asset' , 'AssetController');
         Route::get('get_asset_by_forecast/{id}' , 'AssetController@getAssetByForecast');
+
+
     });
 
 });
