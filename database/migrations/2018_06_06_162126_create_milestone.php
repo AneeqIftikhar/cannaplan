@@ -20,13 +20,13 @@ class CreateMilestone extends Migration
                 $table->integer('pitch_id')->unsigned();
                 $table->foreign('pitch_id')->references('id')->on('pitch')->onDelete('cascade');
 
+                $table->string('title');
                 $table->date('due_date');
                 $table->string('responsible','100');
                 $table->string('details','255');
                 $table->boolean('email_reminder');
-                $table->integer('prospect_cost');
 
-                $table->boolean('completed')->default(false);
+                $table->boolean('is_completed')->default(false);
 
                 $table->integer('created_by')->nullable();
 

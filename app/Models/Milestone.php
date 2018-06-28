@@ -43,7 +43,7 @@ class Milestone extends Model
     /**
      * @var array
      */
-    protected $fillable = ['due_date', 'responsible', 'details', 'email_reminder', 'prospect_cost', 'completed'];
+    protected $fillable = ['title','due_date', 'responsible', 'details', 'email_reminder', 'is_completed'];
     protected $guarded = ['id','pitch_id','created_by'];
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

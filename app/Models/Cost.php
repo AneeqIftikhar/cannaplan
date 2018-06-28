@@ -86,7 +86,8 @@ class Cost extends Model
 
     public static function getCostByForecastId($id)
     {
-        $forecast=Forecast::find($id);
+        $forecast=Forecast::where('id','=',$id)->with(['company','costs','costs.charge'])->first();
+
         $total_arr=array();
         for ($j = 1; $j < 13; $j++) {
             $total_arr['amount_m_' . $j] = 0;
@@ -95,7 +96,7 @@ class Cost extends Model
             $total_arr['amount_y_' . $j] = 0;
         }
 
-        $forecast=$forecast->with(['company','costs','costs.charge'])->first();
+
 
         for ($i=0;$i<count($forecast->costs);$i++)
         {
@@ -109,23 +110,73 @@ class Cost extends Model
         {
             if($forecast->costs[$i]->charge_type=='direct')
             {
-                $forecast->costs[$i]->charge->direct_cost;
-
-                    if($forecast->costs[$i]->charge->direct_cost_type=='general_cost')
-                    {
-                        $forecast->costs[$i]->charge['direct_cost']['amount'];
+                if($forecast->costs[$i]->charge->direct_cost_type=='general_cost')
+                {
+                    for ($j = 1; $j < 13; $j++) {
+                        $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount;
+                        $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
                     }
-                    else if($forecast->costs[$i]->charge->direct_cost_type=='cost_on_revenue')
-                    {
-                        $forecast->costs[$i]->charge['direct_cost']['amount'];
+                    for ($j = 1; $j < 6; $j++) {
+                        $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*12;
+                        $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
                     }
+                }
+                else if($forecast->costs[$i]->charge->direct_cost_type=='cost_on_revenue')
+                {
+                    $revenue=Revenue::find($forecast->costs[$i]->charge->direct_cost->revenue_id);
 
-
+                    if($revenue->revenuable_type=='unit_sale')
+                    {
+                        for ($j = 1; $j < 13; $j++) {
+                            $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->unit_sold;
+                            $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                        }
+                        for ($j = 1; $j < 6; $j++) {
+                            $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->unit_sold*12;
+                            $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                        }
+                    }
+                    else if($revenue->revenuable_type=='billable')
+                    {
+                        for ($j = 1; $j < 13; $j++) {
+                            $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->hour;
+                            $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                        }
+                        for ($j = 1; $j < 6; $j++) {
+                            $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->hour*12;
+                            $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                        }
+                    }
+                    else
+                    {
+                        for ($j = 1; $j < 13; $j++) {
+                            $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount;
+                            $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                        }
+                        for ($j = 1; $j < 6; $j++) {
+                            $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*12;
+                            $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                        }
+                    }
+                }
             }
             else if($forecast->costs[$i]->charge_type=='labor')
             {
-                $forecast->costs[$i]['charge']['number_of_employees']*$forecast->costs[$i]['charge']['pay'];
+                if($forecast->costs[$i]->charge->labor_type=='direct')
+                {
+                    for ($j = 1; $j < 13; $j++) {
+                        $forecast->costs[$i]->charge['amount_m_' . $j] = $forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay;
+                        $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                    }
+                    for ($j = 1; $j < 6; $j++) {
+                        $forecast->costs[$i]->charge['amount_y_' . $j] = $forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12;
+                        $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                    }
+                }
+
             }
+            $forecast['total']=$total_arr;
         }
+        return $forecast;
     }
 }

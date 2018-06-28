@@ -137,9 +137,19 @@ class CompetitorController extends Controller
     {
         $user=Auth::user();
         $competitor=Competitor::find($id);
+        $pitch = $competitor->pitch;
         if($competitor && $competitor->created_by==$user->id) {
-            $competitor = Competitor::destroy($id);
-
+            $deleted_order=$competitor->order;
+            Competitor::destroy($id);
+            $all_competitor=$pitch->competitors;
+            foreach ($all_competitor as $competitor)
+            {
+                if($competitor->order>$deleted_order)
+                {
+                    $competitor->order=$competitor->order-1;
+                    $competitor->save();
+                }
+            }
             return response()->success([],'Competitor Deleted Successfully');
 
         }
