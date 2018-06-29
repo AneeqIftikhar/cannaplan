@@ -25,10 +25,10 @@ class MilestoneRequest extends FormRequest
     {
         return [
             'pitch_id' => 'required',
-            'title'=>'required',
+            'title'=>'required|max:100',
             'due_date' => 'required',
-            'responsible' => 'required|max:100',
-            'details' => 'required|max:255'
+            'responsible' => 'max:100',
+            'details' => 'max:255'
         ];
     }
 }

@@ -22,9 +22,9 @@ class CreateMilestone extends Migration
 
                 $table->string('title');
                 $table->date('due_date');
-                $table->string('responsible','100');
-                $table->string('details','255');
-                $table->boolean('email_reminder');
+                $table->string('responsible','100')->nullable();
+                $table->string('details','255')->nullable();
+                $table->boolean('email_reminder')->default(false);
 
                 $table->boolean('is_completed')->default(false);
 
