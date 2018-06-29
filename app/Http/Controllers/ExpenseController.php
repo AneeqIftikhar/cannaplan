@@ -68,7 +68,21 @@ class ExpenseController extends Controller
 
     }
 
+    public function getExpenseByForecast($id)
+    {
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id)
+        {
+            $forecast=Expense::getExpenseByForecastId($id);
+            return response()->success($forecast,'Revenue Fetched Successfully');
+        }
+        else
+        {
+            return response()->fail('User Not Authorized');
+        }
 
+    }
 
     /**
      * Update the specified resource in storage.
