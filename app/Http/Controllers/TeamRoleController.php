@@ -13,24 +13,9 @@ use Illuminate\Support\Facades\Input;
 
 class TeamRoleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
 
 
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(TeamRoleRequest $request)
     {
         $pitch=Pitch::find($request->input('pitch_id'));
@@ -162,7 +147,7 @@ class TeamRoleController extends Controller
         if($team_role && $team_role->created_by==$user->id) {
             $deleted_order=$team_role->order;
             $team_role = TeamRole::destroy($id);
-            $all_team_roles=$pitch->team_roles;
+            $all_team_roles=$pitch->teamRoles;
             foreach ($all_team_roles as $team_role)
             {
                 if($team_role->order>$deleted_order)

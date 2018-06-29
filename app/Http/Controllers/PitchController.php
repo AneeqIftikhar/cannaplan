@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use CannaPlan\Helpers\Helper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
-
 class PitchController extends Controller
 {
 
@@ -43,8 +42,11 @@ class PitchController extends Controller
             }
             //$pitch=Pitch::where('id', $id)->update($input_array);
 
-            $pitch->update(Input::all());
-
+            $pitch->update($input_array);
+            $pitch->competitors;
+            $pitch->milestones;
+            $pitch->targetMarketGraphs;
+            $pitch->teamRoles;
             return response()->success($pitch,'Pitch Updated Successfully');
         }
         else{
@@ -59,7 +61,13 @@ class PitchController extends Controller
 
         $pitch = Pitch::find($id);
         if($pitch && $user->id == $pitch->created_by) {
-             if(Helper::deleteImage($pitch->logo)) {
+             if($pitch->logo && Helper::deleteImage($pitch->logo)) {
+                 $pitch->logo=null;
+                 $pitch->save();
+                 $pitch->competitors;
+                 $pitch->milestones;
+                 $pitch->targetMarketGraphs;
+                 $pitch->teamRoles;
                 return response()->success($pitch,'Logo Deleted Successfully');
             }
             else{
