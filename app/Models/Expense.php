@@ -5,7 +5,7 @@ namespace CannaPlan\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
-
+use DateTime;
 /**
  * @property int $id
  * @property int $forecast_id
@@ -51,5 +51,37 @@ class Expense extends Model
     public function forecast()
     {
         return $this->belongsTo('CannaPlan\Models\Forecast');
+    }
+    public static function getExpenseByForecastId($id)
+    {
+        $forecast=Forecast::where('id',$id)->with('company','expenses')->first();
+        $now=date('Y-m-d',time());
+
+
+        $now = new DateTime($now);
+
+
+        for ($i=0 ; $i<count($forecast->expenses);$i++)
+        {
+            $date=date($forecast->expenses[$i]['start_date']);
+            $d2 = new DateTime($date);
+            $diff=$now->diff($d2)->m;
+            for ($j = 1; $j < 13; $j++) {
+
+                if($diff<$j)
+                {
+                    $forecast->expenses[$i]['amount_m_' . $j] = $forecast->expenses[$i]['amount'];
+                }
+                else
+                {
+                    $forecast->expenses[$i]['amount_m_' . $j] = 0;
+                }
+
+            }
+            for ($j = 1; $j < 6; $j++) {
+                $forecast->expenses[$i]['amount_y_' . $j]=$forecast->expenses[$i]['amount']*12;
+            }
+        }
+        return $forecast;
     }
 }
