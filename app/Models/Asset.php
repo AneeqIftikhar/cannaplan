@@ -281,7 +281,6 @@ class Asset extends Model
                 }
             }
         }
-
         $forecast['total_current'] = $total_current;
         $forecast['total_long_term'] = $total_long_term;
         return $forecast;
