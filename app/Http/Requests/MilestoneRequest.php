@@ -28,7 +28,8 @@ class MilestoneRequest extends FormRequest
             'title'=>'required',
             'due_date' => 'required',
             'responsible' => 'required|max:100',
-            'details' => 'required|max:255'
+            'details' => 'required|max:255',
+            'email_reminder' => 'required'
         ];
     }
 }

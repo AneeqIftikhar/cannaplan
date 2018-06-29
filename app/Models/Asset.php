@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
-use DateTime;
+
 Relation::morphMap([
     'current'=>'CannaPlan\Models\Current',
     'long_term'=>'CannaPlan\Models\LongTerm'
@@ -67,8 +67,6 @@ class Asset extends Model
     public static function getAssetByForecast($id)
     {
         $forecast = Forecast::where('id', $id)->with(['company', 'assets', 'assets.asset_duration'])->first();
-        $now=date('Y-m-d',time());
-        $now = new DateTime($now);
         $total_current = array();
         $total_long_term = array();
         for ($j = 1; $j < 13; $j++) {
@@ -81,9 +79,6 @@ class Asset extends Model
         }
         for ($i=0;$i<count($forecast->assets);$i++)
         {
-            $date=date($forecast->assets[$i]['start_date']);
-            $d2 = new DateTime($date);
-            $diff=$now->diff($d2)->m;
             if($forecast->assets[$i]->amount_type=='one_time')
             {
                 if($forecast->assets[$i]->asset_duration_type=='current')
@@ -108,19 +103,11 @@ class Asset extends Model
                         $months=$forecast->assets[$i]->asset_duration->month;
                         $dep=$orignal_value / $months;
                         for ($j = 1; $j < 13; $j++) {
-                            if($decreasing_amount>0)
+                            if($j<$months)
                             {
-                                if($diff<$j)
-                                {
-                                    $new_value= $decreasing_amount - $dep;
-                                    $decreasing_amount=$new_value;
-                                    $forecast->assets[$i]['amount_m_' . $j]=round($decreasing_amount);
-                                }
-                                else
-                                {
-                                    $forecast->assets[$i]['amount_m_' . $j]=0;
-                                }
-
+                                $new_value= $decreasing_amount - $dep;
+                                $decreasing_amount=$new_value;
+                                $forecast->assets[$i]['amount_m_' . $j]=round($decreasing_amount);
                             }
                             else
                             {
@@ -137,15 +124,7 @@ class Asset extends Model
                     else
                     {
                         for ($j = 1; $j < 13; $j++) {
-                            if($diff<$j)
-                            {
-                                $forecast->assets[$i]['amount_m_' . $j] = $forecast->assets[$i]->amount;
-                            }
-                            else
-                            {
-                                $forecast->assets[$i]['amount_m_' . $j]=0;
-                            }
-
+                            $forecast->assets[$i]['amount_m_' . $j] = $forecast->assets[$i]->amount;
                         }
                         $forecast->assets[$i]['amount_y_1'] = $forecast->assets[$i]->amount;
                         $forecast->assets[$i]['amount_y_2'] = $forecast->assets[$i]->amount;
@@ -170,17 +149,9 @@ class Asset extends Model
                     $dep_yearly=$orignal_value / ($year);
                     for ($j = 1; $j < 13; $j++)
                     {
-                        if($diff<$j)
-                        {
-                            $new_value= $decreasing_amount - $dep_monthly;
-                            $decreasing_amount=$new_value;
-                             round($decreasing_amount);
-                        }
-                        else
-                        {
-                            $forecast->assets[$i]['amount_m_' . $j]=0;
-                        }
-
+                        $new_value= $decreasing_amount - $dep_monthly;
+                        $decreasing_amount=$new_value;
+                        $forecast->assets[$i]['amount_m_' . $j]=round($decreasing_amount);
                     }
                     $forecast->assets[$i]['amount_y_1']=round($decreasing_amount);
                     for ($j = 2; $j < 6; $j++)

@@ -99,7 +99,7 @@ Route::group(['middleware' => ['cors']], function () {
         /*Expense Routes*/
         Route::resource('expense' , 'ExpenseController');
         Route::post('update_expense/{id}','ExpenseController@updateExpense');
-        Route::get('get_expense_by_forecast/{id}','ExpenseController@getExpenseByForecast');
+
         /*Dividend Routes*/
         Route::resource('dividend' , 'DividendController');
         Route::post('update_dividend/{id}','DividendController@updateDividend');
