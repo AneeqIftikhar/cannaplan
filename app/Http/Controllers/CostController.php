@@ -31,7 +31,7 @@ class CostController extends Controller
      */
     private function addCostHelper($input,$cost)
     {
-        if(isset($input['charges_type']) && $input['charges_type']=="direct")
+        if(isset($input['charge_type']) && $input['charge_type']=="direct")
         {
             $direct=new Direct();
             $direct->name=$input['name'];
@@ -51,7 +51,7 @@ class CostController extends Controller
             }
 
         }
-        else if(isset($input['charges_type']) && $input['charges_type']=="labor")
+        else if(isset($input['charge_type']) && $input['charge_type']=="labor")
         {
             $labor=Cost::addLabor($input['name'], $input['number_of_employees'], $input['labor_type'], $input['pay'], $input['start_date'], $input['staff_role_type'], $input['annual_raise_percent']);
             $labor->charges()->save($cost);
@@ -74,6 +74,7 @@ class CostController extends Controller
 
             if($this->addCostHelper($input,$cost))
             {
+                $cost->charge;
                 return response()->success($cost,'Cost Created Successfully');
             }
             else{
@@ -122,65 +123,58 @@ class CostController extends Controller
 
     }
 
-
     public function updateCost(CostRequest $request, $id)
     {
         $input = $request->all();
         $cost = Cost::find($id);
+
         $user=Auth::user();
         if($cost && $cost->created_by==$user->id){
-            //if user has a charge already set
-            if($charge=$cost->charge)
+            $charge=$cost->charge;
+
+            if(isset($input['charge_type']) && $cost->charge_type==$input['charge_type'])//updating the cost
             {
-                //if the charge is same then it will be updated
-                //else previous will be deleted and new will be inserted
-                if(isset($input['charges_type']) && $cost->charge_type==$input['charges_type'])
+                if($cost->charge_type=='direct')//updating direct
                 {
-                    if ($input['charges_type'] == "billable") {
-                        $billable = Cost::updateBillable($input['hour'], $input['cost_start_date'], $input['hourly_rate'],$charge);
-                    } else if (isset($input['charges_type']) && $input['charges_type'] == "unit_sale") {
-                        $unit_sale = Cost::updateUnitSale($input['unit_sold'], $input['cost_start_date'], $input['unit_price'],$charge);
-
-                    } else if (isset($input['charges_type']) && $input['charges_type'] == "cost_only") {
-                        if ($input['type'] == "varying") {
-                            $array = array();
-                            for ($i = 1; $i < 13; $i++) {
-                                $array['amount_m_' . $i] = $input['amount_m_' . $i];
-                            }
-                            $cost_only = Cost::updateCostOnlyVarying($input['cost_start_date'], $array,$charge);
-                        } else {
-                            $cost_only = Cost::updateCostOnlyConstant($input['amount'], $input['amount_duration'], $input['cost_start_date'],$charge);
-                        }
-
-                    }
-                }
-                else
-                {
-                    //deleting previous charge
-                    $charge->delete();
-                    if(!$this->addCostHelper($input,$cost)) //adding new charge
-                    {
-                        if(isset($input['name']))
+                    if(isset($input['direct_cost_type']) && $cost->charge->direct_cost_type==$input['direct_cost_type'])
+                    {//if direct cost is same
+                        $charge=$charge->direct_cost;
+                        $cost->charge->name=$input['name'];
+                        if(isset($input['direct_cost_type']) && $input['direct_cost_type']=="general_cost")
                         {
-                            $cost->name=$input['name'];
-                            $cost->save();
+                            Cost::updateGeneral($input['amount'] , $input['cost_start_date'] , $charge);
+                        }
+                        else if(isset($input['direct_cost_type']) && $input['direct_cost_type']=="cost_on_revenue")
+                        {
+                            Cost::updateCostOnRevenue($input['revenue_id'], $input['amount'] , $charge);
+                        }
+                    }
+                    else{// if direct cost is changed then delete previous direct cost
+                        $charge->delete();
+                        if(!$this->addCostHelper($input,$cost)) //adding new cost
+                        {
+                            if(isset($input['name']))
+                            {
+                                $cost->charge->name=$input['name'];
+                                $cost->save();
+                                $cost->charge->direct_cost;
+                            }
                         }
                     }
                 }
-            }
-            else//charge was nerver set
-            {
-                //setting a new charge
-                if(!$this->addCostHelper($input,$cost))
-                {
-                    if(isset($input['name']))
-                    {
-                        $cost->name=$input['name'];
-                        $cost->save();
-                    }
+                else{//labor will be updated here
+                    Cost::updateLabor($input['name'], $input['number_of_employees'], $input['labor_type'], $input['pay'], $input['start_date'], $input['staff_role_type'], $input['annual_raise_percent'] ,$charge);
                 }
             }
-            $cost->charge;
+            else{//if cost is changed
+                $charge->delete();
+
+                if(!$this->addCostHelper($input,$cost)) //adding new cost
+                {
+                    $cost->save();
+                    $cost->charge;
+                }
+            }
             return response()->success($cost,'Cost Updated Successfully');
         }
         else{
