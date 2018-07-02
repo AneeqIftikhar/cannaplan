@@ -33,6 +33,7 @@ class Pitch extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
+    protected $appends = ['image_url'];
     /**
      * The table associated with the model.
      * 
@@ -114,5 +115,14 @@ class Pitch extends Model
         $verify=Company::is_user_company($company->id);
 
         return $verify;
+    }
+    public function getImageUrlAttribute()
+    {
+        if($this->image)
+        {
+            $base = config('app.url');
+            return $base.$this->image;
+        }
+        return null;
     }
 }

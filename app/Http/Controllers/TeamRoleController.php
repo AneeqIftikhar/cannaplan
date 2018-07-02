@@ -76,12 +76,12 @@ class TeamRoleController extends Controller
         if($team_role && $team_role->created_by==$user->id) {
             $input_array=$request->all();
             if ($request->hasFile('image')) {
-                Helper::deleteImage($team_role->image);
+//                Helper::deleteImage($team_role->image);
                 $input_array['image']=Helper::uploadImage($request->image);
             }
             //$team_role=TeamRole::where('id', $id)->update($input_array);
 
-            $team_role->update(Input::all());
+            $team_role->update($input_array);
 
             return response()->success($team_role,'Team Role Updated Successfully');
 
