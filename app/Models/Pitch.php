@@ -118,10 +118,10 @@ class Pitch extends Model
     }
     public function getImageUrlAttribute()
     {
-        if($this->image)
+        if($this->logo)
         {
             $base = config('app.url');
-            return $base.$this->image;
+            return $base.$this->logo;
         }
         return null;
     }

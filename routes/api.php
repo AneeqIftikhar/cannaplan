@@ -52,13 +52,14 @@ Route::group(['middleware' => ['cors']], function () {
         Route::post('update_milestone/{id}' , 'MilestoneController@updateMilestone');
 
         /*Target Marget Graph Routes*/
-        Route::resource('target_marget_graph' , 'TargetMargetGraphController');
-        Route::post('update_target_marget_graph/{id}' , 'TargetMargetGraphController@updateTargetMargetGraph');
+        Route::resource('target_market_graph' , 'TargetMarketGraphController');
+        Route::post('update_target_market_graph/{id}' , 'TargetMargetGraphController@updateTargetMarketGraph');
 
         /*Team Role Routes*/
         Route::resource('team_role', 'TeamRoleController');
         Route::post('update_team_role/{id}' , 'TeamRoleController@updateTeamRole');
         Route::post('update_team_role_order' , 'TeamRoleController@updateOrder');
+        Route::post('delete_image/{id}','TeamRoleController@deleteImage');
 
         /*Competitor Routes*/
         Route::resource('competitor', 'CompetitorController');

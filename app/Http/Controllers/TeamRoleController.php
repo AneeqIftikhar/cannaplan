@@ -133,6 +133,25 @@ class TeamRoleController extends Controller
 
     }
 
+    public function deleteImage($id)
+    {
+        $user=Auth::user();
+
+        $team_role=TeamRole::find($id);
+        if($team_role && $user->id == $team_role->created_by) {
+            if($team_role->image &&  mage($team_role->image)) {
+
+                return response()->success($team_role,'Image Deleted Successfully');
+            }
+            else{
+                return response()->fail('Image Not Found');
+            }
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      *

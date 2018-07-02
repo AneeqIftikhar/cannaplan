@@ -95,6 +95,7 @@ class PitchController extends Controller
         }
 
     }
+
     public function publishPitchByCompany($id)
     {
         $user=Auth::user();
@@ -107,7 +108,11 @@ class PitchController extends Controller
                 $pitch->is_published=true;
                 $pitch->publish_key=$time;
                 $pitch->save();
-                return response()->success(['key'=>$time],'Pitch Fetched Successfully');
+                $pitch->competitors;
+                $pitch->milestones;
+                $pitch->targetMarketGraphs;
+                $pitch->teamRoles;
+                return response()->success($pitch,'Pitch Fetched Successfully');
             }
             else
             {
@@ -130,7 +135,11 @@ class PitchController extends Controller
             {
                 $pitch->is_published=false;
                 $pitch->save();
-                return response()->success([],'Stopped Publishing Pitch Successfully');
+                $pitch->competitors;
+                $pitch->milestones;
+                $pitch->targetMarketGraphs;
+                $pitch->teamRoles;
+                return response()->success($pitch,'Your Pitch is no Longer Published');
             }
             else
             {
