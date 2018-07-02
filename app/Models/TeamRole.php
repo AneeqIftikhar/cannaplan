@@ -23,6 +23,7 @@ class TeamRole extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
+    protected $appends = ['image_url'];
     /**
      * The table associated with the model.
      * 
@@ -50,5 +51,14 @@ class TeamRole extends Model
     public function pitch()
     {
         return $this->belongsTo('CannaPlan\Models\Pitch');
+    }
+    public function getImageUrlAttribute()
+    {
+       if($this->image)
+       {
+           $base = config('app.url');
+           return $base.$this->image;
+       }
+       return null;
     }
 }
