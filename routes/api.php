@@ -53,7 +53,7 @@ Route::group(['middleware' => ['cors']], function () {
 
         /*Target Marget Graph Routes*/
         Route::resource('target_market_graph' , 'TargetMarketGraphController');
-        Route::post('update_target_market_graph/{id}' , 'TargetMargetGraphController@updateTargetMarketGraph');
+        Route::post('update_target_market_graph/{id}' , 'TargetMarketGraphController@updateTargetMarketGraph');
 
         /*Team Role Routes*/
         Route::resource('team_role', 'TeamRoleController');
