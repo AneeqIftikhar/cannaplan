@@ -33,7 +33,7 @@ class Pitch extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url','target_market_size'];
     /**
      * The table associated with the model.
      * 
@@ -99,7 +99,7 @@ class Pitch extends Model
      */
     public function targetMarketGraphs()
     {
-        return $this->hasMany('CannaPlan\Models\TargetMarketGraph');
+        return $this->hasMany('CannaPlan\Models\TargetMarketGraph')->orderBy('segment_prospect', 'DESC');
     }
 
     /**
@@ -124,5 +124,36 @@ class Pitch extends Model
             return $base.$this->logo;
         }
         return null;
+    }
+
+    public function getTargetMarketSizeAttribute()
+    {
+        if(count($this->targetMarketGraphs()->get())>0)
+        {
+            $graphs=$this->targetMarketGraphs()->get();
+            $cost=0;
+            foreach ($graphs as $graph)
+            {
+                $cost = $cost+($graph->segment_prospect) * ($graph->prospect_cost);
+            }
+            if($cost%1000000000!=0)
+            {
+                return round($cost/1000000000,1)."B";
+            }
+            else if($cost%1000000!=0)
+            {
+                return round($cost/1000000,1)."M";
+            }
+            else if($cost%1000!=0)
+            {
+                return round($cost/1000)."K";
+            }
+            else
+            {
+                return $cost;
+            }
+        }
+        return 0;
+
     }
 }
