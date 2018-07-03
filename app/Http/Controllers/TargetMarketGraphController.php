@@ -19,19 +19,27 @@ class TargetMarketGraphController extends Controller
     public function store(TargetMarketGraphRequest $request)
     {
         $pitch=Pitch::find($request->input('pitch_id'));
-        if($pitch && $pitch->created_by==Auth::user()->id){
-            $input = $request->all();
-            $target_market_graph=$pitch->targetMarketGraphs()->create($input);
-            if($target_market_graph) {
-                return response()->success($target_market_graph,'Target Market Graph Created Successfully');
+        if($pitch && $pitch->targetMarketGraphs()->count()==5)
+        {
+            return response()->fail('Only 5 Segments Allowed');
+        }
+        else
+        {
+            if($pitch && $pitch->created_by==Auth::user()->id){
+                $input = $request->all();
+                $target_market_graph=$pitch->targetMarketGraphs()->create($input);
+                if($target_market_graph) {
+                    return response()->success($target_market_graph,'Target Market Graph Created Successfully');
+                }
+                else{
+                    return response()->fail('Target Market Graph Could Not Be Added');
+                }
             }
             else{
-                return response()->fail('Target Market Graph Could Not Be Added');
+                return response()->fail('User Not Authorized');
             }
         }
-        else{
-            return response()->fail('User Not Authorized');
-        }
+
 
     }
 
