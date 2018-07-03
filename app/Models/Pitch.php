@@ -33,7 +33,7 @@ class Pitch extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
-    protected $appends = ['image_url','target_market_size'];
+    protected $appends = ['image_url','target_market_size','total_prospects'];
     /**
      * The table associated with the model.
      * 
@@ -136,21 +136,47 @@ class Pitch extends Model
             {
                 $cost = $cost+($graph->segment_prospect) * ($graph->prospect_cost);
             }
-            if($cost%1000000000!=0)
+            if($cost>=1000000000)
             {
                 return round($cost/1000000000,1)."B";
             }
-            else if($cost%1000000!=0)
+            else if($cost>=1000000)
             {
                 return round($cost/1000000,1)."M";
             }
-            else if($cost%1000!=0)
+            else if($cost>=1000)
             {
                 return round($cost/1000)."K";
             }
             else
             {
                 return $cost;
+            }
+        }
+        return 0;
+
+    }
+    public function getTotalProspectsAttribute()
+    {
+        if(count($this->targetMarketGraphs()->get())>0)
+        {
+            $total=$this->targetMarketGraphs()->sum('segment_prospect');
+
+            if($total>=1000000000)
+            {
+                return round($total/1000000000,1)."B";
+            }
+            else if($total>=1000000)
+            {
+                return round($total/1000000,1)."M";
+            }
+            else if($total>=1000)
+            {
+                return round($total/1000)."K";
+            }
+            else
+            {
+                return $total;
             }
         }
         return 0;

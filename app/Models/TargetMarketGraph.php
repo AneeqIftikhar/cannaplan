@@ -74,15 +74,15 @@ class TargetMarketGraph extends Model
         {
             $cost=($this->segment_prospect)*($this->prospect_cost);
             $cost=round($cost);
-            if($cost%1000000000!=0)
+            if($cost>=1000000000)
             {
                 return round($cost/1000000000,1)."B";
             }
-            else if($cost%1000000!=0)
+            else if($cost>=1000000)
             {
                 return round($cost/1000000,1)."M";
             }
-            else if($cost%1000!=0)
+            else if($cost>=1000)
             {
                 return round($cost/1000)."K";
             }
