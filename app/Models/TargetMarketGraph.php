@@ -21,8 +21,7 @@ use Illuminate\Support\Facades\Auth;
 class TargetMarketGraph extends Model
 {
     use SoftDeletes;
-    protected $dates=['deleted_at'];
-    protected $appends = ['segment_percentage','segment_cost'];
+
     /**
      * The table associated with the model.
      * 
@@ -43,6 +42,8 @@ class TargetMarketGraph extends Model
      */
     protected $fillable = ['segment_name', 'segment_prospect', 'prospect_cost'];
     protected $guarded = ['id','pitch_id','created_by'];
+    protected $dates=['deleted_at'];
+    protected $appends = ['segment_percentage','segment_cost'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
