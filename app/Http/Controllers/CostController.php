@@ -97,7 +97,7 @@ class CostController extends Controller
      */
     public function show($id)
     {
-        $cost = Cost::find($id)->with('charge','charge.direct_cost')->first();
+        $cost = Cost::where('id','=',$id)->with('charge')->first();
 
         if($cost) {
             return response()->success($cost,'Cost Fetched Successfully');
@@ -138,8 +138,12 @@ class CostController extends Controller
                 {
                     if(isset($input['direct_cost_type']) && $cost->charge->direct_cost_type==$input['direct_cost_type'])
                     {//if direct cost is same
-                        $charge=$charge->direct_cost;
+
                         $cost->charge->name=$input['name'];
+                        $charge->save();
+
+                        $charge=$charge->direct_cost;
+
                         if(isset($input['direct_cost_type']) && $input['direct_cost_type']=="general_cost")
                         {
                             Cost::updateGeneral($input['amount'] , $input['cost_start_date'] , $charge);
@@ -150,6 +154,8 @@ class CostController extends Controller
                         }
                     }
                     else{// if direct cost is changed then delete previous direct cost
+
+                        $charge->direct_cost->delete();
                         $charge->delete();
                         if(!$this->addCostHelper($input,$cost)) //adding new cost
                         {
@@ -167,12 +173,27 @@ class CostController extends Controller
                 }
             }
             else{//if cost is changed
+                if($cost->charge_type=='direct')
+                {
+                    $charge->direct_cost->delete();
+                }
                 $charge->delete();
+
+                $cost->charge_type=$input['charge_type'];
 
                 if(!$this->addCostHelper($input,$cost)) //adding new cost
                 {
-                    $cost->save();
-                    $cost->charge;
+                    if(isset($input['name']))
+                    {
+                        $cost->charge->name=$input['name'];
+                        $cost->save();
+                        $cost->charge->direct_cost;
+                    }
+                    else{
+                        $cost->save();
+                        $cost->charge;
+                    }
+
                 }
             }
             return response()->success($cost,'Cost Updated Successfully');
