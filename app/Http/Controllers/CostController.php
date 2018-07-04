@@ -157,7 +157,7 @@ class CostController extends Controller
 
                         $charge->direct_cost->delete();
                         $charge->delete();
-                        if(!$this->addCostHelper($input,$cost)) //adding new cost
+                        if($this->addCostHelper($input,$cost)) //adding new cost
                         {
                             if(isset($input['name']))
                             {
@@ -179,9 +179,13 @@ class CostController extends Controller
                 }
                 $charge->delete();
 
+
+                if($this->addCostHelper($input,$cost)) //adding new cost
+
                 $cost->charge_type=$input['charge_type'];
 
-                if(!$this->addCostHelper($input,$cost)) //adding new cost
+                if($this->addCostHelper($input,$cost)) //adding new cost
+
                 {
                     if(isset($input['name']))
                     {

@@ -16,10 +16,11 @@ class CreateLoan extends Migration
         if (!Schema::hasTable('loan')) {
             Schema::create('loan', function (Blueprint $table) {
                 $table->increments('id');
-                $table->string('receive_date' , '50');
-                $table->integer('receive_amount');
+                $table->date('receive_date');
+                $table->integer('remaining_amount')->nullable();
+                $table->integer('amount');
                 $table->integer('interest_rate');
-                $table->integer('interest_months');
+                $table->integer('interest_months')->nullable();
 
                 $table->integer('created_by')->nullable();
 

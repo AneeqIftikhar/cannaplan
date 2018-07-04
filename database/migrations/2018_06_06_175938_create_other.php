@@ -18,7 +18,6 @@ class CreateOther extends Migration
                 $table->increments('id');
                 $table->float('annual_interest');
                 $table->boolean('is_payable');
-                $table->date('start_date');
 
                 $table->integer('created_by')->nullable();
 
