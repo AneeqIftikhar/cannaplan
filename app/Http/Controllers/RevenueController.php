@@ -86,7 +86,7 @@ class RevenueController extends Controller
             $revenue=new Revenue();
             $revenue->name=$input['name'];
             $revenue->forecast_id=$forecast->id;
-            if(!$this->addRevenueHelper($input,$revenue))
+            if($this->addRevenueHelper($input,$revenue))
             {
                 $revenue->save();
             }
@@ -144,6 +144,11 @@ class RevenueController extends Controller
             //if user has a revenuable already set
             if($revenuable=$revenue->revenuable)
             {
+                if(isset($input['name']))
+                {
+                    $revenue->name=$input['name'];
+                    $revenue->save();
+                }
                 //if the revenuable is same then it will be updated
                 //else previous will be deleted and new will be inserted
                 if(isset($input['revenue_type']) && $revenue->revenuable_type==$input['revenue_type'])
@@ -170,7 +175,7 @@ class RevenueController extends Controller
                 {
                     //deleting previous revenuable
                     $revenuable->delete();
-                    if(!$this->addRevenueHelper($input,$revenue)) //adding new revenuable
+                    if($this->addRevenueHelper($input,$revenue)) //adding new revenuable
                     {
                         if(isset($input['name']))
                         {
@@ -183,7 +188,7 @@ class RevenueController extends Controller
             else//revenuable was nerver set
             {
                 //setting a new revenuable
-                if(!$this->addRevenueHelper($input,$revenue))
+                if($this->addRevenueHelper($input,$revenue))
                 {
                     if(isset($input['name']))
                     {

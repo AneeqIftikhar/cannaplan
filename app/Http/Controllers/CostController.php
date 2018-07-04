@@ -151,7 +151,7 @@ class CostController extends Controller
                     }
                     else{// if direct cost is changed then delete previous direct cost
                         $charge->delete();
-                        if(!$this->addCostHelper($input,$cost)) //adding new cost
+                        if($this->addCostHelper($input,$cost)) //adding new cost
                         {
                             if(isset($input['name']))
                             {
@@ -169,7 +169,7 @@ class CostController extends Controller
             else{//if cost is changed
                 $charge->delete();
 
-                if(!$this->addCostHelper($input,$cost)) //adding new cost
+                if($this->addCostHelper($input,$cost)) //adding new cost
                 {
                     $cost->save();
                     $cost->charge;

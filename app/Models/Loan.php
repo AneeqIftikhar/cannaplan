@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property string $receive_date
@@ -29,9 +31,20 @@ class Loan extends Model
     /**
      * @var array
      */
-    protected $fillable = ['receive_date', 'receive_amount', 'interest_rate', 'interest_months'];
+    protected $fillable = ['receive_date', 'amount', 'interest_rate', 'interest_months', 'remaining_amount'];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+    }
+
     public function funds()
     {
-        return $this->morphMany('CannaPlan\Models\Financing', 'fund');
+        return $this->morphMany('CannaPlan\Models\Financing', 'fundable');
     }
 }

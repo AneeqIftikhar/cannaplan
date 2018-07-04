@@ -22,8 +22,8 @@ class CreateFinancing extends Migration
 
                 $table->string('name','255');
 
-                $table->integer('fund_id');
-                $table->string('fund_type','255');
+                $table->integer('fundable_id');
+                $table->string('fundable_type','255');
 
                 $table->integer('created_by')->nullable();
 

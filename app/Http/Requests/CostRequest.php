@@ -37,6 +37,10 @@ class CostRequest extends FormRequest
                 $rules['revenue_id'] = 'required';
                 $rules['amount'] = 'required';
             }
+            else
+            {
+                $rules['direct_cost_type'] = 'required';
+            }
         }
         else if ($this->request->has('charge_type') && $this->request->get('charge_type')=='labor')
         {
@@ -47,6 +51,10 @@ class CostRequest extends FormRequest
             $rules['start_date'] = 'required';
             $rules['staff_role_type'] = 'required|max:100';
             $rules['annual_raise_percent'] = 'required';
+        }
+        else
+        {
+            $rules['charge_type'] = 'required';
         }
         return $rules;
     }

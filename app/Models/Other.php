@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property float $annual_interest
@@ -32,6 +34,16 @@ class Other extends Model
      */
     protected $fillable = ['annual_interest', 'is_payable', 'start_date'];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+    }
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -49,6 +61,6 @@ class Other extends Model
     }
     public function funds()
     {
-        return $this->morphMany('CannaPlan\Models\Financing', 'fund');
+        return $this->morphMany('CannaPlan\Models\Financing', 'fundable');
     }
 }

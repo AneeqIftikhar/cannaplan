@@ -18,7 +18,8 @@ class CreateInvestment extends Migration
                 $table->increments('id');
                 $table->string('amount_type' , '50');
                 $table->integer('amount');
-                $table->date('start_date');
+                $table->string('payable_span' , '10')->nullable();//payment per month/year
+                $table->date('investment_start_date');
 
                 $table->integer('created_by')->nullable();
 
