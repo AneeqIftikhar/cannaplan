@@ -27,7 +27,7 @@ class CreatePitch extends Migration
                 $table->string('headline','255')->nullable();
                 $table->string('problem','255')->nullable();
                 $table->string('solution','255')->nullable();
-                $table->integer('funds_required')->nullable();
+                $table->bigInteger('funds_required')->nullable();
                 $table->string('funds_usage_description','255')->nullable();
                 $table->string('sales_channels','255')->nullable();
                 $table->string('marketing_activities','255')->nullable();

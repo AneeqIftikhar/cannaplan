@@ -98,6 +98,16 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function login(Request $request){
+
+        $validator = Validator::make($request->all(),  [
+            'email' => 'required|email|max:100',
+            'password' => 'required|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->fail($validator->errors());
+        }
+
         $user = User::get_user_from_email( request('email'));
         if(!$user) {
             return response()->fail('Email Not Found');
@@ -154,10 +164,10 @@ class UserController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(),  [
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'email' => 'required|email',
-            'password' => 'required',
+            'first_name' => 'required|max:100',
+            'last_name' => 'required|max:100',
+            'email' => 'required|email|max:100',
+            'password' => 'required|max:100',
         ]);
 
         if ($validator->fails()) {

@@ -87,6 +87,7 @@ class PitchController extends Controller
             $pitch->milestones;
             $pitch->targetMarketGraphs;
             $pitch->teamRoles;
+            $pitch->company->currency;
             return response()->success($pitch,'Pitch Fetched Successfully');
 
         }
