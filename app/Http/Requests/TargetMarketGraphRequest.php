@@ -26,8 +26,8 @@ class TargetMarketGraphRequest extends FormRequest
         return [
             'pitch_id' => 'required',
             'segment_name' => 'required|max:50',
-            'segment_prospect' => 'required',
-            'prospect_cost' => 'required'
+            'segment_prospect' => 'required|numeric|min:0',
+            'prospect_cost' => 'required|numeric|min:0'
         ];
     }
 }
