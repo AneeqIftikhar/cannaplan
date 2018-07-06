@@ -79,6 +79,41 @@ class Financing extends Model
         $investment=Investment::create(['amount_type' => $amount_type, 'investment_start_date'=>$investment_start_date ,'amount' => $amount , 'payable_span'=>$payable_span]);
         return $investment;
     }
+    Public static function addOther($annual_interest , $is_payable)
+    {
+        $other=Other::create(['annual_interest'=>$annual_interest , 'is_payable'=>$is_payable]);
+        return $other;
+    }
+    Public static function addFunding($input , $other)
+    {
+        $array=array();
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $array['amount_m_'.$i]=$input['amount_m_'.$i];
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $array['amount_y_'.$i]=$input['amount_y_'.$i];
+        }
+        $other->fundings()->create($array);
+
+        return $other;
+    }
+    Public static function addPayment($input , $other)
+    {
+        $array=array();
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $array['amount_m_'.$i]=$input['amount_m_'.$i];
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $array['amount_y_'.$i]=$input['amount_y_'.$i];
+        }
+        $other->payments()->create($array);
+
+        return $other;
+    }
 
     public static function updateLoan($receive_date, $amount, $interest_rate, $interest_months , $remaining_amount , $fundable)
     {
@@ -88,5 +123,89 @@ class Financing extends Model
     {
         $fundable->update(['amount_type' => $amount_type, 'investment_start_date'=>$investment_start_date ,'amount' => $amount , 'payable_span'=>$payable_span]);
     }
+    public static function updateOther($annual_interest , $is_payable , $fundable)
+    {
+        $fundable->update(['annual_interest'=>$annual_interest , 'is_payable'=>$is_payable]);
+    }
+    Public static function updateFunding($input , $other)
+    {
+        $array=array();
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $array['amount_m_'.$i]=$input['amount_m_'.$i];
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $array['amount_y_'.$i]=$input['amount_y_'.$i];
+        }
+        $other->fundings()->update($array);
+
+        return $other;
+    }
+    Public static function updatePayment($input , $other)
+    {
+        $array=array();
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $array['amount_m_'.$i]=$input['amount_m_'.$i];
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $array['amount_y_'.$i]=$input['amount_y_'.$i];
+        }
+        $other->payments()->update($array);
+
+        return $other;
+    }
+
+    public static function getFinancingByForecastId($id)
+    {
+        $forecast=Forecast::where('id',$id)->with(['company','revenues','revenues.revenuable'])->first();
+        $total_arr=array();
+        for ($j = 1; $j < 13; $j++) {
+            $total_arr['amount_m_' . $j] = 0;
+        }
+        for ($j = 1; $j < 6; $j++) {
+            $total_arr['amount_y_' . $j] = 0;
+        }
+        for ($i=0;$i<count($forecast->revenues);$i++)
+        {
+            if(isset($forecast->revenues[$i]->revenuable_type)) {
+                if ($forecast->revenues[$i]->revenuable_type !== 'revenue_only') {
+                    $multiplyer = 1;
+                    $multiplicand = 1;
+                    if ($forecast->revenues[$i]->revenuable_type == 'unit_sale') {
+                        $multiplyer = $forecast->revenues[$i]['revenuable']['unit_sold'];
+                        $multiplicand = $forecast->revenues[$i]['revenuable']['unit_price'];
+                    } else {
+                        $multiplyer = $forecast->revenues[$i]['revenuable']['hour'];
+                        $multiplicand = $forecast->revenues[$i]['revenuable']['hourly_rate'];
+                    }
+                    //$forecast->revenues[$i]['revenuable']['amount_m_1'] = 250;
+                    for ($j = 1; $j < 13; $j++) {
+                        $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = $multiplyer * $multiplicand;
+                    }
+                    $total = $multiplyer * $multiplicand * 12;
+                    $forecast->revenues[$i]['revenuable']['amount_y_1'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_2'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_3'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_4'] = $total;
+                    $forecast->revenues[$i]['revenuable']['amount_y_5'] = $total;
+                }
+                for ($j = 1; $j < 13; $j++) {
+                    $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_m_' . $j];
+                }
+                for ($j = 1; $j < 6; $j++) {
+                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_y_' . $j];
+                }
+
+
+            }
+
+        }
+        $forecast['total'] = $total_arr;
+        return $forecast;
+    }
+
 }
 

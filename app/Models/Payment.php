@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property int $other_id
@@ -43,7 +45,17 @@ class Payment extends Model
     /**
      * @var array
      */
-    protected $fillable = ['other_id', 'start_date', 'amount_m_1', 'amount_m_2', 'amount_m_3', 'amount_m_4', 'amount_m_5', 'amount_m_6', 'amount_m_7', 'amount_m_8', 'amount_m_9', 'amount_m_10', 'amount_m_11', 'amount_m_12', 'amount_y_1', 'amount_y_2', 'amount_y_3'];
+    protected $fillable = ['other_id', 'start_date', 'amount_m_1', 'amount_m_2', 'amount_m_3', 'amount_m_4', 'amount_m_5', 'amount_m_6', 'amount_m_7', 'amount_m_8', 'amount_m_9', 'amount_m_10', 'amount_m_11', 'amount_m_12', 'amount_y_1', 'amount_y_2', 'amount_y_3', 'amount_y_4', 'amount_y_5'];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

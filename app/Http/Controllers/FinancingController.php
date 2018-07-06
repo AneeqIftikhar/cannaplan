@@ -56,6 +56,31 @@ class FinancingController extends Controller
         }
         else if(isset($input['fund_type']) && $input['fund_type']=="other")
         {
+            $other=Financing::addOther($input['annual_interest'] , $input['is_payable']);
+
+            $array=array();
+            for($i=1;$i<13;$i++)
+            {
+                $array['amount_m_'.$i]=$input['funding_amount_m_'.$i];
+            }
+            for($i=1;$i<6;$i++)
+            {
+                $array['amount_y_'.$i]=$input['funding_amount_y_'.$i];
+            }
+            $other=Financing::addFunding($array,$other);
+
+            $array=array();
+            for($i=1;$i<13;$i++)
+            {
+                $array['amount_m_'.$i]=$input['payment_amount_m_'.$i];
+            }
+            for($i=1;$i<6;$i++)
+            {
+                $array['amount_y_'.$i]=$input['payment_amount_y_'.$i];
+            }
+            $other=Financing::addPayment($array,$other);
+
+            $other->funds()->save($fund);
 
             return true;
         }
@@ -115,8 +140,8 @@ class FinancingController extends Controller
         $forecast=Forecast::find($id);
         if($forecast && $forecast->created_by==$user->id)
         {
-            $forecast=Financing::getFinancingByForecastId($id);
-            return response()->success($forecast,'Financing Fetched Successfully');
+            $financing=Financing::getFinancingByForecastId($id);
+            return response()->success($financing,'Financing Fetched Successfully');
         }
         else
         {
@@ -169,7 +194,29 @@ class FinancingController extends Controller
 
                 } else if(isset($input['fund_type']) && $input['fund_type'] == "other") {
 
+                    $other=Financing::updateOther($input['annual_interest'] , $input['is_payable'] , $fundable);
 
+                    $array=array();
+                    for($i=1;$i<13;$i++)
+                    {
+                        $array['amount_m_'.$i]=$input['funding_amount_m_'.$i];
+                    }
+                    for($i=1;$i<6;$i++)
+                    {
+                        $array['amount_y_'.$i]=$input['funding_amount_y_'.$i];
+                    }
+                    $other=Financing::updateFunding($array,$fundable);
+
+                    $array=array();
+                    for($i=1;$i<13;$i++)
+                    {
+                        $array['amount_m_'.$i]=$input['payment_amount_m_'.$i];
+                    }
+                    for($i=1;$i<6;$i++)
+                    {
+                        $array['amount_y_'.$i]=$input['payment_amount_y_'.$i];
+                    }
+                    $other=Financing::updatePayment($array,$fundable);
                 }
             }
             else
