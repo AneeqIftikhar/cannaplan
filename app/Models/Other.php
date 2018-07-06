@@ -42,6 +42,16 @@ class Other extends Model
         static::creating(function ($table) {
             $table->created_by = Auth::user()->id;
         });
+
+        static::deleting(function ($table) {
+
+            foreach ($table->fundings()->get() as $funding) {
+                $funding->delete();
+            }
+            foreach ($table->payments()->get() as $payment) {
+                $payment->delete();
+            }
+        });
     }
 
     /**

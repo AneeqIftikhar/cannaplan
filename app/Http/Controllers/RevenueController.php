@@ -124,8 +124,8 @@ class RevenueController extends Controller
         $forecast=Forecast::find($id);
         if($forecast && $forecast->created_by==$user->id)
         {
-            $forecast=Revenue::getRevenueByForecastId($id);
-            return response()->success($forecast,'Revenue Fetched Successfully');
+            $revenue=Revenue::getRevenueByForecastId($id);
+            return response()->success($revenue,'Revenue Fetched Successfully');
         }
         else
         {
