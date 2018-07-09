@@ -20,23 +20,23 @@ class CreatePayment extends Migration
                 $table->integer('other_id')->unsigned();
                 $table->foreign('other_id')->references('id')->on('other')->onDelete('cascade');
 
-                $table->integer('amount_m_1')->default(0);
-                $table->integer('amount_m_2')->default(0);
-                $table->integer('amount_m_3')->default(0);
-                $table->integer('amount_m_4')->default(0);
-                $table->integer('amount_m_5')->default(0);
-                $table->integer('amount_m_6')->default(0);
-                $table->integer('amount_m_7')->default(0);
-                $table->integer('amount_m_8')->default(0);
-                $table->integer('amount_m_9')->default(0);
-                $table->integer('amount_m_10')->default(0);
-                $table->integer('amount_m_11')->default(0);
-                $table->integer('amount_m_12')->default(0);
-                $table->integer('amount_y_1')->default(0);
-                $table->integer('amount_y_2')->default(0);
-                $table->integer('amount_y_3')->default(0);
-                $table->integer('amount_y_4')->default(0);
-                $table->integer('amount_y_5')->default(0);
+                $table->integer('amount_m_1')->nullable();
+                $table->integer('amount_m_2')->nullable();
+                $table->integer('amount_m_3')->nullable();
+                $table->integer('amount_m_4')->nullable();
+                $table->integer('amount_m_5')->nullable();
+                $table->integer('amount_m_6')->nullable();
+                $table->integer('amount_m_7')->nullable();
+                $table->integer('amount_m_8')->nullable();
+                $table->integer('amount_m_9')->nullable();
+                $table->integer('amount_m_10')->nullable();
+                $table->integer('amount_m_11')->nullable();
+                $table->integer('amount_m_12')->nullable();
+                $table->integer('amount_y_1')->nullable();
+                $table->integer('amount_y_2')->nullable();
+                $table->integer('amount_y_3')->nullable();
+                $table->integer('amount_y_4')->nullable();
+                $table->integer('amount_y_5')->nullable();
 
                 $table->integer('created_by')->nullable();
 

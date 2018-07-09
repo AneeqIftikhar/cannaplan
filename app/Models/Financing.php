@@ -2,10 +2,12 @@
 
 namespace CannaPlan\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
+use function Sodium\add;
 
 Relation::morphMap([
     'loan'=>'CannaPlan\Models\Loan',
@@ -158,53 +160,100 @@ class Financing extends Model
         return $other;
     }
 
+    /*
+     *  double original_value = 103;
+	double current_value = original_value;
+    double number_of_periods = 11;
+	double new_value;
+	double dep = original_value / number_of_periods;
+	for (int i = 1; i <=number_of_periods; i++)
+	{
+		new_value = current_value - dep;
+		current_value = new_value;
+		cout << dep << " - " << round(current_value) << endl;
+     * */
     public static function getFinancingByForecastId($id)
     {
-        $forecast=Forecast::where('id',$id)->with(['company','revenues','revenues.revenuable'])->first();
-        $total_arr=array();
+        $forecast=Forecast::where('id',$id)->with(['company','financings','financings.fundable'])->first();
+        return $forecast;
+
+        $start_of_forecast = new Carbon( $forecast->company->start_of_forecast );
+
+        $financing=array();
+
+        $amount_received_arr=array();
         for ($j = 1; $j < 13; $j++) {
-            $total_arr['amount_m_' . $j] = 0;
+            $amount_received_arr['amount_m_' . $j] = null;
         }
         for ($j = 1; $j < 6; $j++) {
-            $total_arr['amount_y_' . $j] = 0;
+            $amount_received_arr['amount_y_' . $j] = null;
         }
-        for ($i=0;$i<count($forecast->revenues);$i++)
+
+        $temp_arr=array();
+        for ($j = 1; $j < 13; $j++) {
+            $temp_arr['amount_m_' . $j] = null;
+        }
+        for ($j = 1; $j < 6; $j++) {
+            $temp_arr['amount_y_' . $j] = null;
+        }
+
+        //$amount_received_arr[0]=['loan'=>$temp_arr];
+        //$financing[0]=['amount_received'=>$amount_received_arr];
+
+
+        //return $forecast;
+
+        for ($i=0;$i<count($forecast->financings);$i++)
         {
-            if(isset($forecast->revenues[$i]->revenuable_type)) {
-                if ($forecast->revenues[$i]->revenuable_type !== 'revenue_only') {
-                    $multiplyer = 1;
-                    $multiplicand = 1;
-                    if ($forecast->revenues[$i]->revenuable_type == 'unit_sale') {
-                        $multiplyer = $forecast->revenues[$i]['revenuable']['unit_sold'];
-                        $multiplicand = $forecast->revenues[$i]['revenuable']['unit_price'];
-                    } else {
-                        $multiplyer = $forecast->revenues[$i]['revenuable']['hour'];
-                        $multiplicand = $forecast->revenues[$i]['revenuable']['hourly_rate'];
+            if(isset($forecast->financings[$i]->fundable)) {
+                if ($forecast->financings[$i]->fundable == 'loan') {
+
+                    $receive_date=new Carbon($forecast->financings[$i]->fundable->receive_date);
+                    $temp_arr=array();
+                    if($receive_date->year>$start_of_forecast->year)
+                    {
+                        for($j=1 ; $j<6 ; $j++)
+                        {
+                            if(($receive_date->year-$start_of_forecast->year)+1==$j)
+                            {
+                                $temp_arr['amount_y_'.$j]=$forecast->financings[$i]->fundable->amount;
+                                $amount_received_arr['amount_y_'.$j]=$temp_arr['amount_y_'.$j];
+                                if($amount_received_arr['amount_y_'.$j]==null)
+                                {
+                                    $amount_received_arr['amount_y_'.$j]=$temp_arr['amount_y_'.$j];
+                                }
+                                else{
+                                    $amount_received_arr['amount_y_'.$j]=$amount_received_arr['amount_y_'.$j]+$temp_arr['amount_y_'.$j];
+                                }
+                            }
+                        }
                     }
-                    //$forecast->revenues[$i]['revenuable']['amount_m_1'] = 250;
-                    for ($j = 1; $j < 13; $j++) {
-                        $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = $multiplyer * $multiplicand;
+                    else{
+
+                        for ($j = 1; $j < 13; $j++) {
+                            if(($receive_date->month-$start_of_forecast->month)+1==$j)
+                            {
+                                $temp_arr['amount_m_'.$j]=$forecast->financings[$i]->fundable->amount;
+                                if($amount_received_arr['amount_m_'.$j]==null)
+                                {
+                                    $amount_received_arr['amount_m_'.$j]=$temp_arr['amount_m_'.$j];
+                                }
+                                else{
+                                    $amount_received_arr['amount_m_'.$j]=$amount_received_arr['amount_m_'.$j]+$temp_arr['amount_m_'.$j];
+                                }
+                            }
+                        }
                     }
-                    $total = $multiplyer * $multiplicand * 12;
-                    $forecast->revenues[$i]['revenuable']['amount_y_1'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_2'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_3'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_4'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_5'] = $total;
+
+                    $amount_received_arr[$i]=[$forecast->financings[$i]->name => $temp_arr];
                 }
-                for ($j = 1; $j < 13; $j++) {
-                    $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_m_' . $j];
-                }
-                for ($j = 1; $j < 6; $j++) {
-                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_y_' . $j];
-                }
+
 
 
             }
 
         }
-        $forecast['total'] = $total_arr;
-        return $forecast;
+        return $financing;
     }
 
 }

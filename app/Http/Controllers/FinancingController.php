@@ -59,24 +59,66 @@ class FinancingController extends Controller
             $other=Financing::addOther($input['annual_interest'] , $input['is_payable']);
 
             $array=array();
-            for($i=1;$i<13;$i++)
+            $total=0;
+            for($i=1 ; $i<13 ; $i++)
             {
-                $array['amount_m_'.$i]=$input['funding_amount_m_'.$i];
+                if(isset($input['funding_amount_m_'.$i]))
+                {
+                    $array['amount_m_'.$i]=null;
+                }
+                else
+                {
+                    $array['amount_m_'.$i]=$input['funding_amount_m_'.$i];
+                    $total=$total+$array['amount_m_'.$i];
+                }
             }
-            for($i=1;$i<6;$i++)
+            for($i=1 ; $i<6 ; $i++)
             {
-                $array['amount_y_'.$i]=$input['funding_amount_y_'.$i];
+                if($i==1)
+                {
+                    $array['amount_y_'.$i]=$total;
+                }
+
+                if(isset($input['funding_amount_y_'.$i]))
+                {
+                    $array['amount_y_'.$i]=null;
+                }
+                else
+                {
+                    $array['amount_y_'.$i]=$input['funding_amount_y_'.$i];
+                }
             }
             $other=Financing::addFunding($array,$other);
 
             $array=array();
-            for($i=1;$i<13;$i++)
+            $total=0;
+            for($i=1 ; $i<13 ; $i++)
             {
-                $array['amount_m_'.$i]=$input['payment_amount_m_'.$i];
+                if(isset($input['payment_amount_m_'.$i]))
+                {
+                    $array['amount_m_'.$i]=null;
+                }
+                else
+                {
+                    $array['amount_m_'.$i]=$input['payment_amount_m_'.$i];
+                    $total=$total+$array['amount_m_'.$i];
+                }
             }
-            for($i=1;$i<6;$i++)
+            for($i=1 ; $i<6 ; $i++)
             {
-                $array['amount_y_'.$i]=$input['payment_amount_y_'.$i];
+                if($i==1)
+                {
+                    $array['amount_y_'.$i]=$total;
+                }
+
+                if(isset($input['payment_amount_m_'.$i]))
+                {
+                    $array['amount_y_'.$i]=null;
+                }
+                else
+                {
+                    $array['amount_y_'.$i]=$input['payment_amount_m_'.$i];
+                }
             }
             $other=Financing::addPayment($array,$other);
 
