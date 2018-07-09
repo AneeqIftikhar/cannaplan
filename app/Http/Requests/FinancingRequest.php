@@ -66,42 +66,6 @@ class FinancingRequest extends FormRequest
             $rules['annual_interest'] = 'required';
             $rules['is_payable'] = 'required';
 
-            $rules['funding_amount_m_1']='required';
-            $rules['funding_amount_m_2']='required';
-            $rules['funding_amount_m_3']='required';
-            $rules['funding_amount_m_4']='required';
-            $rules['funding_amount_m_5']='required';
-            $rules['funding_amount_m_6']='required';
-            $rules['funding_amount_m_7']='required';
-            $rules['funding_amount_m_8']='required';
-            $rules['funding_amount_m_9']='required';
-            $rules['funding_amount_m_10']='required';
-            $rules['funding_amount_m_11']='required';
-            $rules['funding_amount_m_12']='required';
-            $rules['funding_amount_y_1']='required';
-            $rules['funding_amount_y_2']='required';
-            $rules['funding_amount_y_3']='required';
-            $rules['funding_amount_y_4']='required';
-            $rules['funding_amount_y_5']='required';
-
-            $rules['payment_amount_m_1']='required';
-            $rules['payment_amount_m_2']='required';
-            $rules['payment_amount_m_3']='required';
-            $rules['payment_amount_m_4']='required';
-            $rules['payment_amount_m_5']='required';
-            $rules['payment_amount_m_6']='required';
-            $rules['payment_amount_m_7']='required';
-            $rules['payment_amount_m_8']='required';
-            $rules['payment_amount_m_9']='required';
-            $rules['payment_amount_m_10']='required';
-            $rules['payment_amount_m_11']='required';
-            $rules['payment_amount_m_12']='required';
-            $rules['payment_amount_y_1']='required';
-            $rules['payment_amount_y_2']='required';
-            $rules['payment_amount_y_3']='required';
-            $rules['payment_amount_y_4']='required';
-            $rules['payment_amount_y_5']='required';
-
         }
         else
         {
