@@ -58,7 +58,19 @@ class RevenueController extends Controller
                 $array=array();
                 for($i=1;$i<13;$i++)
                 {
-                    $array['amount_m_'.$i]=$input['amount_m_'.$i];
+                    if(isset($input['amount_m_'.$i]))
+                    {
+                        $array['amount_m_'.$i]=$input['amount_m_'.$i];
+                    }
+
+                }
+                for($i=1;$i<6;$i++)
+                {
+                    if(isset($input['amount_y_'.$i]))
+                    {
+                        $array['amount_y_'.$i]=$input['amount_y_'.$i];
+                    }
+
                 }
                 $revenue_only=Revenue::addRevenueOnlyVarying($input['revenue_start_date'],$array);
                 $revenue_only->revenues()->save($revenue);
@@ -162,7 +174,20 @@ class RevenueController extends Controller
                         if ($input['type'] == "varying") {
                             $array = array();
                             for ($i = 1; $i < 13; $i++) {
-                                $array['amount_m_' . $i] = $input['amount_m_' . $i];
+                                if(isset($input['amount_m_' . $i]))
+                                {
+                                    $array['amount_m_' . $i] = $input['amount_m_' . $i];
+                                }
+
+
+                            }
+                            for ($i = 1; $i < 6; $i++) {
+                                if(isset($input['amount_y_' . $i]))
+                                {
+                                    $array['amount_y_' . $i] = $input['amount_y_' . $i];
+                                }
+
+
                             }
                             $revenue_only = Revenue::updateRevenueOnlyVarying($input['revenue_start_date'], $array,$revenuable);
                         } else {

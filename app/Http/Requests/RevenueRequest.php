@@ -43,18 +43,18 @@ class RevenueRequest extends FormRequest
             if($this->request->has('type') && $this->request->get('type')=='varying')
             {
                 $rules['revenue_start_date'] = 'required';
-                $rules['amount_m_1'] = 'required';
-                $rules['amount_m_2'] = 'required';
-                $rules['amount_m_3'] = 'required';
-                $rules['amount_m_4'] = 'required';
-                $rules['amount_m_5'] = 'required';
-                $rules['amount_m_6'] = 'required';
-                $rules['amount_m_7'] = 'required';
-                $rules['amount_m_8'] = 'required';
-                $rules['amount_m_9'] = 'required';
-                $rules['amount_m_10'] = 'required';
-                $rules['amount_m_11'] = 'required';
-                $rules['amount_m_12'] = 'required';
+                $rules['amount_m_1'] = 'numeric';
+                $rules['amount_m_2'] = 'numeric';
+                $rules['amount_m_3'] = 'numeric';
+                $rules['amount_m_4'] = 'numeric';
+                $rules['amount_m_5'] = 'numeric';
+                $rules['amount_m_6'] = 'numeric';
+                $rules['amount_m_7'] = 'numeric';
+                $rules['amount_m_8'] = 'numeric';
+                $rules['amount_m_9'] = 'numeric';
+                $rules['amount_m_10'] = 'numeric';
+                $rules['amount_m_11'] = 'numeric';
+                $rules['amount_m_12'] = 'numeric';
 
             }
             else if($this->request->has('type') && $this->request->get('type')=='constant')
