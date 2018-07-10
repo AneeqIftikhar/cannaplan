@@ -38,7 +38,7 @@ class PitchController extends Controller
         if($pitch && $user->id == $pitch->created_by) {
             $input_array=$request->all();
             if ($request->hasFile('logo')) {
-                $input_array['logo']=Helper::uploadImage($request->logo);
+                $input_array['logo']=str_replace('\\', '/', Helper::uploadImage($request->logo));
             }
             //$pitch=Pitch::where('id', $id)->update($input_array);
 
@@ -147,6 +147,37 @@ class PitchController extends Controller
                 return response()->fail('Pitch Not Published');
             }
 
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+    }
+
+    public function getPitchByCompanyForPDF($id)
+    {
+        $user=Auth::user();
+        $company=Company::find($id);
+        if($company && $user->id == $company->created_by) {
+            $pitch = $company->pitches[0];
+            if($pitch->logo!=null)
+            {
+                $pitch['image_base64']=base64_encode(file_get_contents($pitch->logo));
+            }
+
+            $pitch->competitors;
+            $pitch->milestones;
+            $pitch->targetMarketGraphs;
+            $pitch->teamRoles;
+            foreach ($pitch->teamRoles as $teamRole)
+            {
+                if($teamRole->image!=null)
+                {
+                    $teamRole['image_base64']=base64_encode(file_get_contents($teamRole->image));
+                }
+            }
+
+            return response()->success($pitch,'Pitch Fetched Successfully');
 
         }
         else{
