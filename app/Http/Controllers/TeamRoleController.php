@@ -76,10 +76,18 @@ class TeamRoleController extends Controller
         if($team_role && $team_role->created_by==$user->id) {
             $input_array=$request->all();
             if ($request->hasFile('image')) {
-//                Helper::deleteImage($team_role->image);
+                if($team_role->image!=null)
+                {
+                    Helper::deleteImage($team_role->image);
+                }
+
                 $input_array['image']=Helper::uploadImage($request->image);
             }
-            //$team_role=TeamRole::where('id', $id)->update($input_array);
+            else if($team_role->image!=null)
+            {
+                Helper::deleteImage($team_role->image);
+                $team_role->image=null;
+            }
 
             $team_role->update($input_array);
 
@@ -139,8 +147,10 @@ class TeamRoleController extends Controller
 
         $team_role=TeamRole::find($id);
         if($team_role && $user->id == $team_role->created_by) {
-            if($team_role->image &&  mage($team_role->image)) {
-
+            if($team_role->image) {
+                Helper::deleteImage($team_role->image);
+                $team_role->image=null;
+                $team_role->save();
                 return response()->success($team_role,'Image Deleted Successfully');
             }
             else{
@@ -165,6 +175,7 @@ class TeamRoleController extends Controller
         $pitch = $team_role->pitch;
         if($team_role && $team_role->created_by==$user->id) {
             $deleted_order=$team_role->order;
+            Helper::deleteImage($team_role->image);
             $team_role = TeamRole::destroy($id);
             $all_team_roles=$pitch->teamRoles;
             foreach ($all_team_roles as $team_role)

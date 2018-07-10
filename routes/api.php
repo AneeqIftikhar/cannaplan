@@ -40,6 +40,7 @@ Route::group(['middleware' => ['cors']], function () {
         Route::post('update_pitch/{id}','PitchController@updatePitch');
         Route::post('delete_logo/{id}','PitchController@deleteLogo');
         Route::get('get_pitch_by_company/{id}','PitchController@getPitchByCompany');
+        Route::get('get_pitch_by_company_for_pdf/{id}','PitchController@getPitchByCompanyForPDF');
         Route::post('publish_pitch_by_company/{id}','PitchController@publishPitchByCompany');
         Route::post('unpublish_pitch_by_company/{id}','PitchController@unpublishPitchByCompany');
 
