@@ -2,7 +2,11 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Http\Requests\ForecastRequest;
+use CannaPlan\Models\Company;
+use CannaPlan\Models\Forecast;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ForecastController extends Controller
 {
@@ -23,9 +27,26 @@ class ForecastController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ForecastRequest $request)
     {
-        //
+        $user=Auth::user();
+        $company=Company::find($request['company_id']);
+        if($company && $user->id == $company->created_by) {
+            $input = $request->all();
+            $forecast=$company->forecasts()->create($input);
+            if($forecast) {
+                return response()->success($forecast,'Forecast Created Successfully');
+            }
+            else{
+                return response()->fail('Forecast Could Not Be Added');
+            }
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+        
+
+
     }
 
     /**
@@ -36,7 +57,17 @@ class ForecastController extends Controller
      */
     public function show($id)
     {
-        //
+        $user=Auth::user();
+
+        $forecast = Forecast::find($id);
+
+        if($forecast && $user->id==$forecast->created_by) {
+            return response()->success($forecast,'Forecast Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+
     }
 
 
@@ -47,9 +78,35 @@ class ForecastController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function updateForecast(Request $request, $id)
+    public function updateForecast(ForecastRequest $request, $id)
     {
-        //
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id) {
+
+            $forecast->update($request->all());
+
+            return response()->success($forecast,'Forecast Updated Successfully');
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+
+    }
+
+    public static function getForecastByCompany($id)
+    {
+        $user=Auth::user();
+        $company=Company::find($id);
+        if($company && $company->created_by==$user->id) {
+            $forecast=$company->forecasts;
+
+            return response()->success($forecast,'Forecast Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 
     /**
@@ -60,6 +117,16 @@ class ForecastController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id) {
+            $forecast = Forecast::destroy($id);
+
+            return response()->success([],'Forecast Deleted Successfully');
+
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 }

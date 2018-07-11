@@ -30,8 +30,6 @@ Route::group(['middleware' => ['cors']], function () {
     Route::group(['middleware' => ['auth:api']], function () {
         Route::get('details/{id}','UserController@details');
 
-
-
         /*Company Routes*/
         Route::resource('company', 'CompanyController');
         Route::post('update_company/{id}', 'CompanyController@updateCompany');
@@ -46,7 +44,6 @@ Route::group(['middleware' => ['cors']], function () {
 
         /*Plan Routes*/
         Route::resource('plan', 'PlanController');
-
 
         /*Milestone Routes*/
         Route::resource('milestone' , 'MilestoneController');
@@ -92,6 +89,11 @@ Route::group(['middleware' => ['cors']], function () {
         /*Topic Routes*/
         Route::resource('topic', 'TopicController');
         Route::post('update_topic/{id}','TopicController@updateTopic');
+
+        /*Forecast Routes*/
+        Route::resource('forecast', 'ForecastController');
+        Route::post('update_forecast/{id}','ForecastController@updateForecast');
+        Route::get('get_forecast_by_company/{id}' , 'ForecastController@getForecastByCompany');
 
         /*Revenue Routes*/
         Route::resource('revenue', 'RevenueController');

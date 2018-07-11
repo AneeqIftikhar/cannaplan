@@ -23,7 +23,7 @@ class CreateForecast extends Migration
                 $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
 
                 $table->string('name','255');
-                $table->integer('burden_rate');
+                $table->integer('burden_rate')->default(20);
 
                 $table->integer('created_by')->nullable();
 

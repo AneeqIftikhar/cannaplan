@@ -35,7 +35,8 @@ class Forecast extends Model
     /**
      * @var array
      */
-    protected $fillable = ['company_id', 'name', 'burden_rate', 'is_started'];
+    protected $fillable = ['name', 'burden_rate', 'is_started'];
+    protected $gaurded =['id', 'company_id' , 'created_by'];
 
     public static function boot() {
         parent::boot();
@@ -51,6 +52,21 @@ class Forecast extends Model
             }
             foreach ($forecast->assets()->get() as $asset) {
                 $asset->delete();
+            }
+            foreach ($forecast->costs()->get() as $cost) {
+                $cost->delete();
+            }
+            foreach ($forecast->dividends()->get() as $dividend) {
+                $dividend->delete();
+            }
+            foreach ($forecast->expenses()->get() as $expense) {
+                $expense->delete();
+            }
+            foreach ($forecast->financings()->get() as $finance) {
+                $finance->delete();
+            }
+            foreach ($forecast->taxes()->get() as $tax) {
+                $tax->delete();
             }
         });
     }
