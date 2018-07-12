@@ -177,6 +177,15 @@ class Financing extends Model
         $short_term=array();
         $long_term=array();
 
+        $amount_received_temp=array();
+        $payment_temp=array();
+        $short_term_temp=array();
+        $long_term_temp=array();
+
+        $sum_temp=0;
+        $sum_temp_IP=0;
+        $sum_temp_PP=0;
+
         for ($j = 1; $j < 13; $j++) {
             $amount_received_arr['amount_m_' . $j] = null;
 
@@ -187,6 +196,11 @@ class Financing extends Model
             $balance['amount_m_' . $j] = null;
             $short_term['amount_m_' . $j] = null;
             $long_term['amount_m_' . $j] = null;
+
+            $amount_received_temp['amount_m_' . $j] = null;
+            $payment_temp['amount_m_' . $j] = null;
+            $short_term_temp['amount_m_' . $j] = null;
+            $long_term_temp['amount_m_' . $j] = null;
         }
         for ($j = 1; $j < 6; $j++) {
             $amount_received_arr['amount_y_' . $j] = null;
@@ -198,19 +212,7 @@ class Financing extends Model
             $balance['amount_y_' . $j] = null;
             $short_term['amount_y_' . $j] = null;
             $long_term['amount_y_' . $j] = null;
-        }
 
-        $amount_received_temp=array();
-        $payment_temp=array();
-        $short_term_temp=array();
-        $long_term_temp=array();
-        for ($j = 1; $j < 13; $j++) {
-            $amount_received_temp['amount_m_' . $j] = null;
-            $payment_temp['amount_m_' . $j] = null;
-            $short_term_temp['amount_m_' . $j] = null;
-            $long_term_temp['amount_m_' . $j] = null;
-        }
-        for ($j = 1; $j < 6; $j++) {
             $amount_received_temp['amount_y_' . $j] = null;
             $payment_temp['amount_y_' . $j] = null;
             $short_term_temp['amount_y_' . $j] = null;
@@ -246,18 +248,7 @@ class Financing extends Model
 
                     $receive_date=new Carbon($forecast->financings[$i]->fundable->receive_date);
 
-                    $interest_rate=$forecast->financings[$i]->fundable->interest_rate;
-                    $absolute_interest_rate_monthly=($interest_rate/12)/100;
-                    $monthly_interest=$financing[$i]->fundable->
-
-                    $amount_received_temp=array();
-                    for ($j = 1; $j < 13; $j++) {
-                        $amount_received_temp['amount_m_' . $j] = null;
-                    }
-                    for ($j = 1; $j < 6; $j++) {
-                        $amount_received_temp['amount_y_' . $j] = null;
-                    }
-
+                    //populate ammount received
                     if($receive_date->year>$start_of_forecast->year)
                     {
                         for($j=1 ; $j<6 ; $j++)
@@ -266,13 +257,14 @@ class Financing extends Model
                             {
                                 $amount_received_temp['amount_y_'.$j]=$forecast->financings[$i]->fundable->amount;
                                 $amount_received_arr['amount_y_'.$j]=$amount_received_temp['amount_y_'.$j];
-                                if($amount_received_arr['amount_y_'.$j]==null)
-                                {
-                                    $amount_received_arr['amount_y_'.$j]=$amount_received_temp['amount_y_'.$j];
-                                }
-                                else{
-                                    $amount_received_arr['amount_y_'.$j]=$amount_received_arr['amount_y_'.$j]+$amount_received_temp['amount_y_'.$j];
-                                }
+//                                if($amount_received_arr['amount_y_'.$j]==null)
+//                                {
+//                                    $amount_received_arr['amount_y_'.$j]=$amount_received_temp['amount_y_'.$j];
+//                                }
+//                                else{
+//                                    $amount_received_arr['amount_y_'.$j]=$amount_received_arr['amount_y_'.$j]+$amount_received_temp['amount_y_'.$j];
+//                                }
+                                $amount_received_arr['amount_y_'.$j]=$amount_received_arr['amount_y_'.$j]+$amount_received_temp['amount_y_'.$j];
                             }
                         }
                     }
@@ -281,23 +273,103 @@ class Financing extends Model
                             if(($receive_date->month-$start_of_forecast->month)+1==$j)
                             {
                                 $amount_received_temp['amount_m_'.$j]=$forecast->financings[$i]->fundable->amount;
-                                if($amount_received_arr['amount_m_'.$j]==null)
-                                {
-                                    $amount_received_arr['amount_m_'.$j]=$amount_received_temp['amount_m_'.$j];
-                                }
-                                else{
-                                    $amount_received_arr['amount_m_'.$j]=$amount_received_arr['amount_m_'.$j]+$amount_received_temp['amount_m_'.$j];
-                                }
+//                                if($amount_received_arr['amount_m_'.$j]==null)
+//                                {
+//                                    $amount_received_arr['amount_m_'.$j]=$amount_received_temp['amount_m_'.$j];
+//                                }
+//                                else{
+//                                    $amount_received_arr['amount_m_'.$j]=$amount_received_arr['amount_m_'.$j]+$amount_received_temp['amount_m_'.$j];
+//                                }
+                                $amount_received_arr['amount_m_'.$j]=$amount_received_arr['amount_m_'.$j]+$amount_received_temp['amount_m_'.$j];
                             }
                         }
                     }
-
+                    //storing in amount received array
                     $amount_received_arr[$i]=[$forecast->financings[$i]->name => $amount_received_temp];
+
+                    //Payments Portion
+                    //calculating monthly interest
+                    $interest_rate=$forecast->financings[$i]->fundable->interest_rate;
+                    $absolute_interest_rate_monthly=($interest_rate/12)/100;
+                    $divisor=(1-pow((1+$absolute_interest_rate_monthly) , ($forecast->financings[$i]->fundable->interest_months*-1)));
+                    $dividend=$forecast->financings[$i]->fundable->amount*$absolute_interest_rate_monthly;
+                    $monthly_interest=round($dividend/$divisor);
+
+                    //start of payments
+                    $start=($receive_date->month-$start_of_forecast->month)+2;
+                    //end of payments
+                    if(($forecast->financings[$i]->fundable->interest_months+$start)<12)
+                    {
+                        $end=($forecast->financings[$i]->fundable->interest_months+$start);
+                    }
+                    else{
+                        $end=12;
+                    }
+                    //populating payment temp array
+                    for ($j = $start ; $j <=$end ; $j++) {
+                        $payment_temp['amount_m_' . $j] = $monthly_interest;
+                        $sum_temp=$sum_temp+$monthly_interest;
+                    }
+
+                    $payment_temp['amount_y_' . 1]=$sum_temp;
+                    for ($j = 2; $j < intval($forecast->financings[$i]->fundable->interest_months/12)+2 ; $j++) {
+                        $payment_temp['amount_y_' . $j] = $monthly_interest*11;
+                    }
+
+                    //calculating principal paid and interest paid
+                    $previous_month_balance=$forecast->financings[$i]->fundable->amount;
+
+                    for ($j = $start ; $j <=$end ; $j++) {
+                        $interest_paid['amount_m_' . $j] = round($previous_month_balance*$absolute_interest_rate_monthly);
+
+                        $principal_paid['amount_m_' . $j] = $monthly_interest-$interest_paid['amount_m_' . $j];
+
+                        $previous_month_balance=$previous_month_balance-$principal_paid['amount_m_' . $j];
+
+                        $sum_temp_IP=$sum_temp_IP+$interest_paid['amount_m_' . $j];
+                        $sum_temp_PP=$sum_temp_PP+$principal_paid['amount_m_' . $j];
+                    }
+
+                    $interest_paid['amount_y_' . 1]=$sum_temp_IP;
+                    $principal_paid['amount_y_' . 1]=$sum_temp_PP;
+                    for ($j = 2; $j < intval($forecast->financings[$i]->fundable->interest_months/12)+2 ; $j++) {
+                        $sum_temp_IP=0;
+                        $sum_temp_PP=0;
+                        //iterate for 11 months to find the principal and interest paid for next years
+                        for($k=0 ; $k<12 ; $k++)
+                        {
+                            $sum_temp_IP=round($previous_month_balance*$absolute_interest_rate_monthly);
+                            $interest_paid['amount_y_' . $j] = $interest_paid['amount_y_' . $j]+$sum_temp_IP;
+
+                            $sum_temp_PP=$monthly_interest-$sum_temp_IP;
+                            //$principal_paid['amount_y_' . $j] = $principal_paid['amount_y_' . $j]+$sum_temp_PP;
+
+                            $previous_month_balance=$previous_month_balance-$sum_temp_PP;
+                        }
+                        $principal_paid['amount_y_' . $j]=$payment_temp['amount_y_' . $j]-$interest_paid['amount_y_' . $j];
+                    }
+
+                    //storing principal and interest paid
+                    $payment_temp[0]=['principal_paid'=>$principal_paid];
+                    $payment_temp[1]=['interest_paid'=>$interest_paid];
+
+                    $payments[$i]=[$forecast->financings[$i]->name => $payment_temp];
+
+                    //populating payments array
+                    for ($j = $start ; $j <=$end ; $j++) {
+                        $payments['amount_m_' . $j]=$payments['amount_m_' . $j]+$payment_temp['amount_m_' . $j];
+                    }
+                    for ($j = 1 ; $j < 6 ; $j++) {
+                        $payments['amount_y_' . $j]=$payments['amount_y_' . $j]+$payment_temp['amount_y_' . $j];
+                    }
+
+
                 }
             }
 
         }
         $financing[0]=['amount_received'=>$amount_received_arr];
+        $financing[1]=['payments'=>$payments];
         return $financing;
     }
 
