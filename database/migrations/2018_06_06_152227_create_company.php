@@ -28,6 +28,7 @@ class CreateCompany extends Migration
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
                 $table->integer('created_by')->nullable();
+                $table->integer('selected_forecast')->nullable();
 
                 $table->softDeletes();
                 $table->timestamps();

@@ -209,22 +209,32 @@ class Revenue extends Model
         $d2 = new DateTime($date);
         $diff_month=$start_of_forecast->diff($d2)->m;
         $diff_year=$start_of_forecast->diff($d2)->y;
+        $total_year_1=0;
         if($amount_duration=="year")
         {
             $total=$amount;
+            $index=1;
             for($i=1;$i<13;$i++)
             {
                 if($diff_year==0 && $diff_month<$i) {
-                    if ($i == 12)
+                    if ($i == 12 && $index==$i)
                     {
                         $array['amount_m_12']=$amount;
+                        $total_year_1=$total_year_1+$array['amount_m_' . $i];
                     }
                     else
                     {
-                        $array['amount_m_' . $i] = floor(($amount / (13 - $i)));
-                        $amount = $amount - floor(($amount / (13 - $i)));
+
+                        $array['amount_m_' . $i] = floor(($amount / (13 - $index)));
+                        $total_year_1=$total_year_1+$array['amount_m_' . $i];
+                        $amount = $amount - floor(($amount / (13 - $index)));
+                        $index=$index+1;
                     }
 
+                }
+                else
+                {
+                    $array['amount_m_' . $i] = null;
                 }
             }
 
@@ -236,20 +246,34 @@ class Revenue extends Model
             {
                 if($diff_year==0 && $diff_month<$i) {
                     $array['amount_m_'.$i]=$amount;
+                    $total_year_1=$total_year_1+$array['amount_m_' . $i];
+                }
+                else
+                {
+                    $array['amount_m_' . $i] = null;
                 }
 
             }
         }
         for($i=1;$i<6;$i++)
         {
+            if($diff_year<$i)
+            {
+                if($i==1)
+                {
+                    $array['amount_y_'.$i]=$total_year_1;
+                }
+                else
+                {
+                    $array['amount_y_'.$i]=$total;
+                }
 
-
+            }
+            else
+            {
+                $array['amount_y_' . $i] = null;
+            }
         }
-        $array['amount_y_1']=$total;
-        $array['amount_y_2']=$total;
-        $array['amount_y_3']=$total;
-        $array['amount_y_4']=$total;
-        $array['amount_y_5']=$total;
         $array['type']='constant';
         $array['amount_duration']=$amount_duration;
         $array['amount']=$amount;
@@ -266,10 +290,10 @@ class Revenue extends Model
         $start_of_forecast = new DateTime($start_of_forecast);
         $total_arr=array();
         for ($j = 1; $j < 13; $j++) {
-            $total_arr['amount_m_' . $j] = 0;
+            $total_arr['amount_m_' . $j] = null;
         }
         for ($j = 1; $j < 6; $j++) {
-            $total_arr['amount_y_' . $j] = 0;
+            $total_arr['amount_y_' . $j] = null;
         }
         for ($i=0;$i<count($forecast->revenues);$i++)
         {

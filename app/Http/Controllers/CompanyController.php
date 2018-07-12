@@ -51,7 +51,10 @@ class CompanyController extends Controller
                     $plan=$company->plans()->create([]);
                     Plan::add_entries_in_plan_module($plan);
                     //creating plan with dummy chapters,sections and topics/charts/tables
-                    $company->forecasts()->create(['name'=>'Original Forecast','burden_rate'=>'20']);
+                    $forecast=$company->forecasts()->create(['name'=>'Original Forecast','burden_rate'=>'20']);
+                    $company->selected_forecast=$forecast->id;
+                    $company->save();
+
 
 
                     DB::commit();
