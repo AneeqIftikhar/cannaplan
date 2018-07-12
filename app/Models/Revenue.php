@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use DateTime;
 Relation::morphMap([
     'unit_sale'=>'CannaPlan\Models\UnitSale',
     'billable'=>'CannaPlan\Models\Billable',
@@ -102,28 +103,25 @@ class Revenue extends Model
     }
     public static function addRevenueOnlyVarying($revenue_start_date,$input)
     {
-        $total=$input['amount_m_1']+$input['amount_m_2']+$input['amount_m_3']+$input['amount_m_4']+$input['amount_m_5']+$input['amount_m_6']
-            +$input['amount_m_7']+$input['amount_m_8']+$input['amount_m_9']+$input['amount_m_10']+$input['amount_m_11']+$input['amount_m_12'];
         $array=array();
         $array['type']='varying';
         $array['revenue_start_date']=$revenue_start_date;
-        $array['amount_m_1']=$input['amount_m_1'];
-        $array['amount_m_2']=$input['amount_m_2'];
-        $array['amount_m_3']=$input['amount_m_3'];
-        $array['amount_m_4']=$input['amount_m_4'];
-        $array['amount_m_5']=$input['amount_m_5'];
-        $array['amount_m_6']=$input['amount_m_6'];
-        $array['amount_m_7']=$input['amount_m_7'];
-        $array['amount_m_8']=$input['amount_m_8'];
-        $array['amount_m_9']=$input['amount_m_9'];
-        $array['amount_m_10']=$input['amount_m_10'];
-        $array[ 'amount_m_11']=$input['amount_m_11'];
-        $array['amount_m_12']=$input['amount_m_12'];
-        $array[ 'amount_y_1']=$total;
-        $array['amount_y_2']=$total;
-        $array['amount_y_3']=$total;
-        $array['amount_y_4']=$total;
-        $array['amount_y_5']=$total;
+        for($i=1;$i<13;$i++)
+        {
+            if(isset($input['amount_m_'.$i]))
+            {
+                $array['amount_m_'.$i]=$input['amount_m_'.$i];
+            }
+
+        }
+        for($i=1;$i<6;$i++)
+        {
+            if(isset($input['amount_y_'.$i]))
+            {
+                $array['amount_y_'.$i]=$input['amount_y_'.$i];
+            }
+
+        }
         $revenue_only=RevenueOnly::create($array);
         return $revenue_only;
     }
@@ -172,50 +170,80 @@ class Revenue extends Model
     }
     public static function updateRevenueOnlyVarying($revenue_start_date,$input,$revenuable)
     {
-        $total=$input['amount_m_1']+$input['amount_m_2']+$input['amount_m_3']+$input['amount_m_4']+$input['amount_m_5']+$input['amount_m_6']
-            +$input['amount_m_7']+$input['amount_m_8']+$input['amount_m_9']+$input['amount_m_10']+$input['amount_m_11']+$input['amount_m_12'];
         $array=array();
         $array['type']='varying';
         $array['revenue_start_date']=$revenue_start_date;
-        $array['amount_m_1']=$input['amount_m_1'];
-        $array['amount_m_2']=$input['amount_m_2'];
-        $array['amount_m_3']=$input['amount_m_3'];
-        $array['amount_m_4']=$input['amount_m_4'];
-        $array['amount_m_5']=$input['amount_m_5'];
-        $array['amount_m_6']=$input['amount_m_6'];
-        $array['amount_m_7']=$input['amount_m_7'];
-        $array['amount_m_8']=$input['amount_m_8'];
-        $array['amount_m_9']=$input['amount_m_9'];
-        $array['amount_m_10']=$input['amount_m_10'];
-        $array[ 'amount_m_11']=$input['amount_m_11'];
-        $array['amount_m_12']=$input['amount_m_12'];
-        $array[ 'amount_y_1']=$total;
-        $array['amount_y_2']=$total;
-        $array['amount_y_3']=$total;
-        $array['amount_y_4']=$total;
-        $array['amount_y_5']=$total;
+        for($i=1;$i<13;$i++)
+        {
+            if(isset($input['amount_m_'.$i]))
+            {
+                $array['amount_m_'.$i]=$input['amount_m_'.$i];
+            }
+            else
+            {
+                $array['amount_m_'.$i]=null;
+            }
+
+
+        }
+        for($i=1;$i<6;$i++)
+        {
+            if(isset($input['amount_y_'.$i]))
+            {
+                $array['amount_y_'.$i]=$input['amount_y_'.$i];
+            }
+            else
+            {
+                $array['amount_y_'.$i]=null;
+            }
+
+        }
         $revenuable->update($array);
     }
     public static function updateRevenueOnlyConstant($amount,$amount_duration,$revenue_start_date,$revenuable)
     {
         $array=array();
+        $start_of_forecast=date($revenuable->revenues[0]->forecast->company->start_of_forecast);
+        $start_of_forecast = new DateTime($start_of_forecast);
+        $date=date($revenuable->revenue_start_date);
+        $d2 = new DateTime($date);
+        $diff_month=$start_of_forecast->diff($d2)->m;
+        $diff_year=$start_of_forecast->diff($d2)->y;
         if($amount_duration=="year")
         {
             $total=$amount;
-            for($i=1;$i<12;$i++)
+            for($i=1;$i<13;$i++)
             {
-                $array['amount_m_'.$i]=floor(($amount/(13-$i)));
-                $amount=$amount-floor(($amount/(13-$i)));
+                if($diff_year==0 && $diff_month<$i) {
+                    if ($i == 12)
+                    {
+                        $array['amount_m_12']=$amount;
+                    }
+                    else
+                    {
+                        $array['amount_m_' . $i] = floor(($amount / (13 - $i)));
+                        $amount = $amount - floor(($amount / (13 - $i)));
+                    }
+
+                }
             }
-            $array['amount_m_12']=$amount;
+
         }
         else if($amount_duration=="month")
         {
             $total=$amount*12;
             for($i=1;$i<13;$i++)
             {
-                $array['amount_m_'.$i]=$amount;
+                if($diff_year==0 && $diff_month<$i) {
+                    $array['amount_m_'.$i]=$amount;
+                }
+
             }
+        }
+        for($i=1;$i<6;$i++)
+        {
+
+
         }
         $array['amount_y_1']=$total;
         $array['amount_y_2']=$total;
@@ -234,6 +262,8 @@ class Revenue extends Model
     public static function getRevenueByForecastId($id)
     {
         $forecast=Forecast::where('id',$id)->with(['company','revenues','revenues.revenuable'])->first();
+        $start_of_forecast=date($forecast->company->start_of_forecast);
+        $start_of_forecast = new DateTime($start_of_forecast);
         $total_arr=array();
         for ($j = 1; $j < 13; $j++) {
             $total_arr['amount_m_' . $j] = 0;
@@ -255,21 +285,56 @@ class Revenue extends Model
                         $multiplicand = $forecast->revenues[$i]['revenuable']['hourly_rate'];
                     }
                     //$forecast->revenues[$i]['revenuable']['amount_m_1'] = 250;
+                    $date=date($forecast->revenues[$i]['revenuable']['revenue_start_date']);
+                    $d2 = new DateTime($date);
+                    $diff_month=$start_of_forecast->diff($d2)->m;
+                    $diff_year=$start_of_forecast->diff($d2)->y;
+                    $year_1_total=0;
                     for ($j = 1; $j < 13; $j++) {
-                        $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = $multiplyer * $multiplicand;
+                        if($diff_year==0 && $diff_month<$j)
+                        {
+                            $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = $multiplyer * $multiplicand;
+                            $year_1_total=$year_1_total+$forecast->revenues[$i]['revenuable']['amount_m_' . $j];
+                        }
+                        else
+                        {
+                            $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = null;
+                        }
                     }
                     $total = $multiplyer * $multiplicand * 12;
-                    $forecast->revenues[$i]['revenuable']['amount_y_1'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_2'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_3'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_4'] = $total;
-                    $forecast->revenues[$i]['revenuable']['amount_y_5'] = $total;
+                    for ($j = 1; $j < 6; $j++)
+                    {
+                        if($diff_year<$j)
+                        {
+                            if ($j == 1)
+                            {
+                                $forecast->revenues[$i]['revenuable']['amount_y_'.$j] = $year_1_total;
+                            }
+                            else
+                            {
+                                $forecast->revenues[$i]['revenuable']['amount_y_'.$j] = $total;
+
+                            }
+                        }
+                        else
+                        {
+                            $forecast->revenues[$i]['revenuable']['amount_y_'.$j] = null;
+                        }
+                    }
+
+
                 }
                 for ($j = 1; $j < 13; $j++) {
-                    $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_m_' . $j];
+                    if($forecast->revenues[$i]['revenuable']['amount_m_' . $j])
+                    {
+                        $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_m_' . $j];
+                    }
                 }
                 for ($j = 1; $j < 6; $j++) {
-                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_y_' . $j];
+                    if($forecast->revenues[$i]['revenuable']['amount_y_' . $j])
+                    {
+                        $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_y_' . $j];
+                    }
                 }
 
 
