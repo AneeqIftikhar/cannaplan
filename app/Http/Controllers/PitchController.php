@@ -38,7 +38,7 @@ class PitchController extends Controller
         if($pitch && $user->id == $pitch->created_by) {
             $input_array=$request->all();
             if ($request->hasFile('logo')) {
-                $input_array['logo']=str_replace('\\', '/', Helper::uploadImage($request->logo));
+                $input_array['logo']=Helper::uploadImage($request->logo);
             }
             //$pitch=Pitch::where('id', $id)->update($input_array);
 
