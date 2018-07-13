@@ -111,14 +111,14 @@ class Cost extends Model
         $burden_rate_percent=$forecast->burden_rate/100;
 
         for ($j = 1; $j < 13; $j++) {
-            $total_arr['amount_m_' . $j] = 0;
-            $salaries_and_wages_arr['amount_m_' . $j] = 0;
-            $employee_related_expenses_arr['amount_m_' . $j] = 0;
+            $total_arr['amount_m_' . $j] = null;
+            $salaries_and_wages_arr['amount_m_' . $j] = null;
+            $employee_related_expenses_arr['amount_m_' . $j] = null;
         }
         for ($j = 1; $j < 6; $j++) {
-            $total_arr['amount_y_' . $j] = 0;
-            $salaries_and_wages_arr['amount_y_' . $j] = 0;
-            $employee_related_expenses_arr['amount_y_' . $j] = 0;
+            $total_arr['amount_y_' . $j] = null;
+            $salaries_and_wages_arr['amount_y_' . $j] = null;
+            $employee_related_expenses_arr['amount_y_' . $j] = null;
         }
 
         for ($i=0;$i<count($forecast->costs);$i++)

@@ -175,7 +175,8 @@ class TeamRoleController extends Controller
         $pitch = $team_role->pitch;
         if($team_role && $team_role->created_by==$user->id) {
             $deleted_order=$team_role->order;
-            Helper::deleteImage($team_role->image);
+//            Helper::deleteImage($team_role->image);
+            //No need to delete image as we are using soft deletes.
             $team_role = TeamRole::destroy($id);
             $all_team_roles=$pitch->teamRoles;
             foreach ($all_team_roles as $team_role)

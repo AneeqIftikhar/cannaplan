@@ -37,7 +37,7 @@ class RevenueController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    private function addRevenueHelper($input,$revenue)
+    private function addRevenueHelper($input,$revenue,$start_of_forecast)
     {
         if(isset($input['revenue_type']) && $input['revenue_type']=="billable")
         {
@@ -77,7 +77,9 @@ class RevenueController extends Controller
             }
             else
             {
-                $revenue_only=Revenue::addRevenueOnlyConstant($input['amount'],$input['amount_duration'],$input['revenue_start_date']);
+
+                $revenue_only=Revenue::addRevenueOnlyConstant($input['amount'],$input['amount_duration'],$input['revenue_start_date'],$start_of_forecast);
+
                 $revenue_only->revenues()->save($revenue);
             }
             return true;
@@ -95,10 +97,11 @@ class RevenueController extends Controller
         $forecast=Forecast::find($input['forecast_id']);
         if($forecast && $forecast->created_by==$user->id)
         {
+            $start_of_forecast=$forecast->company->start_of_forecast;
             $revenue=new Revenue();
             $revenue->name=$input['name'];
             $revenue->forecast_id=$forecast->id;
-            if($this->addRevenueHelper($input,$revenue))
+            if($this->addRevenueHelper($input,$revenue,$start_of_forecast))
             {
                 $revenue->save();
             }
@@ -199,8 +202,9 @@ class RevenueController extends Controller
                 else
                 {
                     //deleting previous revenuable
+                    $start_of_forecast=$revenue->forecast->company->start_of_forecast;
                     $revenuable->delete();
-                    if($this->addRevenueHelper($input,$revenue)) //adding new revenuable
+                    if($this->addRevenueHelper($input,$revenue,$start_of_forecast)) //adding new revenuable
                     {
                         if(isset($input['name']))
                         {

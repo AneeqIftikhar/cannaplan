@@ -14,7 +14,7 @@ class Helper
     {
         $image_name=Helper::createImageUniqueName($file->getClientOriginalExtension());
         $file->move(public_path('images'),$image_name);
-        return 'images\\'.$image_name;
+        return 'images/'.$image_name;
     }
     public static function deleteImage($image_path){
         if(public_path($image_path)) {

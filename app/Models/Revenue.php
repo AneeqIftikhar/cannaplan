@@ -125,35 +125,84 @@ class Revenue extends Model
         $revenue_only=RevenueOnly::create($array);
         return $revenue_only;
     }
-    public static function addRevenueOnlyConstant($amount,$amount_duration,$revenue_start_date)
+    public static function addRevenueOnlyConstant($amount,$amount_duration,$revenue_start_date,$start_forecast)
     {
         $array=array();
+        $array['amount']=$amount;
+        $start_of_forecast=date($start_forecast);
+        $start_of_forecast = new DateTime($start_of_forecast);
+        $date=date($revenue_start_date);
+        $d2 = new DateTime($date);
+        $diff_month=$start_of_forecast->diff($d2)->m;
+        $diff_year=$start_of_forecast->diff($d2)->y;
+        $total_year_1=0;
         if($amount_duration=="year")
         {
             $total=$amount;
-            for($i=1;$i<12;$i++)
+            $index=1;
+            for($i=1;$i<13;$i++)
             {
-                $array['amount_m_'.$i]=floor(($amount/(13-$i)));
-                $amount=$amount-floor(($amount/(13-$i)));
+                if($diff_year==0 && $diff_month<$i)
+                {
+                    if ($i == 12 && $index==$i)
+                    {
+                        $array['amount_m_12']=$amount;
+                        $total_year_1=$total_year_1+$array['amount_m_' . $i];
+                    }
+                    else
+                    {
+
+                        $array['amount_m_' . $i] = floor(($amount / (13 - $index)));
+                        $total_year_1=$total_year_1+$array['amount_m_' . $i];
+                        $amount = $amount - floor(($amount / (13 - $index)));
+                        $index=$index+1;
+                    }
+
+                }
+                else
+                {
+                    $array['amount_m_' . $i] = null;
+                }
             }
-            $array['amount_m_12']=$amount;
+
         }
         else if($amount_duration=="month")
         {
             $total=$amount*12;
             for($i=1;$i<13;$i++)
             {
-                $array['amount_m_'.$i]=$amount;
+                if($diff_year==0 && $diff_month<$i) {
+                    $array['amount_m_'.$i]=$amount;
+                    $total_year_1=$total_year_1+$array['amount_m_' . $i];
+                }
+                else
+                {
+                    $array['amount_m_' . $i] = null;
+                }
+
             }
         }
-        $array['amount_y_1']=$total;
-        $array['amount_y_2']=$total;
-        $array['amount_y_3']=$total;
-        $array['amount_y_4']=$total;
-        $array['amount_y_5']=$total;
+        for($i=1;$i<6;$i++)
+        {
+            if($diff_year<$i)
+            {
+                if($i==1)
+                {
+                    $array['amount_y_'.$i]=$total_year_1;
+                }
+                else
+                {
+                    $array['amount_y_'.$i]=$total;
+                }
+
+            }
+            else
+            {
+                $array['amount_y_' . $i] = null;
+            }
+        }
         $array['type']='constant';
         $array['amount_duration']=$amount_duration;
-        $array['amount']=$amount;
         $array['revenue_start_date']=$revenue_start_date;
 
         $revenue_only=RevenueOnly::create($array);
@@ -203,6 +252,7 @@ class Revenue extends Model
     public static function updateRevenueOnlyConstant($amount,$amount_duration,$revenue_start_date,$revenuable)
     {
         $array=array();
+        $array['amount']=$amount;
         $start_of_forecast=date($revenuable->revenues[0]->forecast->company->start_of_forecast);
         $start_of_forecast = new DateTime($start_of_forecast);
         $date=date($revenuable->revenue_start_date);
@@ -276,7 +326,7 @@ class Revenue extends Model
         }
         $array['type']='constant';
         $array['amount_duration']=$amount_duration;
-        $array['amount']=$amount;
+
         $array['revenue_start_date']=$revenue_start_date;
 
         $revenuable->update($array);
@@ -289,12 +339,26 @@ class Revenue extends Model
         $start_of_forecast=date($forecast->company->start_of_forecast);
         $start_of_forecast = new DateTime($start_of_forecast);
         $total_arr=array();
+        $unit_sale=array();
+        $unit_price=array();
+        $billable_hour=array();
+        $hourly_rate=array();
         for ($j = 1; $j < 13; $j++) {
             $total_arr['amount_m_' . $j] = null;
+            $unit_sale['amount_m_' . $j] = null;
+            $unit_price['amount_m_' . $j] = null;
+            $billable_hour['amount_m_' . $j] = null;
+            $hourly_rate['amount_m_' . $j] = null;
         }
         for ($j = 1; $j < 6; $j++) {
             $total_arr['amount_y_' . $j] = null;
+            $unit_sale['amount_y_' . $j] = null;
+            $unit_price['amount_y_' . $j] = null;
+            $billable_hour['amount_y_' . $j] = null;
+            $hourly_rate['amount_y_' . $j] = null;
         }
+
+        //ARRAY OF UNIT SALES AND UNIT PRICE IS NOT MADE
         for ($i=0;$i<count($forecast->revenues);$i++)
         {
             if(isset($forecast->revenues[$i]->revenuable_type)) {
@@ -314,11 +378,29 @@ class Revenue extends Model
                     $diff_month=$start_of_forecast->diff($d2)->m;
                     $diff_year=$start_of_forecast->diff($d2)->y;
                     $year_1_total=0;
+
+                    $sum_sale=0;
+                    $year_1_billable=0;
                     for ($j = 1; $j < 13; $j++) {
                         if($diff_year==0 && $diff_month<$j)
                         {
                             $forecast->revenues[$i]['revenuable']['amount_m_' . $j] = $multiplyer * $multiplicand;
                             $year_1_total=$year_1_total+$forecast->revenues[$i]['revenuable']['amount_m_' . $j];
+
+                            if($forecast->revenues[$i]->revenuable_type == 'unit_sale')
+                            {
+                                $unit_sale['amount_m_' . $j] = $multiplyer;
+                                $sum_sale=$sum_sale+$multiplyer;
+                                $unit_price['amount_m_' . $j] = $multiplicand;
+                            }
+                            else
+                            {
+                                $billable_hour['amount_m_' . $j] = $multiplyer;
+                                $year_1_billable=$year_1_billable+$multiplyer;
+                                $hourly_rate['amount_m_' . $j] = $multiplicand;
+                            }
+
+
                         }
                         else
                         {
@@ -333,11 +415,31 @@ class Revenue extends Model
                             if ($j == 1)
                             {
                                 $forecast->revenues[$i]['revenuable']['amount_y_'.$j] = $year_1_total;
+
+                                if($forecast->revenues[$i]->revenuable_type == 'unit_sale')
+                                {
+                                    $unit_sale['amount_y_'.$j]=$sum_sale;
+                                    $unit_price['amount_y_' . $j] = $multiplicand;
+                                }
+                                else
+                                {
+                                    $billable_hour['amount_y_'.$j]=$year_1_billable;
+                                    $hourly_rate['amount_y_' . $j] = $multiplicand;
+                                }
                             }
                             else
                             {
                                 $forecast->revenues[$i]['revenuable']['amount_y_'.$j] = $total;
-
+                                if($forecast->revenues[$i]->revenuable_type == 'unit_sale')
+                                {
+                                    $unit_sale['amount_y_'.$j]=$multiplyer*12;
+                                    $unit_price['amount_y_' . $j] = $multiplicand;
+                                }
+                                else
+                                {
+                                    $billable_hour['amount_y_'.$j]=$multiplyer*12;
+                                    $hourly_rate['amount_y_' . $j] = $multiplicand;
+                                }
                             }
                         }
                         else
@@ -345,16 +447,35 @@ class Revenue extends Model
                             $forecast->revenues[$i]['revenuable']['amount_y_'.$j] = null;
                         }
                     }
+                    if($forecast->revenues[$i]->revenuable_type == 'unit_sale')
+                    {
+                        $forecast->revenues[$i]->revenuable['unit_sale'] = $unit_sale;
+                        $forecast->revenues[$i]->revenuable['unit_price'] = $unit_price;
+                    }
+                    else
+                    {
+                        $forecast->revenues[$i]->revenuable['billable_hour'] = $billable_hour;
+                        $forecast->revenues[$i]->revenuable['hourly_rate'] = $hourly_rate;
+                    }
 
 
                 }
+
                 for ($j = 1; $j < 13; $j++) {
+                    $unit_sale['amount_m_' . $j] = null;
+                    $unit_price['amount_m_' . $j] = null;
+                    $billable_hour['amount_m_' . $j] = null;
+                    $hourly_rate['amount_m_' . $j] = null;
                     if($forecast->revenues[$i]['revenuable']['amount_m_' . $j])
                     {
                         $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_m_' . $j];
                     }
                 }
                 for ($j = 1; $j < 6; $j++) {
+                    $unit_sale['amount_y_' . $j] = null;
+                    $unit_price['amount_y_' . $j] = null;
+                    $billable_hour['amount_y_' . $j] = null;
+                    $hourly_rate['amount_y_' . $j] = null;
                     if($forecast->revenues[$i]['revenuable']['amount_y_' . $j])
                     {
                         $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+ $forecast->revenues[$i]['revenuable']['amount_y_' . $j];
@@ -366,6 +487,7 @@ class Revenue extends Model
 
         }
         $forecast['total'] = $total_arr;
+
         return $forecast;
     }
 }
