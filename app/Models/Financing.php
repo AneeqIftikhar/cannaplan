@@ -367,21 +367,55 @@ class Financing extends Model
                         $previous_month_balance=$previous_month_balance-$sum_temp_PP;
                     }
 
-                    if($forecast->financings[$i]->fundable->interest_months>12)
-                    {
-                        for($j=0 ; $j<$forecast->financings[$i]->fundable->interest_months ; $j++)
-                        {
-                            $sum_temp=$sum_temp+$pp[$j];
-                            if($j>((12-$receive_date->month)+($start_of_forecast->month-1))+1)
-                            {
-                                $short_term_index=($j-((12-$receive_date->month)+$start_of_forecast->month))+($start-1);
-                                $pp_index=$j-((12-$receive_date->month)+$start_of_forecast->month);
-
-                                $short_term_temp['amount_m_'.$short_term_index]=$sum_temp-$pp[$pp_index];
-                            }
-                        }
-                        return $short_term_temp;
-                    }
+//                    if($forecast->financings[$i]->fundable->interest_months>12)
+//                    {
+//                        $iterate=0;
+//                        $total_temp=0;
+//                        //problem with the loop consult maab
+//                        for($j=$start-1 ; $j<13 ; $j++)
+//                        {
+//                            $sum_temp=0;
+//                            if(sizeof($pp)<((12-$receive_date->month)+$start_of_forecast->month)+$iterate)
+//                            {
+//
+//                            }
+//                            else{
+//                                for($k=$iterate ; $k<=((12-$receive_date->month)+$start_of_forecast->month)+$iterate ; $k++)
+//                                {
+//                                    $sum_temp=$sum_temp+$pp[$k];
+//                                }
+//                            }
+//
+//
+//                            $iterate++;
+//                            $short_term_temp['amount_m_'.$j]=$sum_temp;
+//                        }
+//                        $sum_temp=0;
+//
+//                        for ($j=$iterate ; $j<((12-$receive_date->month)+$start_of_forecast->month)+$iterate ; $j++)
+//                        {
+//                            $sum_temp=$sum_temp+$pp[$j];
+//                        }
+//                        $short_term_temp['amount_m_12']=$sum_temp;
+//
+//                        $short_term_temp['amount_y_1']=$short_term_temp['amount_m_12'];
+//                        //return $short_term_temp;
+//
+//                        $iterate=((12-$receive_date->month)+$start_of_forecast->month)+1;
+//                        for($j=$start-1 ; $j<=12 ; $j++)
+//                        {
+//                            $sum_temp=0;
+//                            for($k=$iterate ; $k<sizeof($pp) ; $k++)
+//                            {
+//                                $sum_temp=$sum_temp+$pp[$k];
+//                            }
+//                            $iterate++;
+//                            $long_term_temp['amount_m_'.$j]=$sum_temp;
+//                        }
+//                        $long_term_temp['amount_y_1']=$long_term_temp['amount_m_12'];
+//
+//                        return $long_term_temp;
+//                    }
 
 
                 }
