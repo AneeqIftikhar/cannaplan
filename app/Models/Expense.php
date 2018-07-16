@@ -55,33 +55,61 @@ class Expense extends Model
     public static function getExpenseByForecastId($id)
     {
         $forecast=Forecast::where('id',$id)->with('company','expenses')->first();
-        $now=date('Y-m-d',time());
-
-
-        $now = new DateTime($now);
+        $start_of_forecast=date($forecast->company->start_of_forecast);
+        $start_of_forecast = new DateTime($start_of_forecast);
+        $total_arr=array();
+        for ($j = 1; $j < 13; $j++) {
+            $total_arr['amount_m_' . $j] = null;
+        }
+        for ($j = 1; $j < 6; $j++) {
+            $total_arr['amount_y_' . $j] = null;
+        }
 
 
         for ($i=0 ; $i<count($forecast->expenses);$i++)
         {
             $date=date($forecast->expenses[$i]['start_date']);
             $d2 = new DateTime($date);
-            $diff=$now->diff($d2)->m;
+            $diff_month=$start_of_forecast->diff($d2)->m;
+            $diff_year=$start_of_forecast->diff($d2)->y;
+            $year_1_total=0;
             for ($j = 1; $j < 13; $j++) {
 
-                if($diff<$j)
+                if($diff_year==0 && $diff_month<$j)
                 {
                     $forecast->expenses[$i]['amount_m_' . $j] = $forecast->expenses[$i]['amount'];
+                    $year_1_total=$year_1_total+$forecast->expenses[$i]['amount_m_' . $j];
+                    $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j] + $forecast->expenses[$i]['amount_m_' . $j];
                 }
                 else
                 {
-                    $forecast->expenses[$i]['amount_m_' . $j] = 0;
+                    $forecast->expenses[$i]['amount_m_' . $j] = null;
                 }
 
             }
             for ($j = 1; $j < 6; $j++) {
-                $forecast->expenses[$i]['amount_y_' . $j]=$forecast->expenses[$i]['amount']*12;
+                if($diff_year<$j)
+                {
+                    if ($j == 1)
+                    {
+                        $forecast->expenses[$i]['amount_y_' . $j]=$year_1_total;
+                        $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j] +$forecast->expenses[$i]['amount_y_' . $j];
+                    }
+                    else
+                    {
+                        $forecast->expenses[$i]['amount_y_' . $j]=$forecast->expenses[$i]['amount']*12;
+                        $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j] +$forecast->expenses[$i]['amount_y_' . $j];
+                    }
+                }
+                else
+                {
+                    $forecast->expenses[$i]['amount_y_' . $j]= null;
+                }
+
             }
+
         }
+        $forecast['total']=$total_arr;
         return $forecast;
     }
 }
