@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
 use function Sodium\add;
-
+use DateTime;
 Relation::morphMap([
     'direct'=>'CannaPlan\Models\Direct',
     'labor'=>'CannaPlan\Models\Labor'
@@ -104,6 +104,9 @@ class Cost extends Model
     {
         $forecast=Forecast::where('id','=',$id)->with(['company','costs','costs.charge'])->first();
 
+        $start_of_forecast=date($forecast->company->start_of_forecast);
+        $start_of_forecast = new DateTime($start_of_forecast);
+
         $total_arr=array();
         $salaries_and_wages_arr=array();
         $employee_related_expenses_arr=array();
@@ -135,39 +138,125 @@ class Cost extends Model
             {
                 if($forecast->costs[$i]->charge->direct_cost_type=='general_cost')
                 {
+                    $date=date($forecast->costs[$i]->charge->direct_cost['cost_start_date']);
+                    $d2 = new DateTime($date);
+                    $diff_month=$start_of_forecast->diff($d2)->m;
+                    $diff_year=$start_of_forecast->diff($d2)->y;
+                    $year_1_cost=0;
                     for ($j = 1; $j < 13; $j++) {
-                        $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount;
-                        $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                        if ($diff_year == 0 && $diff_month < $j) {
+                            $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount;
+                            $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j] + $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                            $year_1_cost=$year_1_cost+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                        }
+                        else
+                        {
+                            $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = null;
+                        }
                     }
                     for ($j = 1; $j < 6; $j++) {
-                        $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*12;
-                        $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                        if($diff_year<$j)
+                        {
+                            if($j==1)
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $year_1_cost;
+                                $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$year_1_cost;
+                            }
+                            else
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*12;
+                                $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                            }
+
+
+                        }
+                        else
+                        {
+                            $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = null;
+                        }
                     }
                 }
                 else if($forecast->costs[$i]->charge->direct_cost_type=='cost_on_revenue')
                 {
                     $revenue=Revenue::find($forecast->costs[$i]->charge->direct_cost->revenue_id);
+                    $date=date($revenue['revenuable']['revenue_start_date']);
+                    $d2 = new DateTime($date);
+                    $diff_month=$start_of_forecast->diff($d2)->m;
+                    $diff_year=$start_of_forecast->diff($d2)->y;
+                    $year_1_cost=0;
 
                     if($revenue->revenuable_type=='unit_sale')
                     {
                         for ($j = 1; $j < 13; $j++) {
-                            $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->unit_sold;
-                            $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                            if ($diff_year == 0 && $diff_month < $j)
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->unit_sold;
+                                $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                                $year_1_cost=$year_1_cost+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                            }
+                            else
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] =null;
+                            }
+
                         }
                         for ($j = 1; $j < 6; $j++) {
-                            $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->unit_sold*12;
-                            $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                            if($diff_year<$j)
+                            {
+                                if ($j == 1)
+                                {
+                                    $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $year_1_cost;
+                                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$year_1_cost;
+                                }
+                                else
+                                {
+                                    $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->unit_sold*12;
+                                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+
+                                }
+                            }
+                            else
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = null;
+                            }
+
                         }
                     }
                     else if($revenue->revenuable_type=='billable')
                     {
                         for ($j = 1; $j < 13; $j++) {
-                            $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->hour;
-                            $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                            if ($diff_year == 0 && $diff_month < $j)
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->hour;
+                                $total_arr['amount_m_' . $j] = $total_arr['amount_m_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                                $year_1_cost=$year_1_cost+$forecast->costs[$i]->charge->direct_cost['amount_m_' . $j];
+                            }
+                            else
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_m_' . $j] =null;
+                            }
+
                         }
                         for ($j = 1; $j < 6; $j++) {
-                            $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->hour*12;
-                            $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+                            if($diff_year<$j)
+                            {
+                                if ($j == 1)
+                                {
+                                    $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $year_1_cost;
+                                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$year_1_cost;
+                                }
+                                else
+                                {
+                                    $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = $forecast->costs[$i]->charge->direct_cost->amount*$revenue->revenuable->hour*12;
+                                    $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j]+$forecast->costs[$i]->charge->direct_cost['amount_y_' . $j];
+
+                                }
+                            }
+                            else
+                            {
+                                $forecast->costs[$i]->charge->direct_cost['amount_y_' . $j] = null;
+                            }
+
                         }
                     }
                     else
