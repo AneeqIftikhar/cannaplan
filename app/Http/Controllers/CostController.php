@@ -123,6 +123,22 @@ class CostController extends Controller
 
     }
 
+    public function getPersonnelByForecast($id)
+    {
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id)
+        {
+            $cost=Cost::getPersonnelByForecastId($id);
+            return response()->success($cost,'Cost Fetched Successfully');
+        }
+        else
+        {
+            return response()->fail('User Not Authorized');
+        }
+
+    }
+
     public function updateCost(CostRequest $request, $id)
     {
         $input = $request->all();
