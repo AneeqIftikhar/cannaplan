@@ -191,6 +191,7 @@ class Cost extends Model
                 else if($forecast->costs[$i]->charge->direct_cost_type=='cost_on_revenue')
                 {
                     $revenue=Revenue::find($forecast->costs[$i]->charge->direct_cost->revenue_id);
+
                     $date=date($revenue['revenuable']['revenue_start_date']);
                     $d2 = new DateTime($date);
                     $diff_month=$start_of_forecast->diff($d2)->m;
@@ -325,7 +326,14 @@ class Cost extends Model
 
                             if ($j == 1) {
                                 $forecast->costs[$i]->charge['amount_y_' . $j]=$year_1_total;
-                                $labor_previous_val=$forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12;
+                                if($forecast->costs[$i]->charge->staff_role_type=='contract')
+                                {
+                                    $labor_previous_val=$forecast->costs[$i]->charge->pay*12;
+                                }
+                                else{
+                                    $labor_previous_val=$forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12;
+                                }
+
                                 $salaries_and_wages_arr['amount_y_' . $j]=$salaries_and_wages_arr['amount_y_' . $j]+$forecast->costs[$i]->charge['amount_y_' . $j];
                             }
                             else if ($forecast->costs[$i]->charge->annual_raise_percent>0) {
@@ -338,7 +346,14 @@ class Cost extends Model
                             }
                             else
                             {
-                                $forecast->costs[$i]->charge['amount_y_' . $j]=$forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12;
+                                if($forecast->costs[$i]->charge->staff_role_type=='contract')
+                                {
+                                    $forecast->costs[$i]->charge['amount_y_' . $j]=$forecast->costs[$i]->charge->pay*12;
+                                }
+                                else{
+                                    $forecast->costs[$i]->charge['amount_y_' . $j]=$forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12;
+                                }
+
 
                                 $salaries_and_wages_arr['amount_y_' . $j]=$salaries_and_wages_arr['amount_y_' . $j]+$forecast->costs[$i]->charge['amount_y_' . $j];
                             }
@@ -346,7 +361,28 @@ class Cost extends Model
                         else{
                             $forecast->costs[$i]->charge['amount_y_' . $j]=null;
                             $annual_raise_percent=1+($forecast->costs[$i]->charge->annual_raise_percent/100);
-                            $labor_previous_val=($forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12)/$annual_raise_percent;
+                            if($forecast->costs[$i]->charge->staff_role_type=='contract')
+                            {
+                                if($forecast->costs[$i]->charge->annual_raise_percent>0)
+                                {
+                                    $labor_previous_val=($forecast->costs[$i]->charge->pay*12)/$annual_raise_percent;
+                                }
+                                else{
+                                    $labor_previous_val=$forecast->costs[$i]->charge->pay*12;
+                                }
+
+                            }
+                            else{
+                                if($forecast->costs[$i]->charge->annual_raise_percent>0)
+                                {
+                                    $labor_previous_val=($forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12)/$annual_raise_percent;
+                                }
+                                else{
+                                    $labor_previous_val=($forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12);
+                                }
+
+                            }
+
                         }
 
                     }
@@ -367,20 +403,7 @@ class Cost extends Model
             }
         }
 
-        //unset labor cost
 
-//        foreach($forecast->costs as $key => $cost)
-//        {
-//            if($cost->charge_type=='labor')
-//            {
-//               unset($forecast->costs[$key]);
-//
-//
-//            }
-//        }
-
-
-        //unset($forecast->costs);
         //return round((10284+5/2)/5)*5;
 
         //total array updated here
@@ -418,14 +441,14 @@ class Cost extends Model
 
             }
         }
-        for($j=1 ; $j<6 ; $j++)
-        {
-            $total_arr['amount_y_' . $j] = $total_arr['amount_y_'.$j]+$employee_related_expenses_arr['amount_y_' . $j]+$salaries_and_wages_arr['amount_y_'.$j];
+        for($j=1 ; $j<6 ; $j++) {
+            if ($employee_related_expenses_arr['amount_y_' . $j] || $salaries_and_wages_arr['amount_y_' . $j]) {
+                $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j] + $employee_related_expenses_arr['amount_y_' . $j] + $salaries_and_wages_arr['amount_y_' . $j];
+
+            }
         }
 
         $forecast['total']=$total_arr;
-        //$forecast['salaries_and_wages']=$salaries_and_wages_arr;
-        //$forecast['$employee_related_expenses']=$employee_related_expenses_arr;
         return $forecast;
     }
 }
