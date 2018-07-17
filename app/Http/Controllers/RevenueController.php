@@ -72,7 +72,7 @@ class RevenueController extends Controller
                     }
 
                 }
-                $revenue_only=Revenue::addRevenueOnlyVarying($input['revenue_start_date'],$array);
+                $revenue_only=Revenue::addRevenueOnlyVarying($array);
                 $revenue_only->revenues()->save($revenue);
             }
             else
@@ -155,6 +155,8 @@ class RevenueController extends Controller
         $input = $request->all();
         $revenue = Revenue::find($id);
         $user=Auth::user();
+        $start_of_forecast=$revenue->forecast->company->start_of_forecast;
+
         if($revenue && $revenue->created_by==$user->id){
             //if user has a revenuable already set
             if($revenuable=$revenue->revenuable)
@@ -192,7 +194,7 @@ class RevenueController extends Controller
 
 
                             }
-                            $revenue_only = Revenue::updateRevenueOnlyVarying($input['revenue_start_date'], $array,$revenuable);
+                            $revenue_only = Revenue::updateRevenueOnlyVarying($array,$revenuable);
                         } else {
                             $revenue_only = Revenue::updateRevenueOnlyConstant($input['amount'], $input['amount_duration'], $input['revenue_start_date'],$revenuable);
                         }
@@ -217,7 +219,7 @@ class RevenueController extends Controller
             else//revenuable was nerver set
             {
                 //setting a new revenuable
-                if($this->addRevenueHelper($input,$revenue))
+                if($this->addRevenueHelper($input,$revenue,$start_of_forecast))
                 {
                     if(isset($input['name']))
                     {

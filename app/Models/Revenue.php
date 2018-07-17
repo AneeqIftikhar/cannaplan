@@ -101,11 +101,10 @@ class Revenue extends Model
         $unit_sale=UnitSale::create(['unit_sold'=>$unit_sold,'revenue_start_date'=>$revenue_start_date,'unit_price'=>$unit_price]);
         return $unit_sale;
     }
-    public static function addRevenueOnlyVarying($revenue_start_date,$input)
+    public static function addRevenueOnlyVarying($input)
     {
         $array=array();
         $array['type']='varying';
-        $array['revenue_start_date']=$revenue_start_date;
         for($i=1;$i<13;$i++)
         {
             if(isset($input['amount_m_'.$i]))
@@ -217,11 +216,10 @@ class Revenue extends Model
     {
         $revenuable->update(['unit_sold'=>$unit_sold,'revenue_start_date'=>$revenue_start_date,'unit_price'=>$unit_price]);
     }
-    public static function updateRevenueOnlyVarying($revenue_start_date,$input,$revenuable)
+    public static function updateRevenueOnlyVarying($input,$revenuable)
     {
         $array=array();
         $array['type']='varying';
-        $array['revenue_start_date']=$revenue_start_date;
         for($i=1;$i<13;$i++)
         {
             if(isset($input['amount_m_'.$i]))

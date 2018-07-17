@@ -42,7 +42,6 @@ class RevenueRequest extends FormRequest
         {
             if($this->request->has('type') && $this->request->get('type')=='varying')
             {
-                $rules['revenue_start_date'] = 'required';
                 $rules['amount_m_1'] = 'numeric';
                 $rules['amount_m_2'] = 'numeric';
                 $rules['amount_m_3'] = 'numeric';
