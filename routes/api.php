@@ -94,6 +94,8 @@ Route::group(['middleware' => ['cors']], function () {
         Route::resource('forecast', 'ForecastController');
         Route::post('update_forecast/{id}','ForecastController@updateForecast');
         Route::get('get_forecast_by_company/{id}' , 'ForecastController@getForecastByCompany');
+        //change burden rate
+        Route::post('change_burden_rate/{id}','ForecastController@changeBurdenRate');
 
         /*Revenue Routes*/
         Route::resource('revenue', 'RevenueController');
@@ -112,6 +114,8 @@ Route::group(['middleware' => ['cors']], function () {
         Route::resource('cost' , 'CostController');
         Route::post('update_cost/{id}','CostController@updateCost');
         Route::get('get_cost_by_forecast/{id}','CostController@getCostByForecast');
+        //personnel API
+        Route::get('get_personnel_by_forecast/{id}','CostController@getPersonnelByForecast');
 
         /*Asset Routes*/
         Route::resource('asset' , 'AssetController');

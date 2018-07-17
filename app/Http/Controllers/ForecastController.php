@@ -7,6 +7,7 @@ use CannaPlan\Models\Company;
 use CannaPlan\Models\Forecast;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class ForecastController extends Controller
 {
@@ -102,6 +103,31 @@ class ForecastController extends Controller
         if($company && $company->created_by==$user->id) {
             $forecast=$company->forecasts;
 
+            return response()->success($forecast,'Forecast Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+    }
+
+    public static function changeBurdenRate(Request $request, $id)
+    {
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+
+        $validator = Validator::make($request->all(),  [
+            'burden_rate' => 'numeric|min:0|required'
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->fail($validator->errors());
+        }
+
+        if($forecast && $forecast->created_by==$user->id) {
+
+            $forecast->burden_rate=$request->burden_rate;
+            $forecast->save();
             return response()->success($forecast,'Forecast Fetched Successfully');
         }
         else{

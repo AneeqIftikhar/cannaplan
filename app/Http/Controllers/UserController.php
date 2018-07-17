@@ -10,10 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 //use Illuminate\Routing\Route;
-use Validator;
+
 use CannaPlan\User;
 use CannaPlan\Http\Requests\RegisterUserPost;
 use CannaPlan\Client;
+use Illuminate\Support\Facades\Validator;
+
 class UserController extends Controller
 {
     /**
