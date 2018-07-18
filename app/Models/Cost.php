@@ -45,7 +45,7 @@ class Cost extends Model
 
         static::deleting(function($table) {
 
-            $table->charge->delete();
+            //$table->charge->delete();
             if($table->charge_type=='direct')
             {
                 $table->charge->direct_cost->delete();
@@ -482,6 +482,7 @@ class Cost extends Model
         $net_profit_per_employee=array();
 
         $direct_labor_check=false;
+        $regular_labor_check=false;
 
         $burden_rate_percent=$forecast->burden_rate/100;
 
@@ -629,6 +630,7 @@ class Cost extends Model
                 }
                 else if($forecast->costs[$i]->charge->labor_type=='regular')
                 {
+                    $regular_labor_check=true;
                     $date=date($forecast->costs[$i]->charge->start_date);
                     $d2 = new DateTime($date);
                     $diff_month=$start_of_forecast->diff($d2)->m;
@@ -776,13 +778,16 @@ class Cost extends Model
         $regular_labor_arr['saleries_and_wages']=$regular_salaries_and_wages_arr;
         $regular_labor_arr['employee_related_expanses']=$regular_employee_related_expenses_arr;
 
-        if($direct_labor_check)
+        if($direct_labor_check && $regular_labor_check)
         {
             $forecast['direct_labor']=$direct_labor_arr;
             $forecast['other_labor']=$regular_labor_arr;
         }
-        else{
+        else if($regular_labor_check && !$direct_labor_check){
             $forecast['personnel_expenses']=$regular_labor_arr;
+        }
+        else{
+            $forecast['direct_labor']=$direct_labor_arr;
         }
 
         for($j=1 ; $j<13 ; $j++)
