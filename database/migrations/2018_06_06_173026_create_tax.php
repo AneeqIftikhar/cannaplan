@@ -17,14 +17,15 @@ class CreateTax extends Migration
             Schema::create('tax', function (Blueprint $table) {
                 $table->increments('id');
 
+                $table->boolean('is_started')->default(false);
+
                 $table->integer('forecast_id')->unsigned();
                 $table->foreign('forecast_id')->references('id')->on('forecast')->onDelete('cascade');
 
-                $table->string('name','255');
-                $table->float('coorporate_tax');
-                $table->string('coorporate_payable_time', '100');
-                $table->float('sales_tax');
-                $table->string('sales_payable_time', '100');
+                $table->float('coorporate_tax')->nullable();
+                $table->string('coorporate_payable_time', '100')->nullable();
+                $table->float('sales_tax')->nullable();
+                $table->string('sales_payable_time', '100')->nullable();
 
                 $table->integer('created_by')->nullable();
 

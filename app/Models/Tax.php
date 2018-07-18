@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property int $forecast_id
@@ -33,8 +35,24 @@ class Tax extends Model
     /**
      * @var array
      */
-    protected $fillable = ['forecast_id', 'name', 'coorporate_tax', 'coorporate_payable_time', 'sales_tax', 'sales_payable_time'];
+    protected $fillable = ['coorporate_tax', 'coorporate_payable_time', 'sales_tax', 'sales_payable_time'];
+    protected $gaurded=['id' , 'forecast_id', 'created_by'];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+
+        static::deleting(function($table) {
+            foreach ($table->revenueTaxes()->get() as $revenueTaxes) {
+                $revenueTaxes->delete();
+            }
+        });
+    }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -56,4 +74,10 @@ class Tax extends Model
         return $this->belongsToMany('CannaPlan\Models\Revenue', 'revenue_tax',
             'tax_id', 'revenue_id');
     }
+
+    public static function getTaxByForecast($id)
+    {
+
+    }
+
 }

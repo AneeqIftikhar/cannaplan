@@ -53,6 +53,7 @@ class CompanyController extends Controller
                     //creating plan with dummy chapters,sections and topics/charts/tables
                     $forecast=$company->forecasts()->create(['name'=>'Original Forecast','burden_rate'=>'20']);
                     $company->selected_forecast=$forecast->id;
+                    $forecast->taxes()->create(['coorporate_tax'=>null , 'sales_tax'=>null]);
                     $company->save();
 
 
