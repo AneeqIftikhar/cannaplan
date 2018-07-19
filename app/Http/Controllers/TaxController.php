@@ -6,6 +6,7 @@ use CannaPlan\Models\Forecast;
 use CannaPlan\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class TaxController extends Controller
 {
@@ -43,10 +44,22 @@ class TaxController extends Controller
 
             if(isset($request['coorporate_tax']) || isset($request['sales_tax']))
             {
+                $validator = Validator::make($request->all(),[
+                    'coorporate_payable_time' => 'required',
+                    'sales_payable_time' => 'required',
+                ]);
+
+                if ($validator->fails()) {
+                    return response()->fail($validator->errors());
+                }
+
                 $tax->is_started=true;
-                $tax->update(['coorporate_tax'=>$request['coorporate_tax'] , 'sales_tax'=>$request['sales_tax']]);
+                $tax->update(['coorporate_tax'=>$request['coorporate_tax'] , 'sales_tax'=>$request['sales_tax'] , 'coorporate_payable_time'=>$request['coorporate_payable_time'] , 'sales_payable_time'=>$request['sales_payable_time']]);
                 if(isset($request->revenue_id))
                 {
+                    foreach ($tax->revenueTaxes()->get() as $revenueTaxes) {
+                        $revenueTaxes->delete();
+                    }
                     $tax->revenues()->attach($request->revenue_id);
                 }
             }
@@ -65,24 +78,5 @@ class TaxController extends Controller
             return response()->fail('User Not Authorized');
         }
 
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $tax=Tax::find($id);
-        $user=Auth::user();
-        if($tax && $tax->created_by==$user->id){
-            $tax->delete();
-            return response()->success([],'Tax Deleted Successfully');
-        }
-        else{
-            return response()->fail('User Not Authorized');
-        }
     }
 }
