@@ -127,7 +127,6 @@ Route::group(['middleware' => ['cors']], function () {
         Route::get('get_financing_by_forecast/{id}' , 'FinancingController@getFinancingByForecast');
 
         /*Tax Routes*/
-        Route::resource('tax' , 'TaxController');
         Route::post('update_tax/{id}','TaxController@updateTax');
         Route::get('get_tax_by_forecast/{id}' , 'TaxController@getTaxByForecast');
     });
