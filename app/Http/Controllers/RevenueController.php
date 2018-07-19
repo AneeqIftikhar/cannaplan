@@ -84,6 +84,10 @@ class RevenueController extends Controller
             }
             return true;
         }
+        else if(!isset($input['revenue_type']))
+        {
+            return true;
+        }
         else
         {
             return false;
@@ -104,6 +108,7 @@ class RevenueController extends Controller
             if($this->addRevenueHelper($input,$revenue,$start_of_forecast))
             {
                 $revenue->save();
+
             }
             return response()->success($revenue,'Revenue Created Successfully');
 
