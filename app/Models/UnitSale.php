@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property int $unit_sold
@@ -25,6 +27,15 @@ class UnitSale extends Model
      */
     protected $table = 'unit_sale';
 
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+    }
     /**
      * @var array
      */
