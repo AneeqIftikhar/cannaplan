@@ -69,7 +69,20 @@ class DividendController extends Controller
 
     }
 
+    public function getDividendByForecast($id)
+    {
+        $user=Auth::user();
 
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id)
+        {
+            $dividend=Dividend::getDividendByForecast($id);
+            return response()->success($dividend,'Dividend Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
+    }
 
     /**
      * Update the specified resource in storage.

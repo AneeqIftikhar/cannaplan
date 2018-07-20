@@ -82,6 +82,43 @@ class CompanyController extends Controller
         }
     }
 
+
+
+    //need to move all add functions to models to complete this api
+    public function copy_company($id)
+    {
+        try
+        {
+
+            $user=Auth::user();
+            $company=Company::find($id);
+            if($company && $company->created_by==$user->id) {
+                DB::beginTransaction();
+                $company=Company::where('id',$id)
+                    ->with('pitches','pitches.competitors','pitches.milestones','pitches.targetMarketGraphs','pitches.teamRoles',
+                        'forecasts','forecasts.revenues','forecasts.assets','forecasts.costs','forecasts.dividends','forecasts.expenses','forecasts.financings','forecasts.taxes',
+                        'plans','plans.chapters','plans.chapters.sections','plans.chapters.sections.sectionContents','plans.chapters.sections.sectionContents.content')
+                    ->first();
+
+                    DB::commit();
+                    return response()->success($company,'Company Created Successfully');
+                }
+
+            else {
+                return response()->fail("User Not Authorized");
+            }
+
+        }
+        catch (\PDOException $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
+        }
+        catch (\Exception $ex) {
+            DB::rollback();
+            return response()->fail($ex->getMessage());
+
+        }
+    }
     /**
      * Display the specified resource.
      *

@@ -23,6 +23,7 @@ class CreateDividend extends Migration
                 $table->string('name','255');
                 $table->string('amount_type','100');
                 $table->integer('amount');
+                $table->string('amount_distribution')->nullable();
                 $table->date('start_date');
 
                 $table->integer('created_by')->nullable();
