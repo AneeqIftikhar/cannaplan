@@ -4,6 +4,8 @@ namespace CannaPlan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+
 /**
  * @property int $id
  * @property int $revenue_id
@@ -30,6 +32,16 @@ class RevenueTax extends Model
      * @var array
      */
     protected $fillable = ['revenue_id', 'tax_id'];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        // create a event to happen on saving
+        static::creating(function ($table) {
+            $table->created_by = Auth::user()->id;
+        });
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

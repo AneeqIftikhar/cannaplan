@@ -73,9 +73,11 @@ class Tax extends Model
     {
         $forecast=Forecast::where('id','=',$id)->with(['company','taxes' , 'taxes.revenueTaxes'])->first();
 
-        $coorporate_tax_abs=$forecast->taxes[0]->coorporate_tax/100;
-        $sales_tax_abs=$forecast->taxes[0]->sales_tax/100;
+        $tax=new Tax();
 
+        $coorporate_tax_abs=$forecast->taxes[0]->coorporate_tax/100;
+
+        $taxes=['income_tax' , 'sales_tax'];
 
         $revenue=array();
         $accrued=array();
@@ -93,11 +95,43 @@ class Tax extends Model
             $paid['y_'.$i]=null;
         }
 
-        $rev=Revenue::getRevenueByForecastId($id);
+        $tax->calculateSalesTax($paid , $accrued , $taxes , $forecast);
+
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $revenue['m_'.$i]=null;
+            $accrued['m_'.$i]=null;
+            $paid['m_'.$i]=null;
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $revenue['y_'.$i]=null;
+            $accrued['y_'.$i]=null;
+            $paid['y_'.$i]=null;
+        }
+
+
+
+        return $taxes;
+
+    }
+
+    public static function calculateSalesTax($paid , $accrued , $taxes , $forecast)
+    {
+        $rev=Revenue::getRevenueByForecastId($forecast->id);
+        $first=false;
+        $sum=0;
+        $quarterly_sum=0;
+        $total=0;
+        $quarterly_total=0;
+
+        $sales_tax_abs=$forecast->taxes[0]->sales_tax/100;
 
         //Fetching revenues
         foreach($forecast->taxes[0]->revenueTaxes as $rev_temp)
         {
+            $quarterly_sum=0;
+            $sum=0;
             for($i = 0 ; $i < count($rev->revenues) ; $i++)
             {
                 if($rev->revenues[$i]->id== $rev_temp->revenue_id)
@@ -106,142 +140,144 @@ class Tax extends Model
                     {
                         if($rev->revenues[$i]->revenuable['amount_m_'.$j])
                         {
-                            $revenue['m_'.$j]=$revenue['m_'.$j]+$rev->revenues[$i]->revenuable['amount_m_'.$j];
-                        }
-                        else{
-                            $revenue['m_'.$j]=null;
-                        }
-                    }
-                    for($j=1 ; $j<6 ; $j++)
-                    {
-                        if($rev->revenues[$i]->revenuable['amount_y_'.$j])
-                        {
-                            $revenue['y_'.$j]=$revenue['y_'.$j]+$rev->revenues[$i]->revenuable['amount_y_'.$j];
-                        }
-                        else{
-                            $revenue['y_'.$j]=null;
-                        }
-                    }
-                }
-            }
+                            $first=true;
 
-        }
-
-
-        $taxes=['income_tax' , 'sales_tax'];
-        $sum=0;
-        $total=0;
-
-        if($forecast->taxes[0]->sales_payable_time=='annually')
-        {
-            for($j=1 ; $j<13 ; $j++)
-            {
-
-                if($revenue['m_'.$j]==null)
-                {
-                    $accrued['m_'.$j]=null;
-                    $paid['m_'.$j]=null;
-                }
-                else{
-                    $accrued['m_'.$j]=$revenue['m_'.$j]*$sales_tax_abs;
-                    $paid['m_'.$j]=0;
-                }
-            }
-            $check_first=false;
-            for($j=1 ; $j<6 ; $j++)
-            {
-                if($revenue['y_'.$j]!=null && $check_first==false)
-                {
-                    $accrued['y_'.$j]=$revenue['y_'.$j]*$sales_tax_abs;
-                    $check_first=true;
-                    $paid['y_'.$j]=0;
-                }
-                else if($revenue['y_'.$j]==null)
-                {
-                    $accrued['y_'.$j]=null;
-                    $paid['y_'.$j]=null;
-                }
-                else
-                {
-                    $accrued['y_'.$j]=$revenue['y_'.$j]*$sales_tax_abs;
-                    $paid['y_'.$j]=$revenue['y_'.($j-1)];
-                }
-            }
-        }
-        else{
-            $check_first=true;
-            $temp=0;
-            for($j=1 ; $j<13 ; $j++)
-            {
-
-                if($revenue['m_'.$j]==null)
-                {
-                    $accrued['m_'.$j]=null;
-                    $paid['m_'.$j]=null;
-                }
-                else{
-
-                    $accrued['m_'.$j]=$revenue['m_'.$j]*$sales_tax_abs;
-                    $temp=$accrued['m_'.$j];
-                    $sum=$sum+$accrued['m_'.$j];
-                    if($j==4 || $j==7 || $j==10)
-                    {
-                        if($accrued['m_'.($j-1)]==null)
-                        {
-                            $check_first=false;
-                            $paid['m_'.$j]=0;
-                            $sum=0;
-                        }
-                        else {
-                            if($check_first==true)
+                            if($forecast->taxes[0]->sales_payable_time=='annually')
                             {
-                                $paid['m_'.$j]=$sum-$accrued['m_'.$j];
-                                $total=$total+$sum;
-                                $sum=0;
-                                $check_first=false;
+                                $paid['m_'.$j]=0;
                             }
-                            else{
-                                $paid['m_'.$j]=$sum;
-                                $total=$total+$sum;
-                                $sum=0;
+                            else
+                            {
+                                if($j==4 || $j==7 || $j==10)
+                                {
+                                    $paid['m_'.$j]=$paid['m_'.$j]+$quarterly_sum;
+                                    $quarterly_total=$quarterly_total+$quarterly_sum;
+                                    $quarterly_sum=0;
+                                }
+                                else
+                                {
+                                    $paid['m_'.$j]=0;
+                                }
                             }
-
+                            $accrued['m_'.$j]=$accrued['m_'.$j]+round($rev->revenues[$i]->revenuable['amount_m_'.$j]*$sales_tax_abs);
+                            $sum=$sum+round($rev->revenues[$i]->revenuable['amount_m_'.$j]*$sales_tax_abs);
+                            $quarterly_sum=$quarterly_sum+round($rev->revenues[$i]->revenuable['amount_m_'.$j]*$sales_tax_abs);
+                            //$revenue['m_'.$j]=$revenue['m_'.$j]+$rev->revenues[$i]->revenuable['amount_m_'.$j];
+                        }
+                        else if($rev->revenues[$i]->revenuable['amount_m_'.$j]==null && $first==true)
+                        {
+                            $accrued['m_'.$j]=$accrued['m_'.$j]+0;
+                            if($forecast->taxes[0]->sales_payable_time=='annually')
+                            {
+                                $paid['m_'.$j]=0;
+                            }
+                            else
+                            {
+                                if($j==4 || $j==7 || $j==10)
+                                {
+                                    $paid['m_'.$j]=$paid['m_'.$j]+$quarterly_sum;
+                                    $quarterly_total=$quarterly_total+$quarterly_sum;
+                                    $quarterly_sum=0;
+                                }
+                                else
+                                {
+                                    $paid['m_'.$j]=0;
+                                }
+                            }
+                        }
+                        else{
+                            $accrued['m_'.$j]=null;
+                            $paid['m_'.$j]=null;
+                            //$revenue['m_'.$j]=null;
                         }
                     }
-                    else{
-                        $paid['m_'.$j]=0;
-                    }
-                }
-            }
-            $check_first=false;
-            for($j=1 ; $j<6 ; $j++)
-            {
-                if($revenue['y_'.$j]==null)
-                {
-                    $accrued['y_'.$j]=null;
-                    $paid['y_'.$j]=null;
-                }
-                else{
-                    if($revenue['y_'.$j]!=null && $check_first==false)
+
+                    if($sum!=0)
                     {
-                        $paid['y_'.$j]=$total;
-                        $accrued['y_'.$j]=$revenue['y_'.$j]*$sales_tax_abs;
-                        $check_first=true;
+                        $accrued['y_1']=$accrued['y_1']+$sum;
+                    }
+
+                    $total=$total+$sum;
+                    if($forecast->taxes[0]->sales_payable_time=='annually' && $sum!=0)
+                    {
+                        $paid['y_1']=0;
                     }
                     else
                     {
-                        $paid['y_'.$j]=$temp*12;
+                        $paid['y_1']=$quarterly_total;
                     }
+                    $sum=0;
+
+                    $first=false;
+                    for($j=2 ; $j<6 ; $j++)
+                    {
+                        if($rev->revenues[$i]->revenuable['amount_y_'.$j])
+                        {
+                            $accrued['y_'.$j]=$accrued['y_'.$j]+round($rev->revenues[$i]->revenuable['amount_y_'.$j]*$sales_tax_abs);
+                            if($forecast->taxes[0]->sales_payable_time=='annually')
+                            {
+                                if($first==false)
+                                {
+                                    $paid['y_'.$j]=0;
+                                    $first=true;
+                                }
+                                else{
+                                    $paid['y_'.$j]=$accrued['y_'.($j-1)];
+                                }
+
+                            }
+                            else
+                            {
+                                if($rev->revenues[$i]->revenuable_type=='revenue_only' && $rev->revenues[$i]->revenuable->type=='varying')
+                                {
+                                    if($first==false)
+                                    {
+                                        $paid['y_'.$j]=$accrued['y_'.($j-1)]-$paid['y_'.($j-1)];
+                                        $first=true;
+                                    }
+                                    else{
+                                        $paid['y_'.$j]=$accrued['y_'.$j];
+                                    }
+                                }
+                            }
+                            //$revenue['y_'.$j]=$revenue['y_'.$j]+$rev->revenues[$i]->revenuable['amount_y_'.$j];
+                        }
+                        else if($rev->revenues[$i]->revenuable['amount_y_'.$j]==null && $accrued['y_'.$j]!=null)
+                        {
+                            $accrued['y_'.$j]=$accrued['y_'.$j]+0;
+
+                            if($forecast->taxes[0]->sales_payable_time=='annually')
+                            {
+                                $paid['y_'.$j]=$accrued['y_'.($j-1)];
+                            }
+                            else
+                            {
+                                if($rev->revenues[$i]->revenuable_type=='revenue_only' && $rev->revenues[$i]->revenuable->type=='varying')
+                                {
+                                    if($first==false)
+                                    {
+                                        $paid['y_'.$j]=$paid['y_'.$j]+$accrued['y_'.($j-1)]-$paid['y_'.($j-1)];
+                                        $first=true;
+                                    }
+                                    else{
+                                        $paid['y_'.$j]=$paid['y_'.$j]+$accrued['y_'.$j];
+                                    }
+                                }
+                            }
+                        }
+                        else{
+                            $accrued['y_'.$j]=null;
+                            $paid['y_'.$j]=null;
+                            //$revenue['y_'.$j]=null;
+                        }
+                    }
+
                 }
             }
+
         }
 
-
-        $taxes['income_tax']=['accrued'=>$accrued , 'paid'=>$paid];
         $taxes['sales_tax']=['accrued'=>$accrued , 'paid'=>$paid];
-
-        return $taxes;
-
     }
 
 }

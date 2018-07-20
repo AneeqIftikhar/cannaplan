@@ -45,6 +45,10 @@ class Revenue extends Model
         static::deleting(function($table) {
 
             $table->revenuable->delete();
+            foreach($table->revenueTaxes as $revenue_tax)
+            {
+                $revenue_tax->delete();
+            }
         });
 
     }
