@@ -26,7 +26,8 @@ class TaxController extends Controller
         $forecast=Forecast::find($id);
         if($forecast && $forecast->created_by==$user->id)
         {
-            $tax=Tax::getTaxByForecastId($id);
+//            $tax=Tax::getTaxByForecastId($id);
+            $tax=Tax::getIncomeTax($id);
             return response()->success($tax,'Tax Fetched Successfully');
         }
         else
