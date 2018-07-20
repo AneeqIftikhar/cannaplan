@@ -279,5 +279,75 @@ class Tax extends Model
 
         $taxes['sales_tax']=['accrued'=>$accrued , 'paid'=>$paid];
     }
+    public static function getProfitArray($id)
+    {
+        //getting revenue total
+        $profit=array();
+        $revenue=Revenue::getRevenueByForecastId($id);
+        $revenue_total=$revenue['total'];
+
+        //getting cost total excluding the cost on labor that will be calculated from personal
+        $cost=Cost::getCostByForecastId($id);
+        $cost_total=array();
+        for($i=1;$i<13;$i++)
+        {
+            if(isset($cost['direct_labor']))
+            {
+                $cost_total['amount_m_'.$i] = $cost['total']['amount_m_'.$i]-$cost['direct_labor']['amount_m_'.$i];
+            }
+            else
+            {
+                $cost_total['amount_m_'.$i] = $cost['total']['amount_m_'.$i];
+            }
+
+        }
+        for($i=1;$i<6;$i++)
+        {
+            if(isset($cost['direct_labor']))
+            {
+                $cost_total['amount_y_'.$i] = $cost['total']['amount_y_'.$i]-$cost['direct_labor']['amount_y_'.$i];
+            }
+            else
+            {
+                $cost_total['amount_y_'.$i] = $cost['total']['amount_y_'.$i];
+            }
+        }
+
+
+
+        $labor=Cost::getPersonnelByForecastId($id);
+        $labor_total=$labor['total'];
+
+        $expense=Expense::getExpenseByForecastId($id);
+        $expense_total=$expense['total'];
+        for($i=1;$i<13;$i++)
+        {
+            $profit['amount_m_'.$i] = 0;
+            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i];
+        }
+        for($i=1;$i<6;$i++)
+        {
+            $profit['amount_y_'.$i] = 0;
+            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i];
+        }
+
+        return $profit;
+    }
+    public static function getIncomeTax($id)
+    {
+        $profit= Tax::getProfitArray($id);
+        $forecast=Forecast::where('id',$id)->with('company','taxes')->first();
+        $coorporate_tax=$forecast->taxes[0]->coorporate_tax;
+        for($i=1;$i<13;$i++)
+        {
+            $profit['amount_m_'.$i] = round(($coorporate_tax/100)*$profit['amount_m_'.$i]);
+        }
+        for($i=1;$i<6;$i++)
+        {
+            $profit['amount_y_'.$i] = round(($coorporate_tax/100)*$profit['amount_y_'.$i]);
+        }
+        return $profit;
+
+    }
 
 }

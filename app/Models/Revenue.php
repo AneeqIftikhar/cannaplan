@@ -363,6 +363,8 @@ class Revenue extends Model
         //ARRAY OF UNIT SALES AND UNIT PRICE IS NOT MADE
         for ($i=0;$i<count($forecast->revenues);$i++)
         {
+            //rows_hidden status for frontend hard coded
+            $forecast->revenues[$i]['revenuable']['rows_hidden']=false;
             if(isset($forecast->revenues[$i]->revenuable_type)) {
                 if ($forecast->revenues[$i]->revenuable_type !== 'revenue_only') {
                     $multiplyer = 1;
