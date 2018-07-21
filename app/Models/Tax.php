@@ -320,15 +320,66 @@ class Tax extends Model
 
         $expense=Expense::getExpenseByForecastId($id);
         $expense_total=$expense['total'];
+        $assets=Asset::getAssetByForecast($id);
+        $asset_total=array();
+        for($i=1;$i<13;$i++)
+        {
+            $asset_total['amount_m_'.$i] = 0;
+        }
+        for($i=1;$i<6;$i++)
+        {
+            $asset_total['amount_y_'.$i] = 0;
+        }
+        foreach ($assets->assets as $asset)
+        {
+            if($asset->amount_type=="constant")
+            {
+                $index=0;
+                $year_1_total=0;
+                for($i=1;$i<13;$i++)
+                {
+                    if($asset['amount_m_'.$i])
+                    {
+                        if($index==0)
+                        {
+                            $asset_total['amount_m_'.$i] = $asset['amount']- $asset['amount_m_'.$i];
+                            $year_1_total=$year_1_total+$asset_total['amount_m_'.$i];
+                            $index++;
+                        }
+                        else
+                        {
+                            $asset_total['amount_m_'.$i] = ($asset['amount'])- ($asset['amount_m_'.$i]-$asset['amount_m_'.($i-1)]);
+                            $year_1_total=$year_1_total+$asset_total['amount_m_'.$i];
+                            $index++;
+                        }
+                    }
+
+                }
+                for($i=1;$i<6;$i++)
+                {
+                    if($i==1)
+                    {
+                        $asset_total['amount_y_'.$i] =$year_1_total;
+                    }
+                    else
+                    {
+                        $asset_total['amount_y_'.$i] = ($asset['amount']*12)- ($asset['amount_y_'.$i]-$asset['amount_y_'.($i-1)]);
+                    }
+                }
+
+
+            }
+
+        }
         for($i=1;$i<13;$i++)
         {
             $profit['amount_m_'.$i] = 0;
-            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i];
+            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i]-$asset_total['amount_m_'.$i];
         }
         for($i=1;$i<6;$i++)
         {
             $profit['amount_y_'.$i] = 0;
-            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i];
+            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i]- $asset_total['amount_y_'.$i];
         }
 
         return $profit;
