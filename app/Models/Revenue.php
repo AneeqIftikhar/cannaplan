@@ -337,7 +337,16 @@ class Revenue extends Model
 
     public static function getRevenueByForecastId($id)
     {
-        $forecast=Forecast::where('id',$id)->with(['company','revenues','revenues.revenuable'])->first();
+        $forecast=Forecast::where('id',$id)->with(['company','revenues'])->first();
+        for ($i=0;$i<count($forecast->revenues);$i++)
+        {
+            if(isset($forecast->revenues[$i]->revenuable_type))
+            {
+                $forecast->revenues[$i]->revenuable;
+                //rows_hidden status for frontend hard coded
+                $forecast->revenues[$i]['revenuable']['rows_hidden']=false;
+            }
+        }
         $start_of_forecast=date($forecast->company->start_of_forecast);
         $start_of_forecast = new DateTime($start_of_forecast);
         $total_arr=array();
@@ -363,8 +372,7 @@ class Revenue extends Model
         //ARRAY OF UNIT SALES AND UNIT PRICE IS NOT MADE
         for ($i=0;$i<count($forecast->revenues);$i++)
         {
-            //rows_hidden status for frontend hard coded
-            $forecast->revenues[$i]['revenuable']['rows_hidden']=false;
+
             if(isset($forecast->revenues[$i]->revenuable_type)) {
                 if ($forecast->revenues[$i]->revenuable_type !== 'revenue_only') {
                     $multiplyer = 1;
