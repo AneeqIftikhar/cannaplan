@@ -43,8 +43,11 @@ class Revenue extends Model
             $table->created_by = Auth::user()->id;
         });
         static::deleting(function($table) {
+            if($table->revenuable)
+            {
+                $table->revenuable->delete();
+            }
 
-            $table->revenuable->delete();
             foreach($table->revenueTaxes as $revenue_tax)
             {
                 $revenue_tax->delete();
@@ -461,13 +464,17 @@ class Revenue extends Model
                     }
                     if($forecast->revenues[$i]->revenuable_type == 'unit_sale')
                     {
+                        $forecast->revenues[$i]->revenuable['single_unit_price'] = $forecast->revenues[$i]->revenuable['unit_price'];
                         $forecast->revenues[$i]->revenuable['unit_sale'] = $unit_sale;
                         $forecast->revenues[$i]->revenuable['unit_price'] = $unit_price;
                     }
                     else
                     {
+                        $forecast->revenues[$i]->revenuable['single_billable_hour'] = $forecast->revenues[$i]->revenuable['hour '];
+                        $forecast->revenues[$i]->revenuable['single_hourly_rate'] = $forecast->revenues[$i]->revenuable['hourly_rate'];
                         $forecast->revenues[$i]->revenuable['billable_hour'] = $billable_hour;
                         $forecast->revenues[$i]->revenuable['hourly_rate'] = $hourly_rate;
+
                     }
 
 

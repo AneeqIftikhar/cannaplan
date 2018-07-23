@@ -84,7 +84,7 @@ class RevenueController extends Controller
             }
             return true;
         }
-        else if(!isset($input['revenue_type']) )
+        else if(isset($input['revenue_type']) && $input['revenue_type']=="default" )
         {
             return true;
         }
