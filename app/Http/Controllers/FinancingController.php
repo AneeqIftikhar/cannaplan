@@ -7,7 +7,7 @@ use CannaPlan\Models\Forecast;
 use Illuminate\Http\Request;
 use CannaPlan\Http\Requests\FinancingRequest;
 use Illuminate\Support\Facades\Auth;
-
+use DateTime;
 class FinancingController extends Controller
 {
     /**
@@ -183,6 +183,7 @@ class FinancingController extends Controller
         if($forecast && $forecast->created_by==$user->id)
         {
             $financing=Financing::getFinancingByForecastId($id);
+//            $financing=Financing::getFinancingGraph($id);
             return response()->success($financing,'Financing Fetched Successfully');
         }
         else
