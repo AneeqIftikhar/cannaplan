@@ -430,6 +430,22 @@ class Financing extends Model
                         }
                     }
 
+                    for($j=1 ; $j<13 ; $j++)
+                    {
+                        if($forecast->financings[$i]->fundable['amount_m_' . $j])
+                        {
+                            $amount_received_arr['amount_m_' . $j] = $amount_received_arr['amount_m_' . $j]+$forecast->financings[$i]->fundable['amount_m_' . $j];
+                        }
+                    }
+                    for($j=1 ; $j<6 ; $j++)
+                    {
+                        if($forecast->financings[$i]->fundable['amount_y_' . $j])
+                        {
+                            $amount_received_arr['amount_y_' . $j] = $amount_received_arr['amount_y_' . $j]+$forecast->financings[$i]->fundable['amount_y_' . $j];
+                        }
+
+                    }
+
                 }
                 else if($forecast->financings[$i]->fundable_type == 'loan'){
                     $date=date($forecast->financings[$i]->fundable->receive_date);
@@ -654,6 +670,10 @@ class Financing extends Model
                                 }
                         }
                         $temp_short['amount_m_'.$j]=round($sum_temp);
+                        if($j%12==0)
+                        {
+                            $temp_short['amount_y_'.($j/12)]=$temp_short['amount_m_'.$j];
+                        }
                         $sum_temp=0;
 
                         if($forecast->financings[$i]->fundable->interest_months>12)
@@ -668,11 +688,18 @@ class Financing extends Model
                                 }
                             }
                             $temp_long['amount_m_'.$j]=round($sum_temp);
+
+                            if($j%12==0)
+                            {
+                                $temp_long['amount_y_'.($j/12)]=$temp_long['amount_m_'.$j];
+                            }
                         }
 
                         $sum_temp=0;
                         $iterate_start++;
                     }
+
+
                     array_push($short_term['loan'],$temp_short);
                     array_push($long_term['loan'],$temp_long);
 
@@ -688,6 +715,15 @@ class Financing extends Model
                             $long_term['amount_m_'.$j]=($long_term['amount_m_'.$j]+$temp_long['amount_m_'.$j]);
                         }
                     }
+
+                    for($j=1;$j<6;$j++)
+                    {
+                        $short_term['amount_y_'.$j]=$short_term['amount_y_'.$j]+$temp_short['amount_y_'.$j];
+
+                        $long_term['amount_y_'.$j]=$long_term['amount_y_'.$j]+$temp_long['amount_y_'.$j];
+
+                    }
+
                     $balance=['short_term' => $short_term,
                         'long_term' => $long_term];
 
@@ -708,9 +744,29 @@ class Financing extends Model
                         }
                     }
 
+                    for($j=1 ; $j<6 ; $j++)
+                    {
+                        if($short_term['amount_y_'.$j] || $long_term['amount_y_'.$j])
+                        {
+                            $balance['amount_y_'.$j]=round($short_term['amount_y_'.$j]+$long_term['amount_y_'.$j]);
+                            if($short_term['amount_y_'.$j])
+                            {
+                                $short_term['amount_y_'.$j]=round($short_term['amount_y_'.$j]);
+                            }
+                            if($long_term['amount_y_'.$j])
+                            {
+                                $long_term['amount_y_'.$j]=round($long_term['amount_y_'.$j]);
+                            }
+                        }
+                    }
+
                     $forecast['amount_received']=$amount_received_arr;
                     $forecast['payments']=$payments;
                     $forecast['balance']=$balance;
+                }
+                else if($forecast->financings[$i]->fundable_type == 'other')
+                {
+
                 }
 
             }
