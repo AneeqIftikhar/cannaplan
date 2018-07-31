@@ -114,11 +114,39 @@ class AssetController extends Controller
     {
         $user=Auth::user();
         $asset=Asset::find($id);
+        $input = $request->all();
         if($asset && $asset->created_by==$user->id) {
+            if($input['asset_duration']==$asset->asset_duration_type)
+            {
+                $asset->update(Input::all());
 
-            $asset->update(Input::all());
+            }
+            else
+            {
+                $asset->asset_duration->delete();
+                if($input['asset_duration']=='current')
+                {
+                    $current=Current::create(['month'=>$input['month']]);
+                    $current->asset_durations()->save($asset);
+                }
+                else if($input['asset_duration']=='long_term')
+                {
+                    $array=[];
+                    $array['year']=$input['year'];
+                    $array['will_sell']=$input['will_sell'];
+                    if($array['will_sell']==true)
+                    {
+                        $array['selling_amount']=$input['selling_amount'];
+                        $array['selling_date']=$input['selling_date'];
+                    }
 
-            return response()->success($asset,'Asset Updated Successfully');
+                    $long_term=LongTerm::create($array);
+                    $long_term->asset_durations()->save($asset);
+                }
+            }
+
+
+            return response()->success([],'Asset Updated Successfully');
 
         }
         else{
