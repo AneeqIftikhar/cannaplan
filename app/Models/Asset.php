@@ -434,14 +434,30 @@ class Asset extends Model
             for ($j = 1; $j < 13; $j++) {
                 if($forecast->assets[$i]['amount_m_' . $j])
                 {
-                    $total_current['amount_m_' . $j] = $total_current['amount_m_' . $j]+ $forecast->assets[$i]['amount_m_' . $j];
+                    if($forecast->assets[$i]->asset_duration_type=='long_term')
+                    {
+                        $total_long_term['amount_m_' . $j]=$total_long_term['amount_m_' . $j]+$forecast->assets[$i]['amount_m_' . $j];
+                    }
+                    else
+                    {
+                        $total_current['amount_m_' . $j] = $total_current['amount_m_' . $j]+ $forecast->assets[$i]['amount_m_' . $j];
+
+                    }
                 }
 
             }
             for ($j = 1; $j < 6; $j++) {
                 if($forecast->assets[$i]['amount_y_' . $j])
                 {
-                    $total_current['amount_y_' . $j] = $total_current['amount_y_' . $j]+ $forecast->assets[$i]['amount_y_' . $j];
+                    if($forecast->assets[$i]->asset_duration_type=='long_term')
+                    {
+                        $total_long_term['amount_y_' . $j]=$total_long_term['amount_y_' . $j]+$forecast->assets[$i]['amount_y_' . $j];
+                    }
+                    else
+                    {
+                        $total_current['amount_y_' . $j] = $total_current['amount_y_' . $j]+ $forecast->assets[$i]['amount_y_' . $j];
+
+                    }
 
                 }
             }
