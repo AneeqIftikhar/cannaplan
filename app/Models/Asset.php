@@ -85,6 +85,8 @@ class Asset extends Model
             $d2 = new DateTime($date);
             $diff_month=$now->diff($d2)->m;
             $diff_year=$now->diff($d2)->y;
+            if($diff_year>0)
+                $diff_month=0;
             if($forecast->assets[$i]->amount_type=='one_time')
             {
                 if($forecast->assets[$i]->asset_duration_type=='current')
@@ -290,36 +292,45 @@ class Asset extends Model
                             }
 
                         }
-
-                        for($j=1 ; $j<6 ; $j++)
+                        //yearly new
+                        $monthly_array=array();
+                        for ($j = 1; $j < 61; $j++)
                         {
-                            if($diff_year<$j)
-                            {
-                                if($j==1)
-                                {
-                                    $forecast->assets[$i]['amount_y_'.$j] = $final_amount;
-                                }
-                                else
-                                {
-                                        $temp = 0;
-                                        $decreasing_amount2 = $orignal_value;
-                                        for ($k = 1; $k < 13; $k++) {
-                                            $new_value2 = $decreasing_amount2 - $dep;
-                                            $decreasing_amount2 = $new_value2;
-                                            $temp = $temp + round($decreasing_amount2);
+                            $monthly_array[$j] = 0;
+                        }
+                        $orignal_value=$forecast->assets[$i]->amount;
+                        $decreasing_amount=$forecast->assets[$i]->amount;
+                        $months=$forecast->assets[$i]->asset_duration->month;
+                        $dep=$orignal_value / $months;
+                        $final_amount=0;
 
-                                        }
-                                        $forecast->assets[$i]['amount_y_'.$j] = $temp;
+                        for ($j = 1; $j < 61; $j++) {
+                            if($diff_year<($j/12) && $diff_month<$j) {
+                                    $new_value = $decreasing_amount - $dep;
+                                    $decreasing_amount = $new_value;
+                                    if($decreasing_amount >= 0)
+                                        $monthly_array[$j] = round($decreasing_amount);
+                                    $decreasing_amount2 = $orignal_value;
+                                    for ($k = 1; $k < $j-($diff_month+($diff_year*12)); $k++) {
+                                        $new_value2 = $decreasing_amount2 - $dep;
+                                        $decreasing_amount2 = $new_value2;
+                                        if($decreasing_amount2 >= 0)
+                                            $monthly_array[$j] =  $monthly_array[$j] + round($decreasing_amount2);
 
+                                    }
+                                    $final_amount =  $monthly_array[$j];
 
-                                }
                             }
                             else
                             {
-                                $forecast->assets[$i]['amount_y_'.$j] = null;
+                                $monthly_array[$j] = null;
                             }
 
+                        }
 
+                        for($j=1 ; $j<6 ; $j++)
+                        {
+                            $forecast->assets[$i]['amount_y_'.$j] = $monthly_array[$j*12];
                         }
                     }
                     else
