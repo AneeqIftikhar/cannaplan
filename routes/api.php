@@ -120,6 +120,7 @@ Route::group(['middleware' => ['cors']], function () {
 
         /*Asset Routes*/
         Route::resource('asset' , 'AssetController');
+        Route::post('update_asset/{id}' , 'AssetController@updateAsset');
         Route::get('get_asset_by_forecast/{id}' , 'AssetController@getAssetByForecast');
 
         /*Financing Routes*/
