@@ -744,7 +744,7 @@ class Financing extends Model
                             }
                         }
                     }
-
+ 
                     for($j=1 ; $j<6 ; $j++)
                     {
                         if($short_term['amount_y_'.$j] || $long_term['amount_y_'.$j])
