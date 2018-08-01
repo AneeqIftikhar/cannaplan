@@ -95,7 +95,7 @@ class Tax extends Model
             $paid['y_'.$i]=null;
         }
 
-        $tax->calculateSalesTax($paid , $accrued , $taxes , $forecast);
+        $taxes=$tax->calculateSalesTax($paid , $accrued , $taxes , $forecast);
 
         for($i=1 ; $i<13 ; $i++)
         {
@@ -206,6 +206,7 @@ class Tax extends Model
                     {
                         $paid['y_1']=$quarterly_total;
                     }
+                    $previous_remaining=$accrued['y_1']-$paid['y_1'];
                     $sum=0;
 
                     $first=false;
@@ -216,31 +217,14 @@ class Tax extends Model
                             $accrued['y_'.$j]=$accrued['y_'.$j]+round($rev->revenues[$i]->revenuable['amount_y_'.$j]*$sales_tax_abs);
                             if($forecast->taxes[0]->sales_payable_time=='annually')
                             {
-                                if($first==false)
-                                {
-                                    $paid['y_'.$j]=0;
-                                    $first=true;
-                                }
-                                else{
-                                    $paid['y_'.$j]=$accrued['y_'.($j-1)];
-                                }
-
+                                $paid['y_'.$j]=$accrued['y_'.($j)];
                             }
                             else
                             {
-                                if($rev->revenues[$i]->revenuable_type=='revenue_only' && $rev->revenues[$i]->revenuable->type=='varying')
-                                {
-                                    if($first==false)
-                                    {
-                                        $paid['y_'.$j]=$accrued['y_'.($j-1)]-$paid['y_'.($j-1)];
-                                        $first=true;
-                                    }
-                                    else{
-                                        $paid['y_'.$j]=$accrued['y_'.$j];
-                                    }
-                                }
+                                $paid['y_'.$j]=$previous_remaining+(($accrued['y_'.$j]/4)*3);
+                                $previous_remaining=($accrued['y_'.$j]/4);
                             }
-                            //$revenue['y_'.$j]=$revenue['y_'.$j]+$rev->revenues[$i]->revenuable['amount_y_'.$j];
+
                         }
                         else if($rev->revenues[$i]->revenuable['amount_y_'.$j]==null && $accrued['y_'.$j]!=null)
                         {
@@ -248,21 +232,11 @@ class Tax extends Model
 
                             if($forecast->taxes[0]->sales_payable_time=='annually')
                             {
-                                $paid['y_'.$j]=$accrued['y_'.($j-1)];
+                                $paid['y_'.$j]=$accrued['y_'.($j)];
                             }
                             else
-                            {
-                                if($rev->revenues[$i]->revenuable_type=='revenue_only' && $rev->revenues[$i]->revenuable->type=='varying')
-                                {
-                                    if($first==false)
-                                    {
-                                        $paid['y_'.$j]=$paid['y_'.$j]+$accrued['y_'.($j-1)]-$paid['y_'.($j-1)];
-                                        $first=true;
-                                    }
-                                    else{
-                                        $paid['y_'.$j]=$paid['y_'.$j]+$accrued['y_'.$j];
-                                    }
-                                }
+                            {//quaterly
+
                             }
                         }
                         else{
@@ -277,7 +251,8 @@ class Tax extends Model
 
         }
 
-        $taxes['sales_tax']=['accrued'=>$accrued , 'paid'=>$paid];
+        $taxes=['accrued'=>$accrued , 'paid'=>$paid];
+        return $taxes;
     }
     public static function getProfitArray($id)
     {
@@ -322,13 +297,16 @@ class Tax extends Model
         $expense_total=$expense['total'];
         $assets=Asset::getAssetByForecast($id);
         $asset_total=array();
+        $total_interest_paid=array();
         for($i=1;$i<13;$i++)
         {
             $asset_total['amount_m_'.$i] = 0;
+            $total_interest_paid['amount_m_'.$i] = 0;
         }
         for($i=1;$i<6;$i++)
         {
             $asset_total['amount_y_'.$i] = 0;
+            $total_interest_paid['amount_y_'.$i] = 0;
         }
         foreach ($assets->assets as $asset)
         {
@@ -371,15 +349,34 @@ class Tax extends Model
             }
 
         }
+        $financing=Financing::getFinancingByForecastId($id);
+        if(isset($financing['payments']['fundable']))
+        {
+            $payment=$financing['payments']['fundable'];
+            foreach ($payment as $p)
+            {
+                for($i=1;$i<13;$i++)
+                {
+                    $total_interest_paid['amount_m_'.$i] =$total_interest_paid['amount_m_'.$i] +$p['interest_paid']['amount_m_'.$i];
+                }
+                for($i=1;$i<5;$i++)
+                {
+                    $total_interest_paid['amount_y_'.$i] =$total_interest_paid['amount_y_'.$i] +$p['interest_paid']['amount_y_'.$i];
+                }
+
+            }
+        }
+
+
         for($i=1;$i<13;$i++)
         {
             $profit['amount_m_'.$i] = 0;
-            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i]-$asset_total['amount_m_'.$i];
+            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i]-$asset_total['amount_m_'.$i]-$total_interest_paid['amount_m_'.$i];
         }
         for($i=1;$i<6;$i++)
         {
             $profit['amount_y_'.$i] = 0;
-            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i]- $asset_total['amount_y_'.$i];
+            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i]- $asset_total['amount_y_'.$i]-$total_interest_paid['amount_y_'.$i];
         }
 
         return $profit;
@@ -389,15 +386,47 @@ class Tax extends Model
         $profit= Tax::getProfitArray($id);
         $forecast=Forecast::where('id',$id)->with('company','taxes')->first();
         $coorporate_tax=$forecast->taxes[0]->coorporate_tax;
+        $paid=array();
+        $sum=0;
+        $year_1_paid=0;
         for($i=1;$i<13;$i++)
         {
+            $paid['amount_m_'.$i]=0;
             $profit['amount_m_'.$i] = round(($coorporate_tax/100)*$profit['amount_m_'.$i]);
+            if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
+            {
+                $sum=$sum+$profit['amount_m_'.$i];
+                if($i==4 || $i==7 || $i==10)
+                {
+                    $paid['amount_m_'.$i]=$sum;
+                    $year_1_paid=$year_1_paid+$sum;
+                    $sum=0;
+                }
+            }
+            else
+            {
+                $year_1_paid=$year_1_paid+$profit['amount_m_'.$i];
+            }
+
         }
-        for($i=1;$i<6;$i++)
+        $paid['amount_y_1']=$year_1_paid;
+        $profit['amount_y_1'] = round(($coorporate_tax/100)*$profit['amount_y_1']);
+        $previous_remaining=$profit['amount_y_1']-$paid['amount_y_1'];
+        for($i=2;$i<6;$i++)
         {
             $profit['amount_y_'.$i] = round(($coorporate_tax/100)*$profit['amount_y_'.$i]);
+            if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
+            {
+                $paid['amount_y_'.$i]=$previous_remaining+(($profit['amount_y_'.$i]/4)*3);
+                $previous_remaining=($profit['amount_y_'.$i]/4);
+            }
+            else
+            {
+                $paid['amount_y_'.$i]=$profit['amount_y_'.$i];
+            }
         }
-        return $profit;
+        $income_tax=['accrued'=>$profit,'paid'=>$paid];
+        return $income_tax;
 
     }
 
