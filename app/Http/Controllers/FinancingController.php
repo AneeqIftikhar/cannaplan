@@ -14,7 +14,9 @@ class FinancingController extends Controller
     {
         if(isset($input['fund_type']) && $input['fund_type']=="loan")
         {
-            if(isset($input['receive_date']) && $input['receive_date']<$start_of_forecast)//before start of plan
+            $start_date=new DateTime($start_of_forecast);
+            $receive_date=new DateTime($input['receive_date']);
+            if(isset($input['receive_date']) && $receive_date<$start_date)//before start of plan
             {
                 $loan=Financing::addLoan($input['receive_date'],$input['amount'],$input['interest_rate'],null, $input['remaining_amount']);
                 $loan->funds()->save($fund);

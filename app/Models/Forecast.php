@@ -131,4 +131,237 @@ class Forecast extends Model
     {
         return $this->hasMany('CannaPlan\Models\Tax');
     }
+
+    public static function getProfitLossByForecastId($id)
+    {
+        $profit_loss=array();
+
+        $gross_margin=array();
+        $gross_margin_percent=array();
+        $operating_expenses=array();
+        $operating_income=array();
+        $total_expenses=array();
+        $net_profit=array();
+        $net_profit_percent=array();
+
+        //initializing arrays
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $gross_margin['amount_m_'.$i]=null;
+            $gross_margin_percent['amount_m_'.$i]=null;
+            $operating_expenses['amount_m_'.$i]=null;
+            $operating_income['amount_m_'.$i]=null;
+            $total_expenses['amount_m_'.$i]=null;
+            $net_profit['amount_m_'.$i]=null;
+            $net_profit_percent['amount_m_'.$i]=null;
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $gross_margin['amount_y_'.$i]=null;
+            $gross_margin_percent['amount_y_'.$i]=null;
+            $operating_expenses['amount_y_'.$i]=null;
+            $operating_income['amount_y_'.$i]=null;
+            $total_expenses['amount_y_'.$i]=null;
+            $net_profit['amount_y_'.$i]=null;
+            $net_profit_percent['amount_y'.$i]=null;
+        }
+
+        //adding revenue
+        $revenue=Revenue::getRevenueByForecastId($id);
+        if($revenue->revenues)
+        {
+            $profit_loss['revenue']=$revenue;
+        }
+        else{//if no revenue is entered
+            $profit_loss['revenue']=$revenue->total;
+        }
+
+        //adding cost
+        $cost=Cost::getCostByForecastId($id);
+        if($cost->costs)
+        {
+            $profit_loss['cost']=$cost;
+        }
+        else{//if no cost is entered
+            $profit_loss['cost']=$cost->total;
+        }
+
+        //calculating gross margin
+        for($i=1 ; $i<13 ; $i++)
+        {
+            if($revenue->revenues || $cost->costs)
+            {
+                if($revenue->total['amount_m_'.$i] || $cost->total['amount_m_'.$i])
+                {
+                    $gross_margin['amount_m_'.$i]=$revenue->total['amount_m_'.$i]-$cost->total['amount_m_'.$i];
+                }
+
+            }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            if($revenue->revenues || $cost->costs)
+            {
+                if($revenue->total['amount_y_'.$i] || $cost->total['amount_y_'.$i])
+                {
+                    $gross_margin['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-$cost->total['amount_y_'.$i];
+                }
+            }
+        }
+        $profit_loss['gross_margin']=$gross_margin;
+
+        //calculating gross margin %
+        for($i=1 ; $i<13 ; $i++)
+        {
+            if($revenue->revenues)
+            {
+                if($revenue->total['amount_m_'.$i] && $revenue->total['amount_m_'.$i]>0)
+                {
+                    $gross_margin_percent['amount_m_'.$i]=round(($gross_margin['amount_m_'.$i]/$revenue->total['amount_m_'.$i])*100).'%';
+                }
+
+            }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            if($revenue->revenues)
+            {
+                if($revenue->total['amount_y_'.$i] && $revenue->total['amount_y_'.$i]>0)
+                {
+                    $gross_margin_percent['amount_y_'.$i]=round(($gross_margin['amount_y_'.$i]/$revenue->total['amount_y_'.$i])*100).'%';
+                }
+
+            }
+        }
+        $profit_loss['gross_margin_percent']=$gross_margin_percent;
+
+        //adding operating expense
+        $expense=Expense::getExpenseByForecastId($id);
+        $personnal=Cost::getPersonnelByForecastId($id);
+        if($personnal->personnal_expenses)
+        {
+            $operating_expenses=$personnal->saleries_and_wages;
+        }
+        return $personnal;
+        for($i=1 ; $i<13 ; $i++)
+        {
+            if($personnal)
+            {
+
+            }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            if($revenue->revenues || $cost->costs || $expense->expenses)
+            {
+                if($revenue->total['amount_y_'.$i] || $cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i])
+                {
+                    $operating_income['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-($cost->total['amount_y_'.$i]+$expense->total['amount_y_'.$i]);
+                }
+            }
+        }
+
+
+        //calculating operating income
+        for($i=1 ; $i<13 ; $i++)
+        {
+            if($revenue->revenues || $cost->costs || $expense->expenses)
+            {
+                if($revenue->total['amount_m_'.$i] || $cost->total['amount_m_'.$i] || $expense->total['amount_m_'.$i])
+                {
+                    $operating_income['amount_m_'.$i]=$revenue->total['amount_m_'.$i]-($cost->total['amount_m_'.$i]+$expense->total['amount_m_'.$i]);
+                }
+
+            }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            if($revenue->revenues || $cost->costs || $expense->expenses)
+            {
+                if($revenue->total['amount_y_'.$i] || $cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i])
+                {
+                    $operating_income['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-($cost->total['amount_y_'.$i]+$expense->total['amount_y_'.$i]);
+                }
+            }
+        }
+        $profit_loss['operating_income']=$operating_income;
+
+        //adding income tax
+        $income_tax=Tax::getIncomeTax($id);
+        $profit_loss['income_tax']=$income_tax->income_tax->accrued;
+
+        //calculating total expenses
+        for($i=1 ; $i<13 ; $i++)
+        {
+            if($cost->costs || $expense->expenses)
+            {
+                if($cost->total['amount_m_'.$i] || $expense->total['amount_m_'.$i] || $income_tax['amount_m_'.$i])
+                {
+                    $total_expenses['amount_m_'.$i]=$income_tax['amount_m_'.$i]+$cost->total['amount_m_'.$i]+$expense->total['amount_m_'.$i];
+                }
+
+            }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            if($cost->costs || $expense->expenses)
+            {
+                if($cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i] || $income_tax['amount_y_'.$i])
+                {
+                    $total_expenses['amount_y_'.$i]=$income_tax['amount_y_'.$i]+$cost->total['amount_y_'.$i]+$expense->total['amount_y_'.$i];
+                }
+            }
+        }
+        $profit_loss['total_expenses']=$total_expenses;
+
+        //calculating net profit
+        for($i=1 ; $i<13 ; $i++)
+        {
+            if($revenue->revenues)
+            {
+                if($revenue->total['amount_m_'.$i] || $expense->total['amount_m_'.$i])
+                {
+                    $net_profit['amount_m_'.$i]=$revenue->total['amount_m_'.$i]-$expense->total['amount_m_'.$i];
+                }
+
+            }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            if($revenue->revenues)
+            {
+                if($revenue->total['amount_y_'.$i] || $expense->total['amount_y_'.$i])
+                {
+                    $net_profit['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-$expense->total['amount_y_'.$i];
+                }
+
+            }
+        }
+        $profit_loss['net_profit']=$net_profit;
+
+        //calculating net profit percent
+        for($i=1 ; $i<13 ; $i++)
+        {
+            if($revenue->revenues)
+            {
+                if($revenue->total['amount_m_'.$i] && $revenue->total['amount_m_'.$i]>0)
+                {
+                    $net_profit_percent['amount_m_'.$i]=round(($net_profit['amount_m_'.$i]/$revenue->total['amount_m_'.$i])*100).'%';
+                }
+            }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            if($revenue->revenues)
+            {
+                if($revenue->total['amount_y_'.$i] && $revenue->total['amount_y_'.$i]>0)
+                {
+                    $net_profit_percent['amount_y_'.$i]=round(($net_profit['amount_y_'.$i]/$revenue->total['amount_y_'.$i])*100).'%';
+                }
+            }
+        }
+        $profit_loss['net_profit_percent']=$net_profit_percent;
+
+        return $profit_loss;
+    }
 }
