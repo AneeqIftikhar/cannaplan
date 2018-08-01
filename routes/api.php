@@ -96,6 +96,8 @@ Route::group(['middleware' => ['cors']], function () {
         Route::get('get_forecast_by_company/{id}' , 'ForecastController@getForecastByCompany');
         //change burden rate
         Route::post('change_burden_rate/{id}','ForecastController@changeBurdenRate');
+        //getting Profit and Loss
+        Route::get('get_profit_loss_by_forecast/{id}', 'ForecastController@getProfitLossByForecast');
 
         /*Revenue Routes*/
         Route::resource('revenue', 'RevenueController');

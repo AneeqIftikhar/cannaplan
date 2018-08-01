@@ -110,6 +110,21 @@ class ForecastController extends Controller
         }
     }
 
+    public static function getProfitLossByForecast($id)
+    {
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id)
+        {
+            $profit_loss=Forecast::getProfitLossByForecastId($id);
+            return response()->success($profit_loss,'Profit And Loss Fetched Successfully');
+        }
+        else
+        {
+            return response()->fail('User Not Authorized');
+        }
+    }
+
     public static function changeBurdenRate(Request $request, $id)
     {
         $user=Auth::user();

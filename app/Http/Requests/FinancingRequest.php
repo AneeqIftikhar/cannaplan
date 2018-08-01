@@ -43,7 +43,7 @@ class FinancingRequest extends FormRequest
             else{//after start of plan
                 $rules['amount'] = 'required|numeric';
                 $rules['interest_rate'] = 'required|numeric';
-                $rules['interest_months'] = 'required';
+               // $rules['interest_months'] = 'required';
             }
         }
         else if($this->request->has('fund_type') && $this->request->get('fund_type')=='investment')
