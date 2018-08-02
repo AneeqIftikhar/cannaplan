@@ -71,44 +71,13 @@ class Tax extends Model
 
     public static function getTaxByForecastId($id)
     {
-        $forecast=Forecast::where('id','=',$id)->with(['company','taxes' , 'taxes.revenueTaxes'])->first();
-
         $tax=new Tax();
+        $taxes=array();
 
-        $coorporate_tax_abs=$forecast->taxes[0]->coorporate_tax/100;
+        $taxes['sales_tax']=$tax->calculateSalesTax($id);
 
-        $taxes=['income_tax' , 'sales_tax'];
 
-        $revenue=array();
-        $accrued=array();
-        $paid=array();
-        for($i=1 ; $i<13 ; $i++)
-        {
-            $revenue['m_'.$i]=null;
-            $accrued['m_'.$i]=null;
-            $paid['m_'.$i]=null;
-        }
-        for($i=1 ; $i<6 ; $i++)
-        {
-            $revenue['y_'.$i]=null;
-            $accrued['y_'.$i]=null;
-            $paid['y_'.$i]=null;
-        }
-
-        $taxes=$tax->calculateSalesTax($paid , $accrued , $taxes , $forecast);
-
-        for($i=1 ; $i<13 ; $i++)
-        {
-            $revenue['m_'.$i]=null;
-            $accrued['m_'.$i]=null;
-            $paid['m_'.$i]=null;
-        }
-        for($i=1 ; $i<6 ; $i++)
-        {
-            $revenue['y_'.$i]=null;
-            $accrued['y_'.$i]=null;
-            $paid['y_'.$i]=null;
-        }
+        $taxes['income_tax']=$tax->getIncomeTax($id);
 
 
 
@@ -116,139 +85,78 @@ class Tax extends Model
 
     }
 
-    public static function calculateSalesTax($paid , $accrued , $taxes , $forecast)
+    public static function calculateSalesTax($id)
     {
-        $rev=Revenue::getRevenueByForecastId($forecast->id);
-        $first=false;
-        $sum=0;
+        $rev=Revenue::getRevenueByForecastId($id);
+
+        $forecast=Forecast::where('id','=',$id)->with(['company','taxes' , 'taxes.revenueTaxes'])->first();
+
+        $tax=new Tax();
+        $taxes=array();
+
+        $accrued=array();
+        $paid=array();
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $accrued['amount_m_'.$i]=null;
+            $paid['amount_m_'.$i]=null;
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $accrued['amount_y_'.$i]=null;
+            $paid['amount_y_'.$i]=null;
+        }
+
+
         $quarterly_sum=0;
-        $total=0;
-        $quarterly_total=0;
+        $total_quarterly=0;
 
         $sales_tax_abs=$forecast->taxes[0]->sales_tax/100;
 
-        //Fetching revenues
-        foreach($forecast->taxes[0]->revenueTaxes as $rev_temp)
+        for($i=1 ; $i<13 ; $i++)
         {
-            $quarterly_sum=0;
-            $sum=0;
-            for($i = 0 ; $i < count($rev->revenues) ; $i++)
+            $accrued['amount_m_'.$i]=$rev->total['amount_m_'.$i]*$sales_tax_abs;
+
+
+            $quarterly_sum=$quarterly_sum+$accrued['amount_m_'.$i];
+            if($forecast->taxes[0]->sales_payable_time=='annually')
             {
-                if($rev->revenues[$i]->id== $rev_temp->revenue_id)
+                $paid['amount_m_'.$i]=0;
+            }
+            else
+            {
+                if($i==4 || $i==7 || $i==10)
                 {
-                    for($j=1 ; $j<13 ; $j++)
-                    {
-                        if($rev->revenues[$i]->revenuable['amount_m_'.$j])
-                        {
-                            $first=true;
-
-                            if($forecast->taxes[0]->sales_payable_time=='annually')
-                            {
-                                $paid['m_'.$j]=0;
-                            }
-                            else
-                            {
-                                if($j==4 || $j==7 || $j==10)
-                                {
-                                    $paid['m_'.$j]=$paid['m_'.$j]+$quarterly_sum;
-                                    $quarterly_total=$quarterly_total+$quarterly_sum;
-                                    $quarterly_sum=0;
-                                }
-                                else
-                                {
-                                    $paid['m_'.$j]=0;
-                                }
-                            }
-                            $accrued['m_'.$j]=$accrued['m_'.$j]+round($rev->revenues[$i]->revenuable['amount_m_'.$j]*$sales_tax_abs);
-                            $sum=$sum+round($rev->revenues[$i]->revenuable['amount_m_'.$j]*$sales_tax_abs);
-                            $quarterly_sum=$quarterly_sum+round($rev->revenues[$i]->revenuable['amount_m_'.$j]*$sales_tax_abs);
-                            //$revenue['m_'.$j]=$revenue['m_'.$j]+$rev->revenues[$i]->revenuable['amount_m_'.$j];
-                        }
-                        else if($rev->revenues[$i]->revenuable['amount_m_'.$j]==null && $first==true)
-                        {
-                            $accrued['m_'.$j]=$accrued['m_'.$j]+0;
-                            if($forecast->taxes[0]->sales_payable_time=='annually')
-                            {
-                                $paid['m_'.$j]=0;
-                            }
-                            else
-                            {
-                                if($j==4 || $j==7 || $j==10)
-                                {
-                                    $paid['m_'.$j]=$paid['m_'.$j]+$quarterly_sum;
-                                    $quarterly_total=$quarterly_total+$quarterly_sum;
-                                    $quarterly_sum=0;
-                                }
-                                else
-                                {
-                                    $paid['m_'.$j]=0;
-                                }
-                            }
-                        }
-                        else{
-                            $accrued['m_'.$j]=null;
-                            $paid['m_'.$j]=null;
-                            //$revenue['m_'.$j]=null;
-                        }
-                    }
-
-                    if($sum!=0)
-                    {
-                        $accrued['y_1']=$accrued['y_1']+$sum;
-                    }
-
-                    $total=$total+$sum;
-                    if($forecast->taxes[0]->sales_payable_time=='annually' && $sum!=0)
-                    {
-                        $paid['y_1']=0;
-                    }
-                    else
-                    {
-                        $paid['y_1']=$quarterly_total;
-                    }
-                    $previous_remaining=$accrued['y_1']-$paid['y_1'];
-                    $sum=0;
-
-                    $first=false;
-                    for($j=2 ; $j<6 ; $j++)
-                    {
-                        if($rev->revenues[$i]->revenuable['amount_y_'.$j])
-                        {
-                            $accrued['y_'.$j]=$accrued['y_'.$j]+round($rev->revenues[$i]->revenuable['amount_y_'.$j]*$sales_tax_abs);
-                            if($forecast->taxes[0]->sales_payable_time=='annually')
-                            {
-                                $paid['y_'.$j]=$accrued['y_'.($j)];
-                            }
-                            else
-                            {
-                                $paid['y_'.$j]=$previous_remaining+(($accrued['y_'.$j]/4)*3);
-                                $previous_remaining=($accrued['y_'.$j]/4);
-                            }
-
-                        }
-                        else if($rev->revenues[$i]->revenuable['amount_y_'.$j]==null && $accrued['y_'.$j]!=null)
-                        {
-                            $accrued['y_'.$j]=$accrued['y_'.$j]+0;
-
-                            if($forecast->taxes[0]->sales_payable_time=='annually')
-                            {
-                                $paid['y_'.$j]=$accrued['y_'.($j)];
-                            }
-                            else
-                            {//quaterly
-
-                            }
-                        }
-                        else{
-                            $accrued['y_'.$j]=null;
-                            $paid['y_'.$j]=null;
-                            //$revenue['y_'.$j]=null;
-                        }
-                    }
-
+                    $paid['amount_m_'.$i]=$quarterly_sum-$accrued['amount_m_'.$i];
+                    $total_quarterly=$total_quarterly+$paid['amount_m_'.$i];
+                    $quarterly_sum=$accrued['amount_m_'.$i];
                 }
             }
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $accrued['amount_y_'.$i]=$rev->total['amount_y_'.$i]*$sales_tax_abs;
+            if($forecast->taxes[0]->sales_payable_time=='annually')
+            {
+                if($i==1)
+                {
+                    $paid['amount_y_'.$i]=0;
+                }
+                else{
+                    $paid['amount_y_'.$i]=$accrued['amount_y_'.$i-1];
+                }
 
+            }
+            else
+            {
+                if($i==1)
+                {
+                    $paid['amount_y_'.$i]=$total_quarterly;
+                }
+                else{
+                    $paid['amount_y_'.$i]=$accrued['amount_y_'.$i];
+                }
+            }
         }
 
         $taxes=['accrued'=>$accrued , 'paid'=>$paid];
@@ -393,6 +301,8 @@ class Tax extends Model
         {
             $paid['amount_m_'.$i]=0;
             $profit['amount_m_'.$i] = round(($coorporate_tax/100)*$profit['amount_m_'.$i]);
+            if($profit['amount_m_'.$i]<0)
+                $profit['amount_m_'.$i]=0;
             if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
             {
                 $sum=$sum+$profit['amount_m_'.$i];
@@ -411,10 +321,14 @@ class Tax extends Model
         }
         $paid['amount_y_1']=$year_1_paid;
         $profit['amount_y_1'] = round(($coorporate_tax/100)*$profit['amount_y_1']);
+        if($profit['amount_y_1']<0)
+            $profit['amount_y_1']=0;
         $previous_remaining=$profit['amount_y_1']-$paid['amount_y_1'];
         for($i=2;$i<6;$i++)
         {
             $profit['amount_y_'.$i] = round(($coorporate_tax/100)*$profit['amount_y_'.$i]);
+            if($profit['amount_y_'.$i]<0)
+                $profit['amount_y_'.$i]=0;
             if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
             {
                 $paid['amount_y_'.$i]=$previous_remaining+(($profit['amount_y_'.$i]/4)*3);
