@@ -36,6 +36,8 @@ class ForecastController extends Controller
             $input = $request->all();
             $forecast=$company->forecasts()->create($input);
             if($forecast) {
+                $forecast->taxes()->create(['coorporate_tax'=>null , 'sales_tax'=>null]);
+                $forecast->save();
                 return response()->success($forecast,'Forecast Created Successfully');
             }
             else{

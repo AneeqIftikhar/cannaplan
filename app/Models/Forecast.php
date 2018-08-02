@@ -237,30 +237,49 @@ class Forecast extends Model
 
         //adding operating expense
         $expense=Expense::getExpenseByForecastId($id);
-        $personnal=Cost::getPersonnelByForecastId($id);
-        if($personnal->personnal_expenses)
+        $personnel=Cost::getPersonnelByForecastId($id);
+        $check_other=false;
+
+        if($personnel->personnel_expenses)
         {
-            $operating_expenses=$personnal->saleries_and_wages;
+            $operating_expenses['saleries_and_wages']=$personnel->personnel_expenses['saleries_and_wages'];
+            $operating_expenses['employee_related_expanses']=$personnel->personnel_expenses['employee_related_expanses'];
         }
-        return $personnal;
+        else if($personnel->other_labor)
+        {
+            $check_other=true;
+            $operating_expenses['saleries_and_wages']=$personnel->other_labor['saleries_and_wages'];
+            $operating_expenses['employee_related_expanses']=$personnel->other_labor['employee_related_expanses'];
+        }
+        if($expense->expenses)
+        {
+            $operating_expenses['expenses']=$expense->expenses;
+        }
+
+        //calculating operating expenses
         for($i=1 ; $i<13 ; $i++)
         {
-            if($personnal)
+            if(($personnel->personnel_expenses || $expense->expenses) && $check_other==false)
             {
-
+                $operating_expenses['amount_m_'.$i]=$personnel->personnel_expenses['amount_m_'.$i]+$expense->total['amount_m_'.$i];
+            }
+            else if(($personnel->other_labor || $expense->expenses) && $check_other==true)
+            {
+                $operating_expenses['amount_m_'.$i]=$personnel->personnel_expenses['amount_m_'.$i]+$expense->total['amount_m_'.$i];
             }
         }
         for($i=1 ; $i<6 ; $i++)
         {
-            if($revenue->revenues || $cost->costs || $expense->expenses)
+            if(($personnel->personnel_expenses || $expense->expenses) && $check_other==false)
             {
-                if($revenue->total['amount_y_'.$i] || $cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i])
-                {
-                    $operating_income['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-($cost->total['amount_y_'.$i]+$expense->total['amount_y_'.$i]);
-                }
+                $operating_expenses['amount_y_'.$i]=$personnel->personnel_expenses['amount_y_'.$i]+$expense->total['amount_y_'.$i];
+            }
+            else if(($personnel->other_labor || $expense->expenses) && $check_other==true)
+            {
+                $operating_expenses['amount_y_'.$i]=$personnel->personnel_expenses['amount_y_'.$i]+$expense->total['amount_y_'.$i];
             }
         }
-
+        $profit_loss['operating_expenses']=$operating_expenses;
 
         //calculating operating income
         for($i=1 ; $i<13 ; $i++)
@@ -287,7 +306,8 @@ class Forecast extends Model
         $profit_loss['operating_income']=$operating_income;
 
         //adding income tax
-        $income_tax=Tax::getIncomeTax($id);
+        $tax=Tax::getTaxByForecastId($id);
+        return $tax;
         $profit_loss['income_tax']=$income_tax->income_tax->accrued;
 
         //calculating total expenses
