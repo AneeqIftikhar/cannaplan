@@ -571,7 +571,6 @@ class Financing extends Model
                             $principal_paid['amount_m_'.$j]=null;
                         }
                     }
-
                     for($j=1;$j<6;$j++){
                         for($k=1;$k<13;$k++)
                         {
