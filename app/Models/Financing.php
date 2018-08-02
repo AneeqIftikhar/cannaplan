@@ -331,7 +331,7 @@ class Financing extends Model
         for ($i=0;$i<count($forecast->financings);$i++)
         {
             if(isset($forecast->financings[$i]->fundable)) {
-
+                $forecast['rows_hidden']=false;
                 if ($forecast->financings[$i]->fundable_type == 'investment') {
                     $date=date($forecast->financings[$i]->fundable->investment_start_date);
                     $d2 = new DateTime($date);
@@ -443,6 +443,7 @@ class Financing extends Model
                         }
 
                     }
+                    $amount_received_arr['rows_hidden']=false;
                     array_push($amount_received_arr['finance'],$temp);
                     $forecast['amount_received']=$amount_received_arr;
 
@@ -774,6 +775,9 @@ class Financing extends Model
                         }
                     }
 
+                    $amount_received_arr['rows_hidden']=false;
+                    $payments['rows_hidden']=false;
+                    $balance['rows_hidden']=false;
                     $forecast['amount_received']=$amount_received_arr;
                     $forecast['payments']=$payments;
                     $forecast['balance']=$balance;
@@ -953,6 +957,7 @@ class Financing extends Model
                         }
                     }
                     //storing principal paid and interest paid in fundable
+                    $temp['rows_hidden']=false;
                     $temp['principal_paid']=$principal_paid;
                     $temp['interest_paid']=$interest_paid;
 
@@ -1007,8 +1012,14 @@ class Financing extends Model
 
                         //updating balance long term array
                         $balance['long_term']=$long_term;
+
                     }
 
+                    $amount_received_arr['rows_hidden']=false;
+                    $payments['rows_hidden']=false;
+                    $balance['rows_hidden']=false;
+                    $balance['long_term']['rows_hidden']=false;
+                    $balance['short_term']['rows_hidden']=false;
                     $forecast['amount_received']=$amount_received_arr;
                     $forecast['payments']=$payments;
                     $forecast['balance']=$balance;
@@ -1034,6 +1045,7 @@ class Financing extends Model
 
         }
         $forecast['projected_cash_flow']=$cash_flow_arr;
+
         return $forecast;
     }
 
