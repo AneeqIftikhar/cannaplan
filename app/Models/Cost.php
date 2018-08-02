@@ -336,6 +336,7 @@ class Cost extends Model
                                 $labor_previous_val=$forecast->costs[$i]->charge->number_of_employees*$forecast->costs[$i]->charge->pay*12;
 
                                 $salaries_and_wages_arr['amount_y_' . $j]=$salaries_and_wages_arr['amount_y_' . $j]+$forecast->costs[$i]->charge['amount_y_' . $j];
+
                             }
                             else if ($forecast->costs[$i]->charge->annual_raise_percent>0) {
                                 $annual_raise_percent=1+($forecast->costs[$i]->charge->annual_raise_percent/100);
@@ -396,18 +397,29 @@ class Cost extends Model
                 }
             }
         }
-        //employee related expenses are added here
-        for($i=0 ; $i<count($forecast->costs) ; $i++)
-        {
-            for($j=1 ; $j<6 ; $j++)
-            {
-                if($forecast->costs[$i]->charge->staff_role_type=='on_staff_employee')
-                {
-                    $employee_related_expenses_arr['amount_y_' . $j]=$employee_related_expenses_arr['amount_y_' . $j]+round($forecast->costs[$i]->charge['amount_y_'.$j]*$burden_rate_percent);
-                }
-
-            }
-        }
+//        //employee related expenses are added here
+//        for($i=0 ; $i<count($forecast->costs) ; $i++)
+//        {
+//            for($j=1 ; $j<6 ; $j++)
+//            {
+//                if($forecast->costs[$i]->charge->staff_role_type=='on_staff_employee')
+//                {
+//                    if($j==1)
+//                    {
+//                        return $employee_related_expenses_arr;
+//                        for ($k=1 ; $k<13 ; $k++)
+//                        {
+//                            $employee_related_expenses_arr['amount_y_' . $j]=$employee_related_expenses_arr['amount_y_' . $j]+$employee_related_expenses_arr['amount_m_' . $k];
+//                        }
+//                    }
+//                    else{
+//                        $employee_related_expenses_arr['amount_y_' . $j]=$employee_related_expenses_arr['amount_y_' . $j]+round($forecast->costs[$i]->charge['amount_y_'.$j]*$burden_rate_percent);
+//                    }
+//
+//                }
+//
+//            }
+//        }
 
 
         //return round((10284+5/2)/5)*5;

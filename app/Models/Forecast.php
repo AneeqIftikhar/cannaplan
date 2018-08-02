@@ -143,6 +143,7 @@ class Forecast extends Model
         $total_expenses=array();
         $net_profit=array();
         $net_profit_percent=array();
+        $total_interest_paid=array();
 
         //initializing arrays
         for($i=1 ; $i<13 ; $i++)
@@ -154,6 +155,7 @@ class Forecast extends Model
             $total_expenses['amount_m_'.$i]=null;
             $net_profit['amount_m_'.$i]=null;
             $net_profit_percent['amount_m_'.$i]=null;
+            $total_interest_paid['amount_m_'.$i]=null;
         }
         for($i=1 ; $i<6 ; $i++)
         {
@@ -163,7 +165,8 @@ class Forecast extends Model
             $operating_income['amount_y_'.$i]=null;
             $total_expenses['amount_y_'.$i]=null;
             $net_profit['amount_y_'.$i]=null;
-            $net_profit_percent['amount_y'.$i]=null;
+            $net_profit_percent['amount_y_'.$i]=null;
+            $total_interest_paid['amount_y_'.$i]=null;
         }
 
         //adding revenue
@@ -178,6 +181,7 @@ class Forecast extends Model
 
         //adding cost
         $cost=Cost::getCostByForecastId($id);
+
         if($cost->costs)
         {
             $profit_loss['cost']=$cost;
@@ -237,39 +241,58 @@ class Forecast extends Model
 
         //adding operating expense
         $expense=Expense::getExpenseByForecastId($id);
-        $personnal=Cost::getPersonnelByForecastId($id);
-        if($personnal->personnal_expenses)
+        $personnel=Cost::getPersonnelByForecastId($id);
+        $check_other=false;
+
+        if($personnel->personnel_expenses)
         {
-            $operating_expenses=$personnal->saleries_and_wages;
+            $operating_expenses['saleries_and_wages']=$personnel->personnel_expenses['saleries_and_wages'];
+            $operating_expenses['employee_related_expanses']=$personnel->personnel_expenses['employee_related_expanses'];
         }
-        return $personnal;
+        else if($personnel->other_labor)
+        {
+            $check_other=true;
+            $operating_expenses['saleries_and_wages']=$personnel->other_labor['saleries_and_wages'];
+            $operating_expenses['employee_related_expanses']=$personnel->other_labor['employee_related_expanses'];
+        }
+        if($expense->expenses)
+        {
+            $operating_expenses['expenses']=$expense->expenses;
+        }
+
+        //calculating operating expenses
         for($i=1 ; $i<13 ; $i++)
         {
-            if($personnal)
+            if(($personnel->personnel_expenses || $expense->expenses) && $check_other==false)
             {
-
+                $operating_expenses['amount_m_'.$i]=$personnel->personnel_expenses['amount_m_'.$i]+$expense->total['amount_m_'.$i];
+            }
+            else if(($personnel->other_labor || $expense->expenses) && $check_other==true)
+            {
+                $operating_expenses['amount_m_'.$i]=$personnel->other_labor['amount_m_'.$i]+$expense->total['amount_m_'.$i];
             }
         }
         for($i=1 ; $i<6 ; $i++)
         {
-            if($revenue->revenues || $cost->costs || $expense->expenses)
+            if(($personnel->personnel_expenses || $expense->expenses) && $check_other==false)
             {
-                if($revenue->total['amount_y_'.$i] || $cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i])
-                {
-                    $operating_income['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-($cost->total['amount_y_'.$i]+$expense->total['amount_y_'.$i]);
-                }
+                $operating_expenses['amount_y_'.$i]=$personnel->personnel_expenses['amount_y_'.$i]+$expense->total['amount_y_'.$i];
+            }
+            else if(($personnel->other_labor || $expense->expenses) && $check_other==true)
+            {
+                $operating_expenses['amount_y_'.$i]=$personnel->other_labor['amount_y_'.$i]+$expense->total['amount_y_'.$i];
             }
         }
-
+        $profit_loss['operating_expenses']=$operating_expenses;
 
         //calculating operating income
         for($i=1 ; $i<13 ; $i++)
         {
             if($revenue->revenues || $cost->costs || $expense->expenses)
             {
-                if($revenue->total['amount_m_'.$i] || $cost->total['amount_m_'.$i] || $expense->total['amount_m_'.$i])
+                if($revenue->total['amount_m_'.$i] || $cost->total['amount_m_'.$i] || $operating_expenses['amount_m_'.$i])
                 {
-                    $operating_income['amount_m_'.$i]=$revenue->total['amount_m_'.$i]-($cost->total['amount_m_'.$i]+$expense->total['amount_m_'.$i]);
+                    $operating_income['amount_m_'.$i]=$revenue->total['amount_m_'.$i]-($operating_expenses['amount_m_'.$i]+$cost->total['amount_m_'.$i]);
                 }
 
             }
@@ -278,17 +301,39 @@ class Forecast extends Model
         {
             if($revenue->revenues || $cost->costs || $expense->expenses)
             {
-                if($revenue->total['amount_y_'.$i] || $cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i])
+                if($revenue->total['amount_y_'.$i] || $cost->total['amount_y_'.$i] || $operating_expenses['amount_y_'.$i])
                 {
-                    $operating_income['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-($cost->total['amount_y_'.$i]+$expense->total['amount_y_'.$i]);
+                    $operating_income['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-($operating_expenses['amount_y_'.$i]+$cost->total['amount_y_'.$i]);
                 }
             }
         }
         $profit_loss['operating_income']=$operating_income;
 
+        //Interest Expense Calculation
+        $finance=Financing::getFinancingByForecastId($id);
+        if(isset($finance->payments))
+        {
+            $payments=$finance->payments;
+
+            for($i=0;$i<count($payments['finance']);$i++)
+            {
+
+                    for($j=1 ; $j<13 ; $j++)
+                    {
+                        $total_interest_paid['amount_m_'.$j]=$total_interest_paid['amount_m_'.$j]+$payments['finance'][$i]['interest_paid']['amount_m_'.$j];
+                    }
+                     for($j=1 ; $j<6 ; $j++)
+                     {
+                         $total_interest_paid['amount_y_'.$j]=$total_interest_paid['amount_y_'.$j]+$payments['finance'][$i]['interest_paid']['amount_y_'.$j];
+                     }
+            }
+            $profit_loss['interest_expense']=$total_interest_paid;
+        }
+
         //adding income tax
-        $income_tax=Tax::getIncomeTax($id);
-        $profit_loss['income_tax']=$income_tax->income_tax->accrued;
+        $tax=Tax::getTaxByForecastId($id);
+        $income_tax=$tax['income_tax']['accrued'];
+        $profit_loss['income_tax']=$income_tax;
 
         //calculating total expenses
         for($i=1 ; $i<13 ; $i++)
@@ -297,7 +342,7 @@ class Forecast extends Model
             {
                 if($cost->total['amount_m_'.$i] || $expense->total['amount_m_'.$i] || $income_tax['amount_m_'.$i])
                 {
-                    $total_expenses['amount_m_'.$i]=$income_tax['amount_m_'.$i]+$cost->total['amount_m_'.$i]+$expense->total['amount_m_'.$i];
+                    $total_expenses['amount_m_'.$i]=$income_tax['amount_m_'.$i]+$cost->total['amount_m_'.$i]+$operating_expenses['amount_m_'.$i]+$total_interest_paid['amount_m_'.$i];
                 }
 
             }
@@ -308,7 +353,7 @@ class Forecast extends Model
             {
                 if($cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i] || $income_tax['amount_y_'.$i])
                 {
-                    $total_expenses['amount_y_'.$i]=$income_tax['amount_y_'.$i]+$cost->total['amount_y_'.$i]+$expense->total['amount_y_'.$i];
+                    $total_expenses['amount_y_'.$i]=$income_tax['amount_y_'.$i]+$cost->total['amount_y_'.$i]+$operating_expenses['amount_y_'.$i]+$total_interest_paid['amount_y_'.$i];
                 }
             }
         }
@@ -319,9 +364,9 @@ class Forecast extends Model
         {
             if($revenue->revenues)
             {
-                if($revenue->total['amount_m_'.$i] || $expense->total['amount_m_'.$i])
+                if($revenue->total['amount_m_'.$i] || $total_expenses['amount_m_'.$i])
                 {
-                    $net_profit['amount_m_'.$i]=$revenue->total['amount_m_'.$i]-$expense->total['amount_m_'.$i];
+                    $net_profit['amount_m_'.$i]=$revenue->total['amount_m_'.$i]-$total_expenses['amount_m_'.$i];
                 }
 
             }
@@ -330,9 +375,9 @@ class Forecast extends Model
         {
             if($revenue->revenues)
             {
-                if($revenue->total['amount_y_'.$i] || $expense->total['amount_y_'.$i])
+                if($revenue->total['amount_y_'.$i] || $total_expenses['amount_y_'.$i])
                 {
-                    $net_profit['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-$expense->total['amount_y_'.$i];
+                    $net_profit['amount_y_'.$i]=$revenue->total['amount_y_'.$i]-$total_expenses['amount_y_'.$i];
                 }
 
             }
