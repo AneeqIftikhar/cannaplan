@@ -281,6 +281,7 @@ class Financing extends Model
     public static function getFinancingByForecastId($id)
     {
         $forecast=Forecast::where('id',$id)->with(['company','financings','financings.fundable'])->first();
+        $forecast['before_start_status']=false;//for front end to check if a before start of forecast is present
         $start_of_forecast = new DateTime( $forecast->company->start_of_forecast );
         $amount_received_arr['finance']=array();
         $principal_paid = array();
@@ -453,6 +454,7 @@ class Financing extends Model
                     {
                         $diff_month=$start_of_forecast->diff($d2)->m;
                         $diff_month=$diff_month*-1;
+                        $forecast['before_start_status']=true;
                     }
                     else
                     {
