@@ -28,7 +28,11 @@ class TaxController extends Controller
         {
 
             $tax=Tax::getTaxByForecastId($id);
-             $tax['company']=$forecast->company;
+            $tax['company']=$forecast->company;
+
+            $tax_details=$forecast->taxes[0];
+            $forecast->taxes[0]->revenues;//to include revenues array in tax details
+            $tax['tax_details']=$tax_details;
             return response()->success($tax,'Tax Fetched Successfully');
         }
         else
