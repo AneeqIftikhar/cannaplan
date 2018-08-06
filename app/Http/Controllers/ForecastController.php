@@ -127,6 +127,21 @@ class ForecastController extends Controller
         }
     }
 
+    public static function getCashFlowByForecast($id)
+    {
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id)
+        {
+            $cash_flow=Forecast::getCashFlowByForecastId($id);
+            return response()->success($cash_flow,'Cash Flow Fetched Successfully');
+        }
+        else
+        {
+            return response()->fail('User Not Authorized');
+        }
+    }
+
     public static function changeBurdenRate(Request $request, $id)
     {
         $user=Auth::user();

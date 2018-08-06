@@ -182,6 +182,7 @@ class Asset extends Model
                         $asset_start_date=new DateTime($forecast->assets[$i]->start_date);
                         $selling_diff_month=$selling_date->diff($asset_start_date)->m;
                         $selling_diff_year=$selling_date->diff($asset_start_date)->y;
+                        $forecast->assets[$i]->asset_duration['dep_monthly']=$dep_monthly;
                     }
                     else
                     {
@@ -242,6 +243,7 @@ class Asset extends Model
                                     $decreasing_amount = $new_value;
                                     $forecast->assets[$i]['amount_y_' . $j] = round($decreasing_amount);
                                 } else {
+
                                     $forecast->assets[$i]['amount_y_' . $j] = 0;
                                 }
                             }
