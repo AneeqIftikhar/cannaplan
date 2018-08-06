@@ -118,7 +118,7 @@ class Tax extends Model
             $accrued['amount_m_'.$i]=$rev->total['amount_m_'.$i]*$sales_tax_abs;
 
 
-            $quarterly_sum=$quarterly_sum+$accrued['amount_m_'.$i];
+
             if($forecast->taxes[0]->sales_payable_time=='annually')
             {
                 $paid['amount_m_'.$i]=0;
@@ -127,11 +127,13 @@ class Tax extends Model
             {
                 if($i==4 || $i==7 || $i==10)
                 {
-                    $paid['amount_m_'.$i]=$quarterly_sum-$accrued['amount_m_'.$i];
+                    $paid['amount_m_'.$i]=$quarterly_sum;
                     $total_quarterly=$total_quarterly+$paid['amount_m_'.$i];
-                    $quarterly_sum=$accrued['amount_m_'.$i];
+                    $quarterly_sum=0;
                 }
+                $quarterly_sum=$quarterly_sum+$accrued['amount_m_'.$i];
             }
+
         }
         for($i=1 ; $i<6 ; $i++)
         {
@@ -258,9 +260,9 @@ class Tax extends Model
 
         }
         $financing=Financing::getFinancingByForecastId($id);
-        if(isset($financing['payments']['fundable']))
+        if(isset($financing['payments']['finance']))
         {
-            $payment=$financing['payments']['fundable'];
+            $payment=$financing['payments']['finance'];
             foreach ($payment as $p)
             {
                 for($i=1;$i<13;$i++)
@@ -305,13 +307,14 @@ class Tax extends Model
                 $profit['amount_m_'.$i]=0;
             if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
             {
-                $sum=$sum+$profit['amount_m_'.$i];
+
                 if($i==4 || $i==7 || $i==10)
                 {
                     $paid['amount_m_'.$i]=$sum;
                     $year_1_paid=$year_1_paid+$sum;
                     $sum=0;
                 }
+                $sum=$sum+$profit['amount_m_'.$i];
             }
             else
             {
