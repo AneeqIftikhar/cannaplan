@@ -20,22 +20,29 @@ class CreateInitialBalanceSettings extends Migration
                 $table->integer('forecast_id')->unsigned();
                 $table->foreign('forecast_id')->references('id')->on('forecast')->onDelete('cascade');
 
-
+                //assets
                 $table->float('cash')->nullable();//How much cash do you have in the bank?
                 $table->float('accounts_receivable')->nullable();//How much do your customers owe you for past sales on credit?
-                $table->integer('days_to_get_paid')->nullable();//How long will you take to collect on this starting balance
+                $table->float('days_to_get_paid')->default(1);//How long will you take to collect on this starting balance
                 $table->float('inventory')->nullable();
                 $table->float('long_term_assets')->nullable();
                 $table->float('accumulated_depreciation')->nullable();
-                $table->integer('depreciation_period')->nullable();
+                $table->float('depreciation_period')->default(1);
                 $table->float('other_current_assets')->nullable();
-                $table->integer('amortization_period')->nullable();
+                $table->float('amortization_period')->default(1);
+
+                //liabilities
                 $table->float('accounts_payable')->nullable();
-                $table->integer('days_to_pay')->nullable();
+                $table->float('days_to_pay')->default(15);
                 $table->float('corporate_taxes_payable')->nullable();
                 $table->float('sales_taxes_payable')->nullable();
-                $table->float('paid_in_capital')->nullable();
+                $table->float('prepaid_revenue')->nullable();
+                $table->float('short_term_debt')->nullable();
+                $table->float('long_term_debt')->nullable();
 
+                //equity
+                $table->float('paid_in_capital')->nullable();
+                $table->float('retained_earnings')->default(0);
 
                 $table->integer('created_by')->nullable();
 
