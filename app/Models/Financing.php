@@ -256,25 +256,49 @@ class Financing extends Model
             }
 
         }
+        //including Tax in projected cash flow
+        //sales tax accrued will be added to profit array and sales tax paid will be subtracted
+        //income tax only paid will be subtracted
+        $tax=Tax::getTaxByForecastId($id);
+        $financing=Financing::getFinancingByForecastId($id);
         for($i=1;$i<13;$i++)
         {
             $profit['amount_m_'.$i] = 0;
-            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i]-$asset_total['amount_m_'.$i];
-//            if($i>1)
-//            {
-//                $profit['amount_m_'.$i] =$profit['amount_m_'.$i] +$profit['amount_m_'.($i-1)];
-//            }
+            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-
+                $expense_total['amount_m_'.$i]-$asset_total['amount_m_'.$i]+$tax['sales_tax']['accrued']['amount_m_'.$i]-
+                $tax['sales_tax']['paid']['amount_m_'.$i]-$tax['income_tax']['paid']['amount_m_'.$i];
+            if(isset($financing['amount_recieved']))
+            {
+                $profit['amount_m_'.$i]=$profit['amount_m_'.$i]+$financing['amount_recieved']['amount_m_'.$i];
+            }
+            if(isset($financing['payments']))
+            {
+                $profit['amount_m_'.$i]=$profit['amount_m_'.$i]-$financing['payments']['amount_m_'.$i];
+            }
+            if($i>1)
+            {
+                $profit['amount_m_'.$i] =$profit['amount_m_'.$i] +$profit['amount_m_'.($i-1)];
+            }
         }
         for($i=1;$i<6;$i++)
         {
             $profit['amount_y_'.$i] = 0;
-            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i]- $asset_total['amount_y_'.$i];
-//            if($i>1)
-//            {
-//                $profit['amount_y_'.$i] =$profit['amount_y_'.$i] +$profit['amount_y_'.($i-1)];
-//            }
+            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-
+                $expense_total['amount_y_'.$i]- $asset_total['amount_y_'.$i]+$tax['sales_tax']['accrued']['amount_y_'.$i]-
+                $tax['sales_tax']['paid']['amount_y_'.$i]-$tax['income_tax']['paid']['amount_y_'.$i];
+            if(isset($financing['amount_recieved']))
+            {
+                $profit['amount_y_'.$i]=$profit['amount_y_'.$i]+$financing['amount_recieved']['amount_y_'.$i];
+            }
+            if(isset($financing['payments']))
+            {
+                $profit['amount_y_'.$i]=$profit['amount_y_'.$i]-$financing['payments']['amount_y_'.$i];
+            }
+            if($i>1)
+            {
+                $profit['amount_y_'.$i] =$profit['amount_y_'.$i] +$profit['amount_y_'.($i-1)];
+            }
         }
-
         return $profit;
     }
 
@@ -1026,24 +1050,7 @@ class Financing extends Model
 
             }
         }
-        $cash_flow_arr=Financing::getProjectedCashFlow($id);
-        for ($j = 1; $j < 13; $j++) {
-            $cash_flow_arr['amount_m_' . $j]=$cash_flow_arr['amount_m_' . $j]+$amount_received_arr['amount_m_' . $j]-$payments['amount_m_'.$j];
-            if($j>1)
-            {
-                $cash_flow_arr['amount_m_'.$j] =$cash_flow_arr['amount_m_'.$j] +$cash_flow_arr['amount_m_'.($j-1)];
-            }
 
-        }
-        for ($j = 1; $j < 6; $j++) {
-            $cash_flow_arr['amount_y_' . $j]=$cash_flow_arr['amount_y_' . $j]+$amount_received_arr['amount_y_' . $j]-$payments['amount_y_' . $j];
-            if($j>1)
-            {
-                $cash_flow_arr['amount_y_'.$j] =$cash_flow_arr['amount_y_'.$j] +$cash_flow_arr['amount_y_'.($j-1)];
-            }
-
-        }
-        $forecast['projected_cash_flow']=$cash_flow_arr;
 
         return $forecast;
     }
