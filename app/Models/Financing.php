@@ -695,7 +695,7 @@ class Financing extends Model
 
 
 
-                    for($j=0 ; $j<61 ; $j++)
+                    for($j=$iterate_start-1 ; $j<61 ; $j++)
                     {
                         for($k=$iterate_start; $k<$iterate_start+12;$k++){
                             if(isset($principal_paid['amount_m_'.$k]))
@@ -714,7 +714,8 @@ class Financing extends Model
 
                         if($end>12)
                         {
-                            for ($k=$iterate_start+12 ; $k<=$end ; $k++)
+
+                            for ($k=$iterate_start+12 ; $k<=$end+($iterate_start-1) ; $k++)
                             {
                                 if(isset($principal_paid['amount_m_'.$k])) {
                                     $sum_temp = $sum_temp + $principal_paid['amount_m_' . $k];
