@@ -97,6 +97,7 @@ class Asset extends Model
                         $decreasing_amount=$forecast->assets[$i]->amount;
                         $months=$forecast->assets[$i]->asset_duration->month;
                         $dep=$orignal_value / $months;
+                        $forecast->assets[$i]->asset_duration['dep_monthly']=$dep;
                         for ($j = 1; $j < 13; $j++) {
                             if($decreasing_amount>0)
                             {
@@ -175,6 +176,7 @@ class Asset extends Model
                     $year=$forecast->assets[$i]->asset_duration->year;
                     $dep_monthly=$orignal_value / ($year*12);
                     $dep_yearly=$orignal_value / ($year);
+                    $forecast->assets[$i]->asset_duration['dep_monthly']=$dep_monthly;
                     if($forecast->assets[$i]->asset_duration->will_sell==1)
                     {
                         $selling_date=new DateTime($forecast->assets[$i]->asset_duration->selling_date);
@@ -182,7 +184,7 @@ class Asset extends Model
                         $asset_start_date=new DateTime($forecast->assets[$i]->start_date);
                         $selling_diff_month=$selling_date->diff($asset_start_date)->m;
                         $selling_diff_year=$selling_date->diff($asset_start_date)->y;
-                        $forecast->assets[$i]->asset_duration['dep_monthly']=$dep_monthly;
+
                     }
                     else
                     {
@@ -269,6 +271,7 @@ class Asset extends Model
                         $decreasing_amount=$forecast->assets[$i]->amount;
                         $months=$forecast->assets[$i]->asset_duration->month;
                         $dep=$orignal_value / $months;
+                        $forecast->assets[$i]->asset_duration['dep_monthly']=$dep;
                         $final_amount=0;
                         for ($j = 1; $j < 13; $j++) {
                             if($diff_year==0 && $diff_month<$j) {
@@ -386,6 +389,7 @@ class Asset extends Model
                     $decreasing_amount=$forecast->assets[$i]->amount;
                     $year=$forecast->assets[$i]->asset_duration->year;
                     $dep_monthly=$orignal_value / ($year*12);
+                    $forecast->assets[$i]->asset_duration['dep_monthly']=$dep_monthly;
                     $final_amount=0;
                     for ($j = 1; $j < 61; $j++)
                     {
