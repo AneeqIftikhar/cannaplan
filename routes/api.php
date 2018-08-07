@@ -135,6 +135,10 @@ Route::group(['middleware' => ['cors']], function () {
         /*Tax Routes*/
         Route::post('update_tax/{id}','TaxController@updateTax');
         Route::get('get_tax_by_forecast/{id}' , 'TaxController@getTaxByForecast');
+
+        /*Initial Balance Settings Routes*/
+        Route::post('update_initial_balance_settings/{id}','InitialBalanceSettingsController@updateInitialBalanceSettings');
+        Route::get('get_initial_balance_settings_by_forecast/{id}' , 'InitialBalanceSettingsController@getInitialBalanceSettingsByForecast');
     });
 
 });
