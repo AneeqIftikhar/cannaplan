@@ -54,10 +54,8 @@ class CompanyController extends Controller
                     $forecast=$company->forecasts()->create(['name'=>'Original Forecast','burden_rate'=>'20']);
                     $company->selected_forecast=$forecast->id;
                     $forecast->taxes()->create(['coorporate_tax'=>null , 'sales_tax'=>null]);
-                    $forecast->initialBalanceSettings()->create(['cash'=>null, 'accounts_receivable'=>null , 'inventory'=>null , 'long_term_assets'=>null , 'accumulated_depreciation'=>null , 'other_current_assets'=>null , 'accounts_payable'=>null, 'corporate_taxes_payable'=>null, 'sales_taxes_payable'=>null, 'prepaid_revenue'=>null, 'short_term_debt'=>null, 'long_term_debt'=>null, 'paid_in_capital'=>null, 'retained_earnings'=>null]);
+                    $forecast->initialBalanceSettings()->create(['cash'=>null, 'accounts_receivable'=>null , 'inventory'=>null , 'long_term_assets'=>null , 'accumulated_depreciation'=>null , 'other_current_assets'=>null , 'accounts_payable'=>null, 'corporate_taxes_payable'=>null, 'sales_taxes_payable'=>null, 'prepaid_revenue'=>null, 'short_term_debt'=>null, 'long_term_debt'=>null, 'paid_in_capital'=>null]);
                     $company->save();
-
-
 
                     DB::commit();
                     return response()->success($company,'Company Created Successfully');

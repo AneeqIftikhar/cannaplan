@@ -37,6 +37,7 @@ class ForecastController extends Controller
             $forecast=$company->forecasts()->create($input);
             if($forecast) {
                 $forecast->taxes()->create(['coorporate_tax'=>null , 'sales_tax'=>null]);
+                $forecast->initialBalanceSettings()->create(['cash'=>null, 'accounts_receivable'=>null , 'inventory'=>null , 'long_term_assets'=>null , 'accumulated_depreciation'=>null , 'other_current_assets'=>null , 'accounts_payable'=>null, 'corporate_taxes_payable'=>null, 'sales_taxes_payable'=>null, 'prepaid_revenue'=>null, 'short_term_debt'=>null, 'long_term_debt'=>null, 'paid_in_capital'=>null]);
                 $forecast->save();
                 return response()->success($forecast,'Forecast Created Successfully');
             }

@@ -69,6 +69,7 @@ class Forecast extends Model
             foreach ($forecast->taxes()->get() as $tax) {
                 $tax->delete();
             }
+            $forecast->initialBalanceSettings()->delete();
         });
     }
 
@@ -131,6 +132,11 @@ class Forecast extends Model
     public function taxes()
     {
         return $this->hasMany('CannaPlan\Models\Tax');
+    }
+
+    public function initialBalanceSettings()
+    {
+        return $this->hasOne('CannaPlan\Models\InitialBalanceSettings');
     }
 
     public static function getProfitLossByForecastId($id)
