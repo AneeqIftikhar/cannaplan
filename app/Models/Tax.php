@@ -145,7 +145,7 @@ class Tax extends Model
                     $paid['amount_y_'.$i]=0;
                 }
                 else{
-                    $paid['amount_y_'.$i]=$accrued['amount_y_'.$i-1];
+                    $paid['amount_y_'.$i]=$accrued['amount_y_'.($i-1)];
                 }
 
             }
