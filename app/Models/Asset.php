@@ -177,6 +177,7 @@ class Asset extends Model
                     $dep_monthly=$orignal_value / ($year*12);
                     $dep_yearly=$orignal_value / ($year);
                     $forecast->assets[$i]->asset_duration['dep_monthly']=$dep_monthly;
+                    $forecast->assets[$i]->asset_duration['dep_yearly']=$dep_yearly;
                     if($forecast->assets[$i]->asset_duration->will_sell==1)
                     {
                         $selling_date=new DateTime($forecast->assets[$i]->asset_duration->selling_date);

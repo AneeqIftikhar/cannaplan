@@ -425,7 +425,7 @@ class Forecast extends Model
         $project_cash_flow['net_cash_from_operations']=array();
         $project_cash_flow['net_cash_from_financing']=array();
         $project_cash_flow['net_cash_from_investing']=array();
-
+        $net_cash_from_operations=array();
         /*Adding net profit*/
         $profit_loss=Forecast::getProfitLossByForecastId($id);
         $net_profit=$profit_loss['net_profit'];
@@ -439,11 +439,15 @@ class Forecast extends Model
         {
             $change_in_accounts_receivable['amount_m_'.$i] = null;
             $change_in_accounts_payable['amount_m_'.$i] = null;
+            $net_cash_from_financing['amount_m_'.$i] = null;
+            $net_cash_from_operations['amount_m_'.$i] = null;
         }
         for($i=1;$i<6;$i++)
         {
             $change_in_accounts_receivable['amount_y_'.$i] = null;
             $change_in_accounts_payable['amount_y_'.$i] = null;
+            $net_cash_from_financing['amount_y_'.$i] = null;
+            $net_cash_from_operations['amount_y_'.$i] = null;
         }
         $net_cash_from_operations['change_in_account_receivable']=$change_in_accounts_receivable;//dependent on table to be added
         $net_cash_from_operations['change_in_account_payable']=$change_in_accounts_payable;//dependent on table to be added
@@ -473,11 +477,11 @@ class Forecast extends Model
 
         /* Loan Short and Long Term*/
         $financing=Financing::getFinancingByForecastId($id);
+        $include_investment_status=false;
+        $include_loan_status=false;
         if(count($financing['financings'])>0)
         {
             $total_investment=array();
-            $include_investment_status=false;
-            $include_loan_status=false;
             $short_term_change=array();
             $long_term_change=array();
             for($i=1;$i<13;$i++)
@@ -564,14 +568,13 @@ class Forecast extends Model
                 $net_cash_from_financing['change_in_short_term']=$short_term_change;
                 $net_cash_from_financing['change_in_long_term']=$long_term_change;
 
-
-
             }
 
         }
 
 
         /*Including Assets, depreciatuion and amortization, Asset Sale and Gain Loss*/
+        $test=array();
         $assets=Asset::getAssetByForecast($id);
         $asset_total=array();
         $asset_sale_gain_loss=array();
@@ -579,6 +582,7 @@ class Forecast extends Model
         $dividend_and_distributions=array();
         $include_asset_status=false;
         $include_asset_gain_loss_status=false;
+        //return $assets;
         for($i=1;$i<13;$i++)
         {
             $asset_total['amount_m_'.$i] = 0;
@@ -595,116 +599,257 @@ class Forecast extends Model
         foreach ($assets->assets as $asset)
         {
             $include_asset_status=true;
+            $total_months = 0;
+            $total_years=0;
             if($asset->amount_type=="constant")
             {
-                for($i=1;$i<13;$i++)
+                if($asset->asset_duration_type=='current' || $asset->asset_duration_type=='long_term')
                 {
-                    if($asset['amount_m_'.$i])
+
+
+                    $total_months=0;
+                    for($i=1;$i<13;$i++)
                     {
-                        $asset_total['amount_m_'.$i] = $asset_total['amount_m_'.$i]-$asset->amount;
-                        if($i==1)
+                        if($asset['amount_m_'.$i])
                         {
-                            $depreciation_and_amortization['amount_m_'.$i]=$depreciation_and_amortization['amount_m_'.$i]+((($i)*$asset->amount)-($asset['amount_m_'.($i)]));
-                        }
-                        else
-                        {
-                            $depreciation_and_amortization['amount_m_'.$i]=$depreciation_and_amortization['amount_m_'.$i]+(($asset->amount)-($asset['amount_m_'.($i)]-$asset['amount_m_'.($i-1)]));
+                            $total_months++;
+                            $asset_total['amount_m_'.$i] = $asset_total['amount_m_'.$i]-$asset->amount;
+                            if($i==1)
+                            {
+                                $depreciation_and_amortization['amount_m_'.$i]=$depreciation_and_amortization['amount_m_'.$i]+((($i)*$asset->amount)-($asset['amount_m_'.($i)]));
+                            }
+                            else
+                            {
+                                $depreciation_and_amortization['amount_m_'.$i]=$depreciation_and_amortization['amount_m_'.$i]+(($asset->amount)-($asset['amount_m_'.($i)]-$asset['amount_m_'.($i-1)]));
+                            }
+
                         }
 
                     }
 
-                }
-                for($i=1;$i<6;$i++)
-                {
-                    if($asset['amount_y_'.$i])
+                    for($i=1;$i<6;$i++)
                     {
-                        $asset_total['amount_y_'.$i] = $asset_total['amount_y_'.$i]-$asset->amount*12;
-                        if($i==1)
-                        {
-                            $depreciation_and_amortization['amount_y_'.$i]=$depreciation_and_amortization['amount_y_'.$i]+(12*$asset->amount-($asset['amount_y_'.($i)]));
+                        if($asset['amount_y_'.$i]) {
+
+                            if ($i == 1) {
+                                $asset_total['amount_y_' . $i] = $asset_total['amount_y_' . $i] - ($asset->amount * $total_months);
+                                $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + (($total_months * $asset->amount) - ($asset['amount_y_' . ($i)]));
+                            } else {
+                                $asset_total['amount_y_' . $i] = $asset_total['amount_y_' . $i] - ($asset->amount * 12);
+                                $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + (12 * $asset->amount - ($asset['amount_y_' . ($i)] - $asset['amount_y_' . ($i - 1)]));
+                            }
                         }
-                        else
-                        {
-                            $depreciation_and_amortization['amount_y_'.$i]=$depreciation_and_amortization['amount_y_'.$i]+(12*$asset->amount-($asset['amount_y_'.($i)]-$asset['amount_y_'.($i-1)]));
-                        }
+
                     }
                 }
+
             }
-            else
+            else if ($asset->amount_type=="one_time")
             {
-                $found=0;
-                $total_months=0;
-                $total_years=0;
-                for($i=1;$i<13;$i++)
+                if($asset->asset_duration_type=='current')
                 {
-                    if($asset['amount_m_'.$i] && $found==0)
-                    {
-                        $asset_total['amount_m_'.$i] = $asset_total['amount_m_'.$i]-$asset->amount;
-                        $found=1;
-                    }
-                    if($asset['amount_m_'.$i])
-                    {
-                        $total_months++;
-                        $depreciation_and_amortization['amount_m_'.$i]=$depreciation_and_amortization['amount_m_'.$i]+round($asset['asset_duration']['dep_monthly']);
-                    }
-                }
-                $found=0;
-                for($i=1;$i<6;$i++)
-                {
-                    if($asset['amount_y_'.$i] && $found==0)
-                    {
-                        $asset_total['amount_y_'.$i] = $asset_total['amount_y_'.$i]-$asset->amount;
-                        $found=1;
-                    }
-                    if($asset['amount_y_'.$i])
-                    {
-                        $total_years++;
-                        if($i==1)
-                        {
-                            $depreciation_and_amortization['amount_y_'.$i]=$depreciation_and_amortization['amount_y_'.$i]+round($asset['asset_duration']['dep_monthly']*$total_months);
-                        }
-                        else
-                        {
-                            $depreciation_and_amortization['amount_y_'.$i]=$depreciation_and_amortization['amount_y_'.$i]+($asset['asset_duration']['dep_monthly']*12);
-                        }
-                    }
-                }
-                if($asset['asset_duration']['will_sell']==1)
-                {
-                    $include_asset_gain_loss_status=true;
                     $start_of_forecast= new DateTime($forecast->company['start_of_forecast']);
-                    $date=date($asset['asset_duration']['selling_date']);
-                    //$date2=date($asset['start_date']);
+                    $date=date($asset['start_date']);
                     $d1 = new DateTime($date);
-                    //$d2 = new DateTime($date2);
                     $diff_month=$start_of_forecast->diff($d1)->m;
                     $diff_year=$start_of_forecast->diff($d1)->y;
-
                     if($diff_year==0)
                     {
-                        if($diff_month==0)
+                        $asset_total['amount_m_'.($diff_month+1)] = $asset_total['amount_m_'.($diff_month+1)]-$asset->amount;
+                        $asset_total['amount_y_1'] = $asset_total['amount_y_1']-$asset->amount;
+                        for($i=1;$i<13;$i++)
                         {
-                            $asset_total['amount_m_1'] = $asset_total['amount_m_1']-$asset->amount;
-                            $asset_total['amount_y_1'] = $asset_total['amount_y_1']-($asset['amount']-$asset['asset_duration']['selling_amount']);
-                            $asset_total['amount_m_1'] = $asset_total['amount_m_1']+$asset['asset_duration']['selling_amount'];
-                            $asset_sale_gain_loss['amount_m_1']=$asset_sale_gain_loss['amount_m_1']+round($asset->amount-$asset['asset_duration']['selling_amount']-(($total_months)*$asset['asset_duration']['dep_monthly']));
-                            $asset_sale_gain_loss['amount_y_1']=$asset_sale_gain_loss['amount_y_1']+$asset_sale_gain_loss['amount_m_1'];
+                            if($diff_month<$i && ($i-$diff_month)<=$asset['asset_duration']['month'])
+                            {
+                                $depreciation_and_amortization['amount_m_'.$i]=$depreciation_and_amortization['amount_m_'.$i]+round($asset['asset_duration']['dep_monthly']);
+                            }
+                        }
+                        if($asset['asset_duration']['month']+$diff_month>12)
+                        {
+                            $depreciation_and_amortization['amount_y_1']=$depreciation_and_amortization['amount_y_1']+round($asset['asset_duration']['dep_monthly']*(12-$diff_month));
+                            $depreciation_and_amortization['amount_y_2']=$depreciation_and_amortization['amount_y_2']+round($asset['asset_duration']['dep_monthly']*($asset['asset_duration']['month']+$diff_month-12));
 
                         }
-                        else
-                        {
-                            $asset_total['amount_m_'.($diff_month)] = $asset_total['amount_m_'.($diff_month)]+$asset['asset_duration']['selling_amount'];
-                            $asset_sale_gain_loss['amount_m_'.($diff_month)]=$asset_sale_gain_loss['amount_m_'.($diff_month)]+round($asset->amount-$asset['asset_duration']['selling_amount']-(($total_months)*$asset['asset_duration']['dep_monthly']));
+                        else {
+                            $depreciation_and_amortization['amount_y_1']=$depreciation_and_amortization['amount_y_1']+round($asset['asset_duration']['dep_monthly']*$asset['asset_duration']['month']);
+
                         }
+
+
+
                     }
                     else
                     {
-                        $asset_total['amount_y_'.($diff_year+1)] = $asset_total['amount_y_'.($diff_year+1)]+$asset['asset_duration']['selling_amount'];
-                        $asset_sale_gain_loss['amount_y_'.($diff_year+1)]=$asset_sale_gain_loss['amount_y_'.($diff_year+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-((($total_years*12)+($total_months-1))*$asset['asset_duration']['dep_monthly']));
+                        $asset_total['amount_y_'.($diff_year+1)] = $asset_total['amount_y_'.($diff_year+1)]-$asset->amount;
+                        $depreciation_and_amortization['amount_y_'.($diff_year+1)]=$depreciation_and_amortization['amount_y_'.($diff_year+1)]+($asset['asset_duration']['dep_monthly']*($asset['asset_duration']['month']));
+
+                    }
+
+
+                }
+                else if($asset->asset_duration_type=='long_term') {
+                    $start_of_forecast = new DateTime($forecast->company['start_of_forecast']);
+                    $date = date($asset['start_date']);
+                    $d1 = new DateTime($date);
+                    $diff_month = $start_of_forecast->diff($d1)->m;
+                    $diff_year = $start_of_forecast->diff($d1)->y;
+                    $date2 = date($asset['asset_duration']['selling_date']);
+                    $d2 = new DateTime($date2);
+                    $sell_month = $start_of_forecast->diff($d2)->m;
+                    $sell_year = $start_of_forecast->diff($d2)->y;
+                    $dep_year=$asset['asset_duration']['year'];
+                    $total_years=0;
+                    $total_months=0;
+                    if($sell_year>0)
+                    {
+                        $sell_month=12;
+                    }
+                    if($dep_year>0)
+                    {
+                        $diff_month=0;
+                    }
+                    if ($diff_year == 0) {
+                        $asset_total['amount_m_' . ($diff_month + 1)] = $asset_total['amount_m_' . ($diff_month + 1)] - $asset->amount;
+                        $asset_total['amount_y_1'] = $asset_total['amount_y_1'] - $asset->amount;
+                        if ($asset['asset_duration']['will_sell'] == 1) {
+
+                            $total_dep=0;
+                            $include_asset_gain_loss_status=true;
+                            for ($i = 1; $i < 13; $i++) {
+                                if ($diff_month < $i && $i<=$sell_month) {
+                                    $depreciation_and_amortization['amount_m_' . $i] = $depreciation_and_amortization['amount_m_' . $i] + round($asset['asset_duration']['dep_monthly']);
+                                    $total_months++;
+                                }
+                            }
+                            if($total_months != 0)
+                            {
+                                $depreciation_and_amortization['amount_y_1'] = $depreciation_and_amortization['amount_y_1'] + round($asset['asset_duration']['dep_monthly'] * $total_months);
+                                $total_years++;
+                                $total_dep=$total_dep+round($asset['asset_duration']['dep_monthly'] * $total_months);
+                            }
+                            for ($i = 2; $i < 6; $i++) {
+
+                                if($i<=$sell_year  && $total_years<$dep_year)
+                                {
+                                    $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + round($asset['asset_duration']['dep_monthly'] * 12);
+                                    $total_years++;
+                                    $total_dep=$total_dep+round($asset['asset_duration']['dep_monthly'] * 12);
+                                }
+                                else if($i<=$sell_year  && $total_years==$dep_year && $total_months<12)
+                                {
+                                    $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + round($asset['asset_duration']['dep_monthly'] *(12-$total_months));
+                                    $total_years++;
+                                    $total_dep=$total_dep+round($asset['asset_duration']['dep_monthly'] *(12-$total_months));
+                                }
+                                else if($i-1==$sell_year && $total_years<=$dep_year && $total_months<12)
+                                {
+                                    $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + round($asset['asset_duration']['dep_monthly'] * (12-$total_months));
+                                    $total_dep=$total_dep+round($asset['asset_duration']['dep_monthly'] *(12-$total_months));
+                                }
+                            }
+                            if($sell_year==0)
+                            {
+                                $asset_sale_gain_loss['amount_y_'.($sell_month+1)]=$asset_sale_gain_loss['amount_y_'.($sell_month+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-$total_dep);
+                                $asset_total['amount_m_'.($sell_month+1)] = $asset_total['amount_m_'.($sell_month+1)]+$asset['asset_duration']['selling_amount'];
+
+                            }
+                            else
+                            {
+                                $asset_sale_gain_loss['amount_y_'.($sell_year+1)]=$asset_sale_gain_loss['amount_y_'.($sell_year+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-$total_dep);
+                                $asset_total['amount_y_'.($sell_year+1)] = $asset_total['amount_y_'.($sell_year+1)]+$asset['asset_duration']['selling_amount'];
+
+                            }
+                        } else {
+                            $total_months = 0;
+                            for ($i = 1; $i < 13; $i++) {
+                                if ($diff_month < $i) {
+                                    $depreciation_and_amortization['amount_m_' . $i] = $depreciation_and_amortization['amount_m_' . $i] + round($asset['asset_duration']['dep_monthly']);
+                                    $total_months++;
+                                }
+                            }
+                            for ($i = 1; $i < 6; $i++) {
+                                if ($i == 1) {
+                                    $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + round($asset['asset_duration']['dep_monthly'] * $total_months);
+                                } else {
+                                    $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + round($asset['asset_duration']['dep_monthly'] * 12);
+                                }
+                            }
+
+                        }
+                    } else {
+                        $asset_total['amount_y_' . ($diff_year + 1)] = $asset_total['amount_y_' . ($diff_year + 1)] - $asset->amount;
+                        if ($asset['asset_duration']['will_sell'] == 1) {
+                            $total_years=0;
+                            $total_dep=0;
+                            $include_asset_gain_loss_status=true;
+                            for ($i = 2; $i < 6; $i++) {
+                                if($i<=$sell_year  && $total_years<$dep_year)
+                                {
+                                    $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + round($asset['asset_duration']['dep_monthly'] * 12);
+                                    $total_dep=$total_dep+round($asset['asset_duration']['dep_monthly'] * 12);
+                                    $total_years++;
+                                }
+                            }
+                            $asset_total['amount_y_'.($sell_year+1)] = $asset_total['amount_y_'.($sell_year+1)]+$asset['asset_duration']['selling_amount'];
+                            $asset_sale_gain_loss['amount_y_'.($sell_year+1)]=$asset_sale_gain_loss['amount_y_'.($sell_year+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-$total_dep);
+                        } else {
+                            for ($i = 2; $i < 6; $i++) {
+                                if($diff_year<$i)
+                                    $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + round($asset['asset_duration']['dep_monthly'] * 12);
+                            }
+                        }
                     }
                 }
 
+//                if($asset['asset_duration']['will_sell']==1)
+//                {
+//                    $include_asset_gain_loss_status=true;
+//                    $start_of_forecast= new DateTime($forecast->company['start_of_forecast']);
+//                    $date=date($asset['asset_duration']['selling_date']);
+//                    $d1 = new DateTime($date);
+//                    $diff_month=$start_of_forecast->diff($d1)->m;
+//                    $diff_year=$start_of_forecast->diff($d1)->y;
+//
+//                    if($diff_year==0)
+//                    {
+//                        if($diff_month==0)
+//                        {
+//                            $asset_total['amount_m_1'] = $asset_total['amount_m_1']-$asset->amount;
+//                            $asset_total['amount_y_1'] = $asset_total['amount_y_1']-($asset['amount']-$asset['asset_duration']['selling_amount']);
+//                            $asset_total['amount_m_1'] = $asset_total['amount_m_1']+$asset['asset_duration']['selling_amount'];
+//                            $asset_sale_gain_loss['amount_m_1']=$asset_sale_gain_loss['amount_m_1']+round($asset->amount-$asset['asset_duration']['selling_amount']-(($total_months)*$asset['asset_duration']['dep_monthly']));
+//                            $asset_sale_gain_loss['amount_y_1']=$asset_sale_gain_loss['amount_y_1']+$asset_sale_gain_loss['amount_m_1'];
+//
+//                        }
+//                        else
+//                        {
+//                            $asset_total['amount_m_'.($diff_month)] = $asset_total['amount_m_'.($diff_month)]+$asset['asset_duration']['selling_amount'];
+//                            $asset_sale_gain_loss['amount_m_'.($diff_month)]=$asset_sale_gain_loss['amount_m_'.($diff_month)]+round($asset->amount-$asset['asset_duration']['selling_amount']-(($total_months)*$asset['asset_duration']['dep_monthly']));
+//                        }
+//                    }
+//                    else
+//                    {
+//                        if($total_months==0)
+//                        {
+//                            $asset_total['amount_y_'.($diff_year+1)] = $asset_total['amount_y_'.($diff_year+1)]+$asset['asset_duration']['selling_amount'];
+//                            $asset_sale_gain_loss['amount_y_'.($diff_year+1)]=$asset_sale_gain_loss['amount_y_'.($diff_year+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-((($total_years*12))*$asset['asset_duration']['dep_monthly']));
+//                            $total_dep=0;
+//                            for($i=1;$i<6;$i++)
+//                            {
+//
+//                            }
+//                        }
+//                        else
+//                        {
+//                            $asset_total['amount_y_'.($diff_year+1)] = $asset_total['amount_y_'.($diff_year+1)]+$asset['asset_duration']['selling_amount'];
+//                            $asset_sale_gain_loss['amount_y_'.($diff_year+1)]=$asset_sale_gain_loss['amount_y_'.($diff_year+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-((($total_years*12)+($total_months-1))*$asset['asset_duration']['dep_monthly']));
+//
+//                        }
+//                    }
+//                }
+
             }
+
 
         }
 
@@ -744,9 +889,23 @@ class Forecast extends Model
             $net_cash_from_investing['amount_m_'.$i]=null;
 
         }
+        for($i=1;$i<6;$i++)
+        {
+            $net_cash_from_operations['amount_y_'.$i]=null;
+            $net_cash_from_investing['amount_y_'.$i]=null;
+
+        }
+
+        $cash_at_the_beginning=array();
+        $net_change_in_cash=array();
+        $cash_at_the_end=array();
 
         for($i=1;$i<13;$i++)
         {
+            $cash_at_the_beginning['amount_m_'.$i]=null;
+            $net_change_in_cash['amount_m_'.$i]=null;
+            $cash_at_the_end['amount_m_'.$i]=null;
+
             if($net_profit['amount_m_'.$i])
             {
                 $net_cash_from_operations['amount_m_'.$i]=$net_cash_from_operations['amount_m_'.$i]+$net_profit['amount_m_'.$i];
@@ -786,22 +945,124 @@ class Forecast extends Model
                 $net_cash_from_operations['amount_m_'.$i]=$net_cash_from_operations['amount_m_'.$i]+$net_cash_from_operations['asset_sale_gain_loss']['amount_m_'.$i];
 
             }
+
+            if($include_investment_status && $net_cash_from_financing['investment_received']['amount_m_'.$i])
+            {
+                $net_cash_from_financing['amount_m_'.$i]=$net_cash_from_financing['amount_m_'.$i]+$net_cash_from_financing['investment_received']['amount_m_'.$i];
+            }
+
+            if($include_dividend && $net_cash_from_financing['dividend_and_distributions']['amount_m_'.$i])
+            {
+                $net_cash_from_financing['amount_m_'.$i]=$net_cash_from_financing['amount_m_'.$i]+$net_cash_from_financing['dividend_and_distributions']['amount_m_'.$i];
+            }
+
+            if($include_loan_status )
+            {
+                if($net_cash_from_financing['change_in_short_term']['amount_m_'.$i])
+                {
+                    $net_cash_from_financing['amount_m_'.$i]=$net_cash_from_financing['amount_m_'.$i]+$net_cash_from_financing['change_in_short_term']['amount_m_'.$i];
+                }
+                if($net_cash_from_financing['change_in_long_term']['amount_m_'.$i])
+                {
+                    $net_cash_from_financing['amount_m_'.$i]=$net_cash_from_financing['amount_m_'.$i]+$net_cash_from_financing['change_in_long_term']['amount_m_'.$i];
+                }
+            }
+
+            $net_change_in_cash['amount_m_'.$i]=$net_cash_from_financing['amount_m_'.$i]+$net_cash_from_investing['amount_m_'.$i]+$net_cash_from_operations['amount_m_'.$i];
+            if($i==1)
+            {
+                $cash_at_the_beginning['amount_m_'.$i]=0;
+            }
+            else{
+
+                $cash_at_the_beginning['amount_m_'.$i]=$net_change_in_cash['amount_m_'.($i-1)]+$cash_at_the_beginning['amount_m_'.($i-1)];
+            }
+            $cash_at_the_end['amount_m_'.$i]=$net_change_in_cash['amount_m_'.$i]+$cash_at_the_beginning['amount_m_'.$i];
         }
         for($i=1;$i<6;$i++)
         {
+            if($net_profit['amount_y_'.$i])
+            {
+                $net_cash_from_operations['amount_y_'.$i]=$net_cash_from_operations['amount_y_'.$i]+$net_profit['amount_y_'.$i];
+            }
+            if($change_in_accounts_receivable['amount_y_'.$i])
+            {
+                $net_cash_from_operations['amount_y_'.$i]=$net_cash_from_operations['amount_y_'.$i]+$change_in_accounts_receivable['amount_y_'.$i];
+            }
+            if($change_in_accounts_payable['amount_y_'.$i])
+            {
+                $net_cash_from_operations['amount_y_'.$i]=$net_cash_from_operations['amount_y_'.$i]+$change_in_accounts_payable['amount_y_'.$i];
+            }
+            if($include_tax)
+            {
+                if($net_cash_from_operations['change_in_income_tax_payable']['amount_y_'.$i])
+                {
+                    $net_cash_from_operations['amount_y_'.$i]=$net_cash_from_operations['amount_y_'.$i]+$net_cash_from_operations['change_in_income_tax_payable']['amount_y_'.$i];
+                }
+                if($net_cash_from_operations['change_in_sales_tax_payable']['amount_y_'.$i])
+                {
+                    $net_cash_from_operations['amount_y_'.$i]=$net_cash_from_operations['amount_y_'.$i]+$net_cash_from_operations['change_in_sales_tax_payable']['amount_y_'.$i];
+                }
+            }
+            if($include_asset_status)
+            {
+                if($net_cash_from_operations['depreciation_and_amortization']['amount_y_'.$i])
+                {
+                    $net_cash_from_operations['amount_y_'.$i]=$net_cash_from_operations['amount_y_'.$i]+$net_cash_from_operations['depreciation_and_amortization']['amount_y_'.$i];
+                }
+                if($net_cash_from_investing['asset_sold_or_purchased']['amount_y_'.$i])
+                {
+                    $net_cash_from_investing['amount_y_'.$i]=$net_cash_from_investing['amount_y_'.$i]+$net_cash_from_investing['asset_sold_or_purchased']['amount_y_'.$i];
+                }
+            }
+            if($include_asset_gain_loss_status && $net_cash_from_operations['asset_sale_gain_loss']['amount_y_'.$i])
+            {
+                $net_cash_from_operations['amount_y_'.$i]=$net_cash_from_operations['amount_y_'.$i]+$net_cash_from_operations['asset_sale_gain_loss']['amount_y_'.$i];
 
+            }
+
+            if($include_investment_status && $net_cash_from_financing['investment_received']['amount_y_'.$i])
+            {
+                $net_cash_from_financing['amount_y_'.$i]=$net_cash_from_financing['amount_y_'.$i]+$net_cash_from_financing['investment_received']['amount_y_'.$i];
+            }
+
+            if($include_dividend && $net_cash_from_financing['dividend_and_distributions']['amount_y_'.$i])
+            {
+                $net_cash_from_financing['amount_y_'.$i]=$net_cash_from_financing['amount_y_'.$i]+$net_cash_from_financing['dividend_and_distributions']['amount_y_'.$i];
+            }
+
+            if($include_loan_status )
+            {
+                if($net_cash_from_financing['change_in_short_term']['amount_y_'.$i])
+                {
+                    $net_cash_from_financing['amount_y_'.$i]=$net_cash_from_financing['amount_y_'.$i]+$net_cash_from_financing['change_in_short_term']['amount_y_'.$i];
+                }
+                if($net_cash_from_financing['change_in_long_term']['amount_y_'.$i])
+                {
+                    $net_cash_from_financing['amount_y_'.$i]=$net_cash_from_financing['amount_y_'.$i]+$net_cash_from_financing['change_in_long_term']['amount_y_'.$i];
+                }
+            }
+
+            $net_change_in_cash['amount_y_'.$i]=$net_cash_from_financing['amount_y_'.$i]+$net_cash_from_investing['amount_y_'.$i]+$net_cash_from_operations['amount_y_'.$i];
+            if($i==1)
+            {
+                $cash_at_the_beginning['amount_y_'.$i]=0;
+            }
+            else{
+
+                $cash_at_the_beginning['amount_y_'.$i]=$net_change_in_cash['amount_y_'.($i-1)]+$cash_at_the_beginning['amount_y_'.($i-1)];
+            }
+            $cash_at_the_end['amount_y_'.$i]=$net_change_in_cash['amount_y_'.$i]+$cash_at_the_beginning['amount_y_'.$i];
         }
 
         $project_cash_flow['net_cash_from_operations']=$net_cash_from_operations;
         $project_cash_flow['net_cash_from_financing']=$net_cash_from_financing;
         $project_cash_flow['net_cash_from_investing']=$net_cash_from_investing;
+        $project_cash_flow['cash_at_the_beginning']=$cash_at_the_beginning;
+        $project_cash_flow['net_change_in_cash']=$net_change_in_cash;
+        $project_cash_flow['cash_at_the_end']=$cash_at_the_end;
 
         return $project_cash_flow;
-
-
-
-
-
 
     }
 }

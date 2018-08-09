@@ -119,7 +119,7 @@ class AssetController extends Controller
             if($input['asset_duration']==$asset->asset_duration_type)
             {
                 $asset->update(Input::all());
-
+                $asset->asset_duration()->update(Input::all());
             }
             else
             {
