@@ -66,7 +66,7 @@ class Tax extends Model
     public function revenues()
     {
         return $this->belongsToMany('CannaPlan\Models\Revenue', 'revenue_tax',
-            'tax_id', 'revenue_id');
+            'tax_id', 'revenue_id')->withTimestamps();
     }
 
     public static function getTaxByForecastId($id)

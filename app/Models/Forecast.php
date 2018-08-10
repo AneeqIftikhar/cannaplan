@@ -417,6 +417,347 @@ class Forecast extends Model
         return $profit_loss;
     }
 
+    public static function getBalanceSheetByForecastId($id)
+    {
+        //declaring arrays
+        $projected_balance_sheet=array();
+
+        $assets=array();
+
+        $current_asset=array();
+        $cash=array();
+        $other_current_assets=array();
+
+        //calling cash flow
+        $forecast=Forecast::where('id',$id)->first();
+        $cash_flow=Forecast::getCashFlowByForecastId($id);
+        //calling asset
+        $asset=Asset::getAssetByForecast($id);
+        $accumulated_depreciation=array();
+        $long_term_assets=array();
+        $long_term_assets_total=array();
+        $include_current_asset=false;
+        $include_long_term_asset=false;
+
+        //Liabilities portion
+        $liabilities=array();
+
+        $current_liabilities=array();
+        $income_tax_payable=array();
+        $sales_tax_payable=array();
+        $short_term_debt=array();
+
+        $long_term_liabilities=array();
+        $long_term_debt=array();
+        $include_short_and_long_term_financing=false;
+        $include_tax=false;
+
+        //initializing arrays
+        for($i=1 ; $i<13 ; $i++)
+        {
+            $long_term_assets['amount_m_'.$i]=null;
+            $long_term_assets_total['amount_m_'.$i]=null;
+            $current_asset['amount_m_'.$i]=null;
+            $assets['amount_m_'.$i]=null;
+
+            $liabilities['amount_m_'.$i]=null;
+
+            $current_liabilities['amount_m_'.$i]=null;
+            $income_tax_payable['amount_m_'.$i]=null;
+            $sales_tax_payable['amount_m_'.$i]=null;
+
+            $long_term_liabilities['amount_m_'.$i]=null;
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            $long_term_assets['amount_y_'.$i]=null;
+            $long_term_assets_total['amount_y_'.$i]=null;
+            $current_asset['amount_y_'.$i]=null;
+            $assets['amount_y_'.$i]=null;
+
+            $liabilities['amount_y_'.$i]=null;
+
+            $current_liabilities['amount_y_'.$i]=null;
+            $income_tax_payable['amount_y_'.$i]=null;
+            $sales_tax_payable['amount_y_'.$i]=null;
+
+            $long_term_liabilities['amount_y_'.$i]=null;
+        }
+
+        //Asset portion
+            //current asset
+                //cash flow's cash at end of the period will come in cash array
+                //if current asset is present it will come in other current asset array
+           //long term asset
+                //if long asset is present it will come in long term asset with accumulated depreciation from cash flow
+
+        //Liabilities protion
+            //CurrentLiabilities
+                //income tax payable is accumulated income tax from tax model
+                //sales tax payable is accumulated sales tax from tax model
+                //short term debt comes from financing if added
+            //Long Term Liabilities
+                //long term debt comes from financing if added
+
+        //Equity portion
+
+
+        //calling tax
+        $tax=Tax::getTaxByForecastId($id);
+        $tax_details=$forecast->taxes[0];
+        $tax['tax_details']=$tax_details;
+
+        //calling finance
+        $financing=Financing::getFinancingByForecastId($id);
+
+        $income_accumulated=0;
+        $sales_accumulated=0;
+        for($i=1 ; $i<13 ; $i++) {
+            //populating cash array
+            $cash['amount_m_' . $i] = $cash_flow['cash_at_the_end']['amount_m_' . $i];
+
+            //populating other cuurent asset array
+            if ($asset['total_current']['amount_m_' . $i]) {
+                $other_current_assets['amount_m_' . $i] = $asset['total_current']['amount_m_' . $i];
+            }
+
+            //calculating current assets
+            if($cash['amount_m_'.$i] || $other_current_assets['amount_m_'.$i])
+            {
+                $current_asset['amount_m_'.$i]=$cash['amount_m_'.$i]+$other_current_assets['amount_m_'.$i];
+            }
+
+            //populating long term assets total array
+            if ($asset['total_long_term']['amount_m_' . $i]) {
+                $long_term_assets_total['amount_m_' . $i] = $asset['total_long_term']['amount_m_' . $i];
+            }
+
+            //calculating assets array
+            if($long_term_assets_total['amount_m_' . $i] || $current_asset['amount_m_'.$i])
+            {
+                $assets['amount_m_'.$i]=$long_term_assets_total['amount_m_' . $i]+$current_asset['amount_m_'.$i];
+            }
+
+            if ($tax['tax_details']['is_started'])
+            {
+                $include_tax=true;
+                //calculating income tax payable
+                $income_tax_payable['amount_m_'.$i]=$income_accumulated+$tax['income_tax']['accrued'];
+                $income_accumulated=$income_tax_payable['amount_m_'.$i];
+
+                //calculating sales tax payable
+                $sales_tax_payable['amount_m_'.$i]=$sales_accumulated+$tax['sales_tax']['accrued'];
+                $sales_accumulated=$sales_tax_payable['amount_m_'.$i];
+            }
+
+
+            //populating short term debt and long term debt calculating current liabilities and long term liabilities
+            if(isset($financing['balance']))
+            {
+                $include_short_and_long_term_financing=true;
+                $short_term_debt['amount_m_'.$i]=$financing['balance']['short_term']['amount_m_'.$i];
+                if($short_term_debt['amount_m_'.$i] || $income_tax_payable['amount_m_'.$i] || $sales_tax_payable['amount_m_'.$i])
+                {
+                    $current_liabilities['amount_m_'.$i]=$income_tax_payable['amount_m_'.$i]+$sales_tax_payable['amount_m_'.$i]+$short_term_debt['amount_m_'.$i];
+                }
+
+                $long_term_debt['amount_m_'.$i]=$financing['balance']['long_term']['amount_m_'.$i];
+                $long_term_liabilities['amount_m_'.$i]=$long_term_debt['amount_m_'.$i];
+
+                $liabilities['amount_m_'.$i]=$long_term_liabilities['amount_m_'.$i]+$current_liabilities['amount_m_'.$i];
+            }
+
+
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            //populating cash array
+            $cash['amount_y_'.$i]=$cash_flow['cash_at_the_end']['amount_y_'.$i];
+
+            //populating other asset array
+            if($asset['total_current']['amount_y_'.$i])
+            {
+                $other_current_assets['amount_y_'.$i]=$asset['total_current']['amount_y_'.$i];
+            }
+            if($asset['total_long_term']['amount_y_'.$i])
+            {
+                $long_term_assets_total['amount_y_'.$i]=$asset['total_long_term']['amount_y_'.$i];
+            }
+
+            //calculating assets array
+            if($long_term_assets_total['amount_y_' . $i] || $current_asset['amount_y_'.$i])
+            {
+                $assets['amount_y_'.$i]=$long_term_assets_total['amount_y_' . $i]+$current_asset['amount_y_'.$i];
+            }
+
+            if($tax['tax_details']['is_started'])
+            {
+                $include_tax=true;
+                //calculating income tax payable
+                $income_tax_payable['amount_y_'.$i]=$income_accumulated+$tax['income_tax']['accrued'];
+                $income_accumulated=$income_tax_payable['amount_y_'.$i];
+
+                //calculating sales tax payable
+                $sales_tax_payable['amount_y_'.$i]=$sales_accumulated+$tax['sales_tax']['accrued'];
+                $sales_accumulated=$sales_tax_payable['amount_y_'.$i];
+            }
+
+            //populating short term debt and long term debt calculating current liabilities and long term liabilities
+            if(isset($financing['balance']))
+            {
+                $include_short_and_long_term_financing=true;
+                $short_term_debt['amount_y_'.$i]=$financing['balance']['short_term']['amount_y_'.$i];
+                if($short_term_debt['amount_y_'.$i] || $income_tax_payable['amount_y_'.$i] || $sales_tax_payable['amount_y_'.$i])
+                {
+                    $current_liabilities['amount_y_'.$i]=$income_tax_payable['amount_y_'.$i]+$sales_tax_payable['amount_y_'.$i]+$short_term_debt['amount_y_'.$i];
+                }
+
+                $long_term_debt['amount_y_'.$i]=$financing['balance']['long_term']['amount_y_'.$i];
+                $long_term_liabilities['amount_y_'.$i]=$long_term_debt['amount_y_'.$i];
+
+                $liabilities['amount_y_'.$i]=$long_term_liabilities['amount_y_'.$i]+$current_liabilities['amount_y_'.$i];
+            }
+        }
+
+        //calculating accumulated long term assets
+        foreach ($asset->assets as $as)
+        {
+            if($as->asset_duration_type=='long_term')
+            {
+                $include_long_term_asset = true;
+                $start_of_forecast= new DateTime($forecast->company['start_of_forecast']);
+                $date=date($as['start_date']);
+                $d1 = new DateTime($date);
+                $diff_month=$start_of_forecast->diff($d1)->m;
+                $diff_year=$start_of_forecast->diff($d1)->y;
+
+                if($diff_year==0)
+                {
+                    if($as->amount_type=='constant')//for  constant amount type
+                    {
+                        for($i=1 ; $i<13 ; $i++)
+                        {
+                            if($diff_month<$i)
+                            {
+                                $long_term_assets['amount_m_'.$i]=$long_term_assets['amount_m_'.$i]+$as->amount;
+                            }
+                        }
+                        for($i=1 ; $i<6 ; $i++)
+                        {
+                            if ($i==1)
+                            {
+                                $long_term_assets['amount_y_'.$i]=$long_term_assets['amount_y_'.$i]+$as->amount*(12-$diff_month);
+                            }
+                            else
+                            {
+                                $long_term_assets['amount_y_'.$i]=$long_term_assets['amount_y_'.$i]+$as->amount*12;
+                            }
+                        }
+                    }
+                    else{//for one time
+                        $long_term_assets['amount_m_'.($diff_month+1)]=$long_term_assets['amount_m_'.($diff_month+1)]+$as->amount;
+                        if($as['asset_duration']['will_sell']==1)
+                        {
+                            $date2 = date($as['asset_duration']['selling_date']);
+                            $d2 = new DateTime($date2);
+                            $sell_month = $start_of_forecast->diff($d2)->m;
+                            $sell_year = $start_of_forecast->diff($d2)->y;
+                            if($sell_year==0)
+                            {
+                                $long_term_assets['amount_m_'.($sell_month+1)]=$long_term_assets['amount_m_'.($sell_month+1)]-$as->amount;
+                            }
+                            else
+                            {
+                                $long_term_assets['amount_y_1']=$long_term_assets['amount_y_1']+$as->amount;
+                                $long_term_assets['amount_y_'.($sell_year+1)]=$long_term_assets['amount_y_'.($sell_year+1)]-$as->amount;
+                            }
+                        }
+                        else
+                        {
+                            $long_term_assets['amount_y_1']=$long_term_assets['amount_y_1']+$as->amount;
+                        }
+                    }
+                }
+                else{//if diff year is greater than 0
+
+                    if($as->amount_type=='constant')//for  constant amount type
+                    {
+                        for($i=2 ; $i<6 ; $i++)
+                        {
+                            if($diff_year<$i)
+                            {
+                                $long_term_assets['amount_y_'.$i]=$long_term_assets['amount_y_'.$i]+$as->amount*12;
+                            }
+                        }
+                    }
+                    else{//for one time
+                        $long_term_assets['amount_m_'.($diff_year+1)]=$long_term_assets['amount_m_'.($diff_year+1)]+$as->amount;
+                        if($as['asset_duration']['will_sell']==1) {
+                            $date2 = date($as['asset_duration']['selling_date']);
+                            $d2 = new DateTime($date2);
+                            $sell_month = $start_of_forecast->diff($d2)->m;
+                            $sell_year = $start_of_forecast->diff($d2)->y;
+                            $long_term_assets['amount_m_'.($sell_year+1)]=$long_term_assets['amount_m_'.($sell_year+1)]-$as->amount;
+                        }
+                    }
+                }
+            }
+            else{
+                $include_current_asset = true;
+            }
+        }
+        for($i=2;$i<13;$i++)
+        {
+            $long_term_assets['amount_m_'.$i]=$long_term_assets['amount_m_'.$i]+$long_term_assets['amount_m_'.($i-1)];
+        }
+        for($i=2;$i<6;$i++)
+        {
+            $long_term_assets['amount_y_'.$i]=$long_term_assets['amount_y_'.$i]+$long_term_assets['amount_y_'.($i-1)];
+        }
+
+        for($i=1 ; $i<13 ; $i++) {
+            //calculating accumulated depreciation
+            if($long_term_assets_total['amount_m_'.$i] || $long_term_assets['amount_m_'.$i])
+            {
+                $accumulated_depreciation['amount_m_' . $i] = $long_term_assets['amount_m_'.$i]-$long_term_assets_total['amount_m_'.$i];
+            }
+
+        }
+        for($i=1 ; $i<6 ; $i++)
+        {
+            //calculating accumulated depreciation
+            if($long_term_assets_total['amount_y_'.$i] || $long_term_assets['amount_y_'.$i])
+            {
+                $accumulated_depreciation['amount_y_' . $i] = $long_term_assets['amount_y_'.$i]-$long_term_assets_total['amount_y_'.$i];
+            }
+        }
+
+        //storing arrays
+        if($include_current_asset)
+        {
+            $current_asset['other_current_asset']=$other_current_assets;
+        }
+        $current_asset['cash']=$cash;
+        if($include_long_term_asset)
+        {
+            $long_term_assets_total['long_term_assets']=$long_term_assets;
+            $long_term_assets_total['accumulated_depreciation']=$accumulated_depreciation;
+        }
+        if($include_short_and_long_term_financing)
+        {
+            $long_term_liabilities['long_term_debt']=$long_term_debt;
+            $current_liabilities['short_term_debt']=$short_term_debt;
+        }
+        if($include_tax)
+        {
+            $current_liabilities['income_taxes_payable']=$income_tax_payable;
+            $current_liabilities['sales_taxes_payable']=$sales_tax_payable;
+        }
+        $liabilities['current_liabilities']=$current_liabilities;
+        $liabilities['long_term_liabilities']=$long_term_liabilities;
+
+    }
+
     public static function getCashFlowByForecastId($id)
     {
         $forecast=Forecast::where('id',$id)->first();
