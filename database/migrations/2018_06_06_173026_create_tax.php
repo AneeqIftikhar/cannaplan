@@ -23,9 +23,9 @@ class CreateTax extends Migration
                 $table->foreign('forecast_id')->references('id')->on('forecast')->onDelete('cascade');
 
                 $table->float('coorporate_tax')->nullable();
-                $table->string('coorporate_payable_time', '100')->nullable();
+                $table->string('coorporate_payable_time', '100')->default('quarterly');
                 $table->float('sales_tax')->nullable();
-                $table->string('sales_payable_time', '100')->nullable();
+                $table->string('sales_payable_time', '100')->default('quarterly');
 
                 $table->integer('created_by')->nullable();
 

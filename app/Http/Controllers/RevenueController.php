@@ -108,6 +108,7 @@ class RevenueController extends Controller
             if($this->addRevenueHelper($input,$revenue,$start_of_forecast))
             {
                 $revenue->save();
+                $forecast->taxes[0]->revenues()->attach($revenue);
                 return response()->success($revenue,'Revenue Created Successfully');
 
             }
@@ -222,6 +223,7 @@ class RevenueController extends Controller
                         {
                             $revenue->name=$input['name'];
                             $revenue->save();
+                            $revenue->taxes[0]->revenues()->attach($revenue);
                         }
                     }
                 }

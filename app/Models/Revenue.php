@@ -89,7 +89,7 @@ class Revenue extends Model
     public function taxes()
     {
         return $this->belongsToMany('CannaPlan\Models\Tax', 'revenue_tax',
-            'revenue_id', 'tax_id');
+            'revenue_id', 'tax_id')->withTimestamps();
     }
 
     public function revenuable()

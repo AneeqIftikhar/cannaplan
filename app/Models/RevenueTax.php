@@ -32,6 +32,7 @@ class RevenueTax extends Model
      * @var array
      */
     protected $fillable = ['revenue_id', 'tax_id'];
+    protected $guarded = ['id', 'created_by'];
 
     public static function boot()
     {

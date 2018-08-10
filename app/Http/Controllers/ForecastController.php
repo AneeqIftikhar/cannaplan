@@ -128,6 +128,21 @@ class ForecastController extends Controller
         }
     }
 
+    public static function getBalanceSheetByForecast($id)
+    {
+        $user=Auth::user();
+        $forecast=Forecast::find($id);
+        if($forecast && $forecast->created_by==$user->id)
+        {
+            $balance_sheet=Forecast::getBalanceSheetByForecastId($id);
+            return response()->success($balance_sheet,'Balance Sheet Fetched Successfully');
+        }
+        else
+        {
+            return response()->fail('User Not Authorized');
+        }
+    }
+
     public static function getCashFlowByForecast($id)
     {
         $user=Auth::user();
