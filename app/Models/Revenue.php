@@ -470,7 +470,7 @@ class Revenue extends Model
                     }
                     else
                     {
-                        $forecast->revenues[$i]->revenuable['single_billable_hour'] = $forecast->revenues[$i]->revenuable['hour '];
+                        $forecast->revenues[$i]->revenuable['single_billable_hour'] = $forecast->revenues[$i]->revenuable['hour'];
                         $forecast->revenues[$i]->revenuable['single_hourly_rate'] = $forecast->revenues[$i]->revenuable['hourly_rate'];
                         $forecast->revenues[$i]->revenuable['billable_hour'] = $billable_hour;
                         $forecast->revenues[$i]->revenuable['hourly_rate'] = $hourly_rate;
