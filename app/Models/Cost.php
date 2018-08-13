@@ -29,7 +29,7 @@ class Cost extends Model
     protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'cost';
@@ -140,7 +140,7 @@ class Cost extends Model
         {
             if($forecast->costs[$i]->charge_type=='direct')
             {
-                 $forecast->costs[$i]->charge->direct_cost;
+                $forecast->costs[$i]->charge->direct_cost;
             }
         }
 
@@ -451,7 +451,7 @@ class Cost extends Model
         }
 
 
-        
+
         //total array updated here
         for($j=1 ; $j<13 ; $j++)
         {
@@ -640,6 +640,7 @@ class Cost extends Model
                         }
 
                     }
+                    $direct_salaries_and_wages_arr['rows_hidden']=false;
                     array_push($direct_salaries_and_wages_arr['employees'],$forecast->costs[$i]->charge);
                 }
                 else if($forecast->costs[$i]->charge->labor_type=='regular')
@@ -743,6 +744,7 @@ class Cost extends Model
                         }
 
                     }
+                    $regular_salaries_and_wages_arr['rows_hidden']=false;
                     array_push($regular_salaries_and_wages_arr['employees'],$forecast->costs[$i]->charge);
 
                 }
@@ -788,7 +790,6 @@ class Cost extends Model
         {
             $regular_labor_arr['amount_y_' . $j] = $regular_employee_related_expenses_arr['amount_y_' . $j]+$regular_salaries_and_wages_arr['amount_y_'.$j];
         }
-
         $regular_labor_arr['saleries_and_wages']=$regular_salaries_and_wages_arr;
         $regular_labor_arr['employee_related_expanses']=$regular_employee_related_expenses_arr;
 
@@ -830,10 +831,11 @@ class Cost extends Model
                 $total_arr['amount_y_' . $j] = $total_arr['amount_y_' . $j] + $direct_labor_arr['amount_y_' . $j] + $regular_labor_arr['amount_y_' . $j];
             }
         }
+        $head_count['rows_hidden']=false;
         $head_count['average_salary']=$average_salary;
         $forecast['head_count']=$head_count;
         $forecast['total']=$total_arr;
-        
+
         return $forecast;
 
     }
