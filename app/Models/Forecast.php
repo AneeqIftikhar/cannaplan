@@ -1612,6 +1612,12 @@ class Forecast extends Model
         $project_cash_flow['net_change_in_cash']=$net_change_in_cash;
         $project_cash_flow['cash_at_the_end']=$cash_at_the_end;
 
+        $project_cash_flow['include_tax_status']=$include_tax;
+        $project_cash_flow['include_investment_status']=$include_investment_status;
+        $project_cash_flow['include_loan_status']=$include_loan_status;
+        $project_cash_flow['include_asset_status']=$include_asset_status;
+        $project_cash_flow['include_asset_gain_loss_status']=$include_asset_gain_loss_status;
+        $project_cash_flow['include_dividend_status']=$include_dividend;
         return $project_cash_flow;
 
     }
