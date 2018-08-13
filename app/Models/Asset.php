@@ -70,6 +70,8 @@ class Asset extends Model
         $now = new DateTime($forecast->company->start_of_forecast);
         $total_current = array();
         $total_long_term = array();
+        $total_current['rows_hidden'] = false;
+        $total_long_term['rows_hidden'] = false;
         for ($j = 1; $j < 13; $j++) {
             $total_current['amount_m_' . $j] = null;
             $total_long_term['amount_m_' . $j] = null;
@@ -480,6 +482,7 @@ class Asset extends Model
                 }
             }
         }
+
 
         $forecast['total_current'] = $total_current;
         $forecast['total_long_term'] = $total_long_term;
