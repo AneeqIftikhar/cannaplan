@@ -48,7 +48,7 @@ Route::group(['middleware' => ['cors']], function () {
         /*Milestone Routes*/
         Route::resource('milestone' , 'MilestoneController');
         Route::post('update_milestone/{id}' , 'MilestoneController@updateMilestone');
-        Route::get('get_milestone_by_forecast/{id}' , 'MilestoneController@getMilestoneByForecast');
+        Route::get('get_milestone_by_company/{id}' , 'MilestoneController@getMilestoneByCompany');
 
         /*Target Marget Graph Routes*/
         Route::resource('target_market_graph' , 'TargetMarketGraphController');
