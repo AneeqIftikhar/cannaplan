@@ -2,6 +2,8 @@
 
 namespace CannaPlan\Http\Controllers;
 
+use CannaPlan\Models\Company;
+use CannaPlan\Models\Forecast;
 use Illuminate\Http\Request;
 use CannaPlan\Models\Milestone;
 use CannaPlan\Models\Pitch;
@@ -115,5 +117,20 @@ class MilestoneController extends Controller
             return response()->fail('User Not Authorized');
         }
 
+    }
+
+    public function  getMilestoneByCompany(Request $request,$id)
+    {
+        $user=Auth::user();
+
+        $company = Company::find($id);
+
+        if($company && $user->id==$company->created_by) {
+            $result=Milestone::getMilestoneByCompany($id);
+            return response()->success($result,'Milestones Fetched Successfully');
+        }
+        else{
+            return response()->fail('User Not Authorized');
+        }
     }
 }

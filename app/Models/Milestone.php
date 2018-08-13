@@ -95,4 +95,12 @@ class Milestone extends Model
             return 'Today';
         }
     }
+    public static function getMilestoneByCompany($id)
+    {
+        $company=Company::where('id',$id)->first();
+        $pitch=$company->pitches()->first();
+        $milestones=$pitch->milestones()->get();
+        $result=['company'=>$company,'milestones'=>$milestones];
+        return $result;
+    }
 }

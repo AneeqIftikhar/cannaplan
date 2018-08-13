@@ -393,6 +393,7 @@ class Cost extends Model
                         }
 
                     }
+                    $salaries_and_wages_arr['rows_hidden']=false;
                     array_push($salaries_and_wages_arr['employees'],$forecast->costs[$i]->charge);
                 }
             }
@@ -445,6 +446,7 @@ class Cost extends Model
             {
                 $direct_labor_arr['saleries_and_wages']=$salaries_and_wages_arr;
             }
+            $direct_labor_arr['rows_hidden']=false;
             $forecast['direct_labor']=$direct_labor_arr;
         }
 
