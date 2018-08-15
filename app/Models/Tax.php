@@ -160,7 +160,18 @@ class Tax extends Model
                 }
             }
         }
-
+        $intial_balance=$forecast->initialBalanceSettings()->first();
+        if($intial_balance['sales_taxes_payable'])
+        {
+            if($forecast->taxes[0]->sales_payable_time=='quarterly')
+            {
+                $paid['amount_m_3']=$intial_balance['sales_taxes_payable'];
+            }
+            else
+            {
+                $paid['amount_y_1']=$paid['amount_y_1']+$intial_balance['sales_taxes_payable'];
+            }
+        }
         $taxes=['accrued'=>$accrued , 'paid'=>$paid];
         return $taxes;
     }
@@ -340,6 +351,18 @@ class Tax extends Model
             else
             {
                 $paid['amount_y_'.$i]=$profit['amount_y_'.$i];
+            }
+        }
+        $intial_balance=$forecast->initialBalanceSettings()->first();
+        if($intial_balance['corporate_taxes_payable'])
+        {
+            if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
+            {
+                $paid['amount_m_3']=$intial_balance['corporate_taxes_payable'];
+            }
+            else
+            {
+                $paid['amount_y_1']=$paid['amount_y_1']+$intial_balance['corporate_taxes_payable'];
             }
         }
         $income_tax=['accrued'=>$profit,'paid'=>$paid];
