@@ -142,6 +142,9 @@ class Forecast extends Model
 
     public static function getProfitLossByForecastId($id)
     {
+        $forecast=Forecast::where('id',$id)->first();
+        $initial_balance_settings=$forecast->initialBalanceSettings;
+
         $profit_loss=array();
 
         $gross_margin=array();
@@ -152,6 +155,7 @@ class Forecast extends Model
         $net_profit=array();
         $net_profit_percent=array();
         $total_interest_paid=array();
+
 
         //initializing arrays
         for($i=1 ; $i<13 ; $i++)
@@ -252,6 +256,13 @@ class Forecast extends Model
         $personnel=Cost::getPersonnelByForecastId($id);
         $check_other=false;
 
+        //calling asset depreciation
+        $asset=Asset::getDepreciationOfAssetByForecast($id);
+
+        if($asset['current_include_status'])
+        {
+            $operating_expenses['amortization_of_other_current_assets']=$asset['current'];
+        }
         if($personnel->personnel_expenses)
         {
             $operating_expenses['saleries_and_wages']=$personnel->personnel_expenses['saleries_and_wages'];
@@ -271,24 +282,24 @@ class Forecast extends Model
         //calculating operating expenses
         for($i=1 ; $i<13 ; $i++)
         {
-            if(($personnel->personnel_expenses || $expense->expenses) && $check_other==false)
+            if(($personnel->personnel_expenses || $expense->expenses || $asset->current_include_status) && $check_other==false)
             {
-                $operating_expenses['amount_m_'.$i]=$personnel->personnel_expenses['amount_m_'.$i]+$expense->total['amount_m_'.$i];
+                $operating_expenses['amount_m_'.$i]=$personnel->personnel_expenses['amount_m_'.$i]+$expense->total['amount_m_'.$i]+$asset['current']['amount_m_'.$i];
             }
-            else if(($personnel->other_labor || $expense->expenses) && $check_other==true)
+            else if(($personnel->other_labor || $expense->expenses || $asset->current_include_status) && $check_other==true)
             {
-                $operating_expenses['amount_m_'.$i]=$personnel->other_labor['amount_m_'.$i]+$expense->total['amount_m_'.$i];
+                $operating_expenses['amount_m_'.$i]=$personnel->other_labor['amount_m_'.$i]+$expense->total['amount_m_'.$i]+$asset['current']['amount_m_'.$i];
             }
         }
         for($i=1 ; $i<6 ; $i++)
         {
-            if(($personnel->personnel_expenses || $expense->expenses) && $check_other==false)
+            if(($personnel->personnel_expenses || $expense->expenses || $asset->current_include_status) && $check_other==false)
             {
-                $operating_expenses['amount_y_'.$i]=$personnel->personnel_expenses['amount_y_'.$i]+$expense->total['amount_y_'.$i];
+                $operating_expenses['amount_y_'.$i]=$personnel->personnel_expenses['amount_y_'.$i]+$expense->total['amount_y_'.$i]+$asset['current']['amount_y_'.$i];
             }
-            else if(($personnel->other_labor || $expense->expenses) && $check_other==true)
+            else if(($personnel->other_labor || $expense->expenses || $asset->current_include_status) && $check_other==true)
             {
-                $operating_expenses['amount_y_'.$i]=$personnel->other_labor['amount_y_'.$i]+$expense->total['amount_y_'.$i];
+                $operating_expenses['amount_y_'.$i]=$personnel->other_labor['amount_y_'.$i]+$expense->total['amount_y_'.$i]+$asset['current']['amount_y_'.$i];
             }
         }
         $profit_loss['operating_expenses']=$operating_expenses;
@@ -328,11 +339,17 @@ class Forecast extends Model
 
                     for($j=1 ; $j<13 ; $j++)
                     {
-                        $total_interest_paid['amount_m_'.$j]=$total_interest_paid['amount_m_'.$j]+$payments['finance'][$i]['interest_paid']['amount_m_'.$j];
+                        if($payments['finance'][$i]['interest_paid']['amount_m_'.$j])
+                        {
+                            $total_interest_paid['amount_m_'.$j]=$total_interest_paid['amount_m_'.$j]+$payments['finance'][$i]['interest_paid']['amount_m_'.$j];
+                        }
                     }
                      for($j=1 ; $j<6 ; $j++)
                      {
-                         $total_interest_paid['amount_y_'.$j]=$total_interest_paid['amount_y_'.$j]+$payments['finance'][$i]['interest_paid']['amount_y_'.$j];
+                         if($payments['finance'][$i]['interest_paid']['amount_y_'.$j])
+                         {
+                             $total_interest_paid['amount_y_'.$j]=$total_interest_paid['amount_y_'.$j]+$payments['finance'][$i]['interest_paid']['amount_y_'.$j];
+                         }
                      }
             }
             $profit_loss['interest_expense']=$total_interest_paid;
@@ -343,25 +360,35 @@ class Forecast extends Model
         $income_tax=$tax['income_tax']['accrued'];
         $profit_loss['income_tax']=$income_tax;
 
+        if($asset['long_term_include_status'])
+        {
+            $profit_loss['depreciation_and_amortization']=$asset['long_term'];
+        }
+
         //calculating total expenses
         for($i=1 ; $i<13 ; $i++)
         {
             if($cost->costs || $expense->expenses)
             {
-                if($cost->total['amount_m_'.$i] || $expense->total['amount_m_'.$i] || $income_tax['amount_m_'.$i] || $total_interest_paid['amount_m_'.$i])
+                if($cost->total['amount_m_'.$i] || $operating_expenses['amount_m_'.$i] || $income_tax['amount_m_'.$i] || $total_interest_paid['amount_m_'.$i] || $asset['long_term_include_status'])
                 {
-                    $total_expenses['amount_m_'.$i]=$income_tax['amount_m_'.$i]+$cost->total['amount_m_'.$i]+$operating_expenses['amount_m_'.$i]+$total_interest_paid['amount_m_'.$i];
+                    $total_expenses['amount_m_'.$i]=$income_tax['amount_m_'.$i]+$cost->total['amount_m_'.$i]+$operating_expenses['amount_m_'.$i]+$total_interest_paid['amount_m_'.$i]+$asset['long_term']['amount_m_'.$i];
                 }
-
+                else{
+                    $total_expenses['amount_m_'.$i]=0;
+                }
             }
         }
         for($i=1 ; $i<6 ; $i++)
         {
             if($cost->costs || $expense->expenses)
             {
-                if($cost->total['amount_y_'.$i] || $expense->total['amount_y_'.$i] || $income_tax['amount_y_'.$i] || $total_interest_paid['amount_y_'.$i])
+                if($cost->total['amount_y_'.$i] || $operating_expenses['amount_y_'.$i] || $income_tax['amount_y_'.$i] || $total_interest_paid['amount_y_'.$i] || $asset['long_term_include_status'])
                 {
-                    $total_expenses['amount_y_'.$i]=$income_tax['amount_y_'.$i]+$cost->total['amount_y_'.$i]+$operating_expenses['amount_y_'.$i]+$total_interest_paid['amount_y_'.$i];
+                    $total_expenses['amount_y_'.$i]=$income_tax['amount_y_'.$i]+$cost->total['amount_y_'.$i]+$operating_expenses['amount_y_'.$i]+$total_interest_paid['amount_y_'.$i]+$asset['long_term']['amount_y_'.$i];
+                }
+                else{
+                    $total_expenses['amount_y_'.$i]=0;
                 }
             }
         }
@@ -433,11 +460,11 @@ class Forecast extends Model
 
         $accounts_receivable=array();
         $inventory=array();
-        $include_inventory=false;
 
         //calling cash flow
         $forecast=Forecast::where('id',$id)->first();
         $cash_flow=Forecast::getCashFlowByForecastId($id);
+
         //calling asset
         $asset=Asset::getAssetByForecast($id);
         $accumulated_depreciation=array();
@@ -464,11 +491,18 @@ class Forecast extends Model
         $retained_earnings=array();
         $earnings=array();
 
+        //calling initial balance settings
+        $initial_balance_settings=$forecast->initialBalanceSettings;
+
         //initializing arrays
         for($i=0 ; $i<13 ; $i++)
         {
             $long_term_assets['amount_m_'.$i]=null;
             $long_term_assets_total['amount_m_'.$i]=null;
+            if($initial_balance_settings['long_term_assets']!==null)
+            {
+                $long_term_assets_total['amount_m_0']=$initial_balance_settings['long_term_assets'];
+            }
             $current_asset['amount_m_'.$i]=null;
             $other_current_assets['amount_m_'.$i]=null;
             $assets['amount_m_'.$i]=null;
@@ -490,7 +524,7 @@ class Forecast extends Model
             $accounts_receivable['amount_m_'.$i]=null;
             $inventory['amount_m_'.$i]=null;
         }
-        for($i=0 ; $i<6 ; $i++)
+        for($i=1 ; $i<6 ; $i++)
         {
             $long_term_assets['amount_y_'.$i]=null;
             $long_term_assets_total['amount_y_'.$i]=null;
@@ -535,25 +569,8 @@ class Forecast extends Model
             //accumulated dividend will come in retained earnings
             //accumulated interest paid will come in earnings
 
-        //calling initial balance settings
-        $initial_balance_settings=new InitialBalanceSettingsController();
-        $initial_balance_settings=$initial_balance_settings->getInitialBalanceSettingsByForecast($id);
-
-        //populating cash if it is set initially
-        if($initial_balance_settings['cash']!=null)
-        {
-            for($i=0 ; $i<13 ; $i++)
-            {
-                $cash['amount_m_' . $i]=$initial_balance_settings['cash'];
-            }
-            for($i=1 ; $i<6 ; $i++)
-            {
-                $cash['amount_y_' . $i]=$initial_balance_settings['cash'];
-            }
-        }
-
         //populating inventory
-        if($initial_balance_settings['inventory'])
+        if($initial_balance_settings['inventory']!==null)
         {
             for($i=0 ; $i<13 ; $i++)
             {
@@ -563,20 +580,24 @@ class Forecast extends Model
             {
                 $inventory['amount_y_' . $i]=$initial_balance_settings['inventory'];
             }
+
+            $current_asset['inventory']=$inventory;
         }
 
         //populating accounts receivable
-        if($initial_balance_settings['accounts_receivable']!=null)
+        if($initial_balance_settings['accounts_receivable']!==null)
         {
             $months_to_get_paid=$initial_balance_settings['days_to_get_paid']/30;
 
             $receivable_depreciation=$initial_balance_settings['accounts_receivable']/$months_to_get_paid;
+
             $temp=$initial_balance_settings['accounts_receivable'];
-            for($i=0 ; $i<13 ; $i++)
+            $accounts_receivable['amount_m_0']=$initial_balance_settings['accounts_receivable'];
+            for($i=1 ; $i<13 ; $i++)
             {
                 if($temp!=0)
                 {
-                    $accounts_receivable['amount_m_'.$i]=$temp-$receivable_depreciation;
+                    $accounts_receivable['amount_m_'.$i]=round($temp-$receivable_depreciation);
                     $temp=$temp-$receivable_depreciation;
                 }
                 else
@@ -588,6 +609,7 @@ class Forecast extends Model
             {
                 $accounts_receivable['amount_y_'.$i]=0;
             }
+            $current_asset['accounts_receivable']=$accounts_receivable;
         }
 
         //calling tax
@@ -604,7 +626,7 @@ class Forecast extends Model
             //populating cash array
             if($cash_flow['cash_at_the_end']['amount_m_' . $i])
             {
-                $cash['amount_m_' . $i] = $cash['amount_m_' . $i]+$cash_flow['cash_at_the_end']['amount_m_' . $i];
+                $cash['amount_m_' . $i] = $cash_flow['cash_at_the_end']['amount_m_' . $i];
             }
 
             //populating other cuurent asset array
@@ -616,6 +638,14 @@ class Forecast extends Model
             if($cash['amount_m_'.$i] || $other_current_assets['amount_m_'.$i])
             {
                 $current_asset['amount_m_'.$i]=$cash['amount_m_'.$i]+$other_current_assets['amount_m_'.$i];
+                if($initial_balance_settings['accounts_receivable']!==null)
+                {
+                    $current_asset['amount_m_'.$i]=$current_asset['amount_m_'.$i]+$accounts_receivable['amount_m_'.$i];
+                }
+                if($initial_balance_settings['inventory']!==null)
+                {
+                    $current_asset['amount_m_'.$i]=$current_asset['amount_m_'.$i]+$inventory['amount_m_'.$i];
+                }
             }
 
             //populating long term assets total array
@@ -661,6 +691,7 @@ class Forecast extends Model
 
 
         }
+
         $sales_accumulated=0;
         $income_accumulated=0;
         for($i=1 ; $i<6 ; $i++)
@@ -668,7 +699,7 @@ class Forecast extends Model
             //populating cash array
             if($cash_flow['cash_at_the_end']['amount_y_' . $i])
             {
-                $cash['amount_y_' . $i] = $cash['amount_y_' . $i]+$cash_flow['cash_at_the_end']['amount_y_' . $i];
+                $cash['amount_y_' . $i] = $cash_flow['cash_at_the_end']['amount_y_' . $i];
             }
 
             //populating other asset array
@@ -821,11 +852,16 @@ class Forecast extends Model
 
         for($i=1 ; $i<13 ; $i++) {
             //calculating accumulated depreciation
+
             if($long_term_assets_total['amount_m_'.$i] || $long_term_assets['amount_m_'.$i])
             {
                 $accumulated_depreciation['amount_m_' . $i] = $long_term_assets['amount_m_'.$i]-$long_term_assets_total['amount_m_'.$i];
             }
-
+            if($initial_balance_settings['accumulated_depreciation']!==null)
+            {
+                $accumulated_depreciation['amount_m_0']=$initial_balance_settings['accumulated_depreciation']*-1;
+                $accumulated_depreciation['amount_m_'.$i]=($initial_balance_settings['accumulated_depreciation']*-1);
+            }
         }
         for($i=1 ; $i<6 ; $i++)
         {
@@ -833,6 +869,10 @@ class Forecast extends Model
             if($long_term_assets_total['amount_y_'.$i] || $long_term_assets['amount_y_'.$i])
             {
                 $accumulated_depreciation['amount_y_' . $i] = $long_term_assets['amount_y_'.$i]-$long_term_assets_total['amount_y_'.$i];
+            }
+            if($initial_balance_settings['accumulated_depreciation']!==null)
+            {
+                $accumulated_depreciation['amount_y_' . $i]=($initial_balance_settings['accumulated_depreciation']*-1);
             }
         }
 
@@ -969,6 +1009,7 @@ class Forecast extends Model
 
     public static function getCashFlowByForecastId($id)
     {
+
         $forecast=Forecast::where('id',$id)->first();
         $project_cash_flow=array();
         $net_cash_from_operations=array();
@@ -999,8 +1040,37 @@ class Forecast extends Model
             $net_cash_from_financing['amount_y_'.$i] = null;
             $net_cash_from_operations['amount_y_'.$i] = null;
         }
+
+
+        $intial_balance=$forecast->initialBalanceSettings()->first();
+        if($intial_balance['accounts_receivable'])
+        {
+            $accounts_receivable_months=round($intial_balance['days_to_get_paid']/30);
+            $per_month_receivable=$intial_balance['accounts_receivable']/$accounts_receivable_months;
+            for($i=1;$i<=$accounts_receivable_months;$i++)
+            {
+                $change_in_accounts_receivable['amount_m_'.$i] = round($per_month_receivable);
+            }
+            $change_in_accounts_receivable['amount_y_1'] = $intial_balance['accounts_receivable'];
+        }
+        if($intial_balance['accounts_payable'])
+        {
+            $accounts_payable_months=round($intial_balance['days_to_pay']/30);
+            if($accounts_payable_months==0)
+            {
+                $accounts_payable_months=1;
+            }
+            $per_month_payable=$intial_balance['accounts_payable']/$accounts_payable_months;
+            for($i=1;$i<=$accounts_payable_months;$i++)
+            {
+                $change_in_accounts_payable['amount_m_'.$i] = (-1)*round($per_month_payable);
+            }
+            $change_in_accounts_payable['amount_y_1'] = (-1)*$intial_balance['accounts_payable'];
+        }
         $net_cash_from_operations['change_in_account_receivable']=$change_in_accounts_receivable;//dependent on table to be added
         $net_cash_from_operations['change_in_account_payable']=$change_in_accounts_payable;//dependent on table to be added
+
+
         /* Tax calculation */
         if(count($forecast->revenues)>0)//check if there will be tax in cash flow
         {
@@ -1402,6 +1472,20 @@ class Forecast extends Model
 
 
         }
+        $intial_depreciation_and_amortization=InitialBalanceSettings::calculatePreviousDepreciationAndAmortization($id);
+        for ($i = 1; $i < 13; $i++) {
+            if ($intial_depreciation_and_amortization['long_term']['amount_m_' . $i] || $intial_depreciation_and_amortization['current']['amount_m_' . $i]) {
+                $depreciation_and_amortization['amount_m_' . $i] = $depreciation_and_amortization['amount_m_' . $i] + $intial_depreciation_and_amortization['long_term']['amount_m_' . $i] + $intial_depreciation_and_amortization['current']['amount_m_' . $i];
+                $include_asset_status=true;
+            }
+        }
+        for ($i = 1; $i < 6; $i++) {
+            if ($intial_depreciation_and_amortization['long_term']['amount_y_' . $i] || $intial_depreciation_and_amortization['current']['amount_y_' . $i]) {
+                $depreciation_and_amortization['amount_y_' . $i] = $depreciation_and_amortization['amount_y_' . $i] + $intial_depreciation_and_amortization['long_term']['amount_y_' . $i] + $intial_depreciation_and_amortization['current']['amount_y_' . $i];
+                $include_asset_status=true;
+            }
+        }
+
 
         //adding dividend and distributions
         $dividend=Dividend::getDividendByForecast($id);
@@ -1522,6 +1606,10 @@ class Forecast extends Model
             if($i==1)
             {
                 $cash_at_the_beginning['amount_m_'.$i]=0;
+                if($intial_balance['cash'])
+                {
+                    $cash_at_the_beginning['amount_m_'.$i]=$intial_balance['cash'];
+                }
             }
             else{
 
@@ -1597,6 +1685,10 @@ class Forecast extends Model
             if($i==1)
             {
                 $cash_at_the_beginning['amount_y_'.$i]=0;
+                if($intial_balance['cash'])
+                {
+                    $cash_at_the_beginning['amount_y_'.$i]=$intial_balance['cash'];
+                }
             }
             else{
 
@@ -1621,4 +1713,6 @@ class Forecast extends Model
         return $project_cash_flow;
 
     }
+
+
 }
