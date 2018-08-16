@@ -450,6 +450,8 @@ class Forecast extends Model
         //declaring arrays
         $projected_balance_sheet=array();
 
+        $begin_value_check=false;
+
         $liabilities_and_equities=array();
 
         $assets=array();
@@ -503,6 +505,7 @@ class Forecast extends Model
             $long_term_assets_total['amount_m_'.$i]=null;
             if($initial_balance_settings['long_term_assets']!==null)
             {
+                $begin_value_check=true;
                 $long_term_assets['amount_m_0']=$initial_balance_settings['long_term_assets'];
                 $long_term_assets['amount_m_1']=$initial_balance_settings['long_term_assets'];
                 $long_term_assets['amount_y_1']=$initial_balance_settings['long_term_assets'];
@@ -512,6 +515,7 @@ class Forecast extends Model
             $other_current_assets['amount_m_'.$i]=null;
             if($initial_balance_settings['long_term_assets']!==null)
             {
+                $begin_value_check=true;
                 $other_current_assets['amount_m_0']=$initial_balance_settings['other_current_assets'];
             }
             $assets['amount_m_'.$i]=null;
@@ -546,6 +550,7 @@ class Forecast extends Model
             $long_term_assets['amount_y_'.$i]=null;
             if($initial_balance_settings['long_term_assets']!==null)
             {
+                $begin_value_check=true;
                 $long_term_assets['amount_y_1']=$initial_balance_settings['long_term_assets'];
             }
             $long_term_assets_total['amount_y_'.$i]=null;
@@ -601,6 +606,7 @@ class Forecast extends Model
         //populating inventory
         if($initial_balance_settings['inventory']!==null)
         {
+            $begin_value_check=true;
             for($i=0 ; $i<13 ; $i++)
             {
                 $inventory['amount_m_' . $i]=$initial_balance_settings['inventory'];
@@ -616,6 +622,7 @@ class Forecast extends Model
         //populating accounts receivable
         if($initial_balance_settings['accounts_receivable']!==null)
         {
+            $begin_value_check=true;
             $months_to_get_paid=$initial_balance_settings['days_to_get_paid']/30;
 
             $receivable_depreciation=$initial_balance_settings['accounts_receivable']/$months_to_get_paid;
@@ -659,6 +666,7 @@ class Forecast extends Model
             {
                 if($initial_balance_settings['cash']!==null)
                 {
+                    $begin_value_check=true;
                     $cash['amount_m_0']=$initial_balance_settings['cash'];
                 }
                 $cash['amount_m_' . $i] = $cash_flow['cash_at_the_end']['amount_m_' . $i];
@@ -759,7 +767,7 @@ class Forecast extends Model
                 $long_term_assets_total['amount_y_'.$i]=$asset['total_long_term']['amount_y_'.$i];
             }
             else{
-
+                $long_term_assets_total['amount_y_'.$i]=0;
             }
 
             //calculating assets array
@@ -928,6 +936,7 @@ class Forecast extends Model
         //calculating accounts payable
         if($initial_balance_settings['accounts_payable']!==null)
         {
+            $begin_value_check=true;
             $months_to_pay=$initial_balance_settings['days_to_pay']/30;
             $payable_depreciation=0;
             $temp=$initial_balance_settings['accounts_payable'];
@@ -1014,6 +1023,7 @@ class Forecast extends Model
         //calculating retained earnings
         if($initial_balance_settings['retained_earnings']!==null)
         {
+            $begin_value_check=true;
             for($i=0 ; $i<13 ; $i++) {
                 $retained_earnings['amount_m_' . $i]=$retained_earnings['amount_m_' . $i]+$initial_balance_settings['retained_earnings'];
             }
@@ -1077,6 +1087,7 @@ class Forecast extends Model
         $projected_balance_sheet['liabilities_and_equities']=$liabilities_and_equities;
         $projected_balance_sheet['assets']=$assets;
         $projected_balance_sheet['company']=$forecast->company;
+        $projected_balance_sheet['month_0_present']=$begin_value_check;
 
         return $projected_balance_sheet;
     }
