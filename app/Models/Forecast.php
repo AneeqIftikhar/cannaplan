@@ -650,16 +650,64 @@ class Forecast extends Model
         }
 
 
+        //tax
         //calling tax
         $tax=Tax::getTaxByForecastId($id);
         $tax_details=$forecast->taxes[0];
         $tax['tax_details']=$tax_details;
+        $income_accumulated=0;
+        $sales_accumulated=0;
+        if($initial_balance_settings['corporate_taxes_payable'])
+        {
+            $begin_value_check=true;
+            $income_accumulated=$initial_balance_settings['corporate_taxes_payable'];
+            $income_tax_payable['amount_m_0']=$initial_balance_settings['corporate_taxes_payable'];
+        }
+        if($initial_balance_settings['sales_taxes_payable'])
+        {
+            $begin_value_check=true;
+            $sales_accumulated=$initial_balance_settings['sales_taxes_payable'];
+            $sales_tax_payable['amount_m_0'] =$initial_balance_settings['sales_taxes_payable'];
+        }
+        for($i=1 ; $i<13 ; $i++) {
+            if ($tax['tax_details']['is_started'] || $initial_balance_settings['corporate_taxes_payable'] || $initial_balance_settings['sales_taxes_payable']) {
+                $include_tax = true;
+                //calculating income tax payable
+                $income_tax_payable['amount_m_' . $i] = $income_accumulated + $tax['income_tax']['accrued']['amount_m_' . $i]-$tax['income_tax']['paid']['amount_m_' . $i];
+                $income_accumulated = $income_tax_payable['amount_m_' . $i];
+
+                //calculating sales tax payable
+                $sales_tax_payable['amount_m_' . $i] = $sales_accumulated + $tax['sales_tax']['accrued']['amount_m_' . $i]-$tax['sales_tax']['paid']['amount_m_' . $i];
+                $sales_accumulated = $sales_tax_payable['amount_m_' . $i];
+            }
+        }
+        $income_accumulated=0;
+        $sales_accumulated=0;
+        if($initial_balance_settings['corporate_taxes_payable'])
+        {
+            $income_accumulated=$initial_balance_settings['corporate_taxes_payable'];
+        }
+        if($initial_balance_settings['sales_taxes_payable'])
+        {
+            $sales_accumulated=$initial_balance_settings['sales_taxes_payable'];
+        }
+        for($i=1 ; $i<6 ; $i++) {
+            if ($tax['tax_details']['is_started'] || $initial_balance_settings['corporate_taxes_payable'] || $initial_balance_settings['sales_taxes_payable']) {
+                $include_tax = true;
+                //calculating income tax payable
+                $income_tax_payable['amount_y_' . $i] = $income_accumulated + $tax['income_tax']['accrued']['amount_y_' . $i] - $tax['income_tax']['paid']['amount_y_' . $i];
+                $income_accumulated = $income_tax_payable['amount_y_' . $i];
+
+                //calculating sales tax payable
+                $sales_tax_payable['amount_y_' . $i] = $sales_accumulated + $tax['sales_tax']['accrued']['amount_y_' . $i] - $tax['sales_tax']['paid']['amount_y_' . $i];
+                $sales_accumulated = $sales_tax_payable['amount_y_' . $i];
+            }
+        }
 
         //calling finance
         $financing=Financing::getFinancingByForecastId($id);
 
-        $income_accumulated=0;
-        $sales_accumulated=0;
+
         for($i=1 ; $i<13 ; $i++) {
             //populating cash array
             if($cash_flow['cash_at_the_end']['amount_m_' . $i])
@@ -705,17 +753,7 @@ class Forecast extends Model
                 $assets['amount_m_'.$i]=$long_term_assets_total['amount_m_' . $i]+$current_asset['amount_m_'.$i];
             }
 
-            if ($tax['tax_details']['is_started'])
-            {
-                $include_tax=true;
-                //calculating income tax payable
-                $income_tax_payable['amount_m_'.$i]=$income_accumulated+$tax['income_tax']['accrued']['amount_m_'.$i];
-                $income_accumulated=$income_tax_payable['amount_m_'.$i];
 
-                //calculating sales tax payable
-                $sales_tax_payable['amount_m_'.$i]=$sales_accumulated+$tax['sales_tax']['accrued']['amount_m_'.$i];
-                $sales_accumulated=$sales_tax_payable['amount_m_'.$i];
-            }
 
 
             //populating short term debt and long term debt calculating current liabilities and long term liabilities
@@ -776,17 +814,7 @@ class Forecast extends Model
                 $assets['amount_y_'.$i]=$long_term_assets_total['amount_y_' . $i]+$current_asset['amount_y_'.$i];
             }
 
-            if($tax['tax_details']['is_started'])
-            {
-                $include_tax=true;
-                //calculating income tax payable
-                $income_tax_payable['amount_y_'.$i]=$income_accumulated+$tax['income_tax']['accrued']['amount_y_'.$i];
-                $income_accumulated=$income_tax_payable['amount_y_'.$i];
 
-                //calculating sales tax payable
-                $sales_tax_payable['amount_y_'.$i]=$sales_accumulated+$tax['sales_tax']['accrued']['amount_y_'.$i];
-                $sales_accumulated=$sales_tax_payable['amount_y_'.$i];
-            }
 
             //populating short term debt and long term debt calculating current liabilities and long term liabilities
             if(isset($financing['balance']))
@@ -804,6 +832,12 @@ class Forecast extends Model
                 $liabilities['amount_y_'.$i]=$long_term_liabilities['amount_y_'.$i]+$current_liabilities['amount_y_'.$i];
             }
         }
+
+
+
+
+
+
 
         //calculating accumulated long term assets
         foreach ($asset->assets as $as)
@@ -1072,6 +1106,11 @@ class Forecast extends Model
             $current_liabilities['income_taxes_payable']=$income_tax_payable;
             $current_liabilities['sales_taxes_payable']=$sales_tax_payable;
         }
+
+        //Including Tax paid incurrent liabilities
+
+
+
         $liabilities['current_liabilities']=$current_liabilities;
         $liabilities['long_term_liabilities']=$long_term_liabilities;
 
