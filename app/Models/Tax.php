@@ -107,71 +107,85 @@ class Tax extends Model
             $paid['amount_y_'.$i]=null;
         }
 
-
-        $quarterly_sum=0;
-        $total_quarterly=0;
-
-        $sales_tax_abs=$forecast->taxes[0]->sales_tax/100;
-
-        for($i=1 ; $i<13 ; $i++)
+        if(count($forecast->taxes[0]['revenueTaxes'])>0)
         {
-            $accrued['amount_m_'.$i]=$rev->total['amount_m_'.$i]*$sales_tax_abs;
+            $quarterly_sum=0;
+            $total_quarterly=0;
 
+            $sales_tax_abs=$forecast->taxes[0]->sales_tax/100;
 
-
-            if($forecast->taxes[0]->sales_payable_time=='annually')
+            for($i=1 ; $i<13 ; $i++)
             {
-                $paid['amount_m_'.$i]=0;
-            }
-            else
-            {
-                if($i==4 || $i==7 || $i==10)
+                $accrued['amount_m_'.$i]=$rev->total['amount_m_'.$i]*$sales_tax_abs;
+
+
+
+                if($forecast->taxes[0]->sales_payable_time=='annually')
                 {
-                    $paid['amount_m_'.$i]=$quarterly_sum;
-                    $total_quarterly=$total_quarterly+$paid['amount_m_'.$i];
-                    $quarterly_sum=0;
+                    $paid['amount_m_'.$i]=0;
                 }
-                $quarterly_sum=$quarterly_sum+$accrued['amount_m_'.$i];
-            }
+                else
+                {
+                    if($i==4 || $i==7 || $i==10)
+                    {
+                        $paid['amount_m_'.$i]=$quarterly_sum;
+                        $total_quarterly=$total_quarterly+$paid['amount_m_'.$i];
+                        $quarterly_sum=0;
+                    }
+                    $quarterly_sum=$quarterly_sum+$accrued['amount_m_'.$i];
+                }
 
+            }
+            for($i=1 ; $i<6 ; $i++)
+            {
+                $accrued['amount_y_'.$i]=$rev->total['amount_y_'.$i]*$sales_tax_abs;
+                if($forecast->taxes[0]->sales_payable_time=='annually')
+                {
+                    if($i==1)
+                    {
+                        $paid['amount_y_'.$i]=0;
+                    }
+                    else{
+                        $paid['amount_y_'.$i]=$accrued['amount_y_'.($i-1)];
+                    }
+
+                }
+                else
+                {
+                    if($i==1)
+                    {
+                        $paid['amount_y_'.$i]=$total_quarterly;
+                    }
+                    else{
+                        $paid['amount_y_'.$i]=$accrued['amount_y_'.$i];
+                    }
+                }
+            }
+            $intial_balance=$forecast->initialBalanceSettings()->first();
+            if($intial_balance['sales_taxes_payable'])
+            {
+                if($forecast->taxes[0]->sales_payable_time=='quarterly')
+                {
+                    $paid['amount_m_3']=$intial_balance['sales_taxes_payable'];
+                    $paid['amount_y_1']=$paid['amount_y_1']+$intial_balance['sales_taxes_payable'];
+                }
+                else
+                {
+                    $paid['amount_y_1']=$paid['amount_y_1']+$intial_balance['sales_taxes_payable'];
+                }
+            }
         }
-        for($i=1 ; $i<6 ; $i++)
+        else
         {
-            $accrued['amount_y_'.$i]=$rev->total['amount_y_'.$i]*$sales_tax_abs;
-            if($forecast->taxes[0]->sales_payable_time=='annually')
+            $intial_balance=$forecast->initialBalanceSettings()->first();
+            if($intial_balance['sales_taxes_payable'])
             {
-                if($i==1)
-                {
-                    $paid['amount_y_'.$i]=0;
-                }
-                else{
-                    $paid['amount_y_'.$i]=$accrued['amount_y_'.($i-1)];
-                }
-
-            }
-            else
-            {
-                if($i==1)
-                {
-                    $paid['amount_y_'.$i]=$total_quarterly;
-                }
-                else{
-                    $paid['amount_y_'.$i]=$accrued['amount_y_'.$i];
-                }
-            }
-        }
-        $intial_balance=$forecast->initialBalanceSettings()->first();
-        if($intial_balance['sales_taxes_payable'])
-        {
-            if($forecast->taxes[0]->sales_payable_time=='quarterly')
-            {
-                $paid['amount_m_3']=$intial_balance['sales_taxes_payable'];
-            }
-            else
-            {
+                $paid['amount_m_1']=$intial_balance['sales_taxes_payable'];
                 $paid['amount_y_1']=$paid['amount_y_1']+$intial_balance['sales_taxes_payable'];
             }
         }
+
+
         $taxes=['accrued'=>$accrued , 'paid'=>$paid];
         return $taxes;
     }
@@ -359,6 +373,7 @@ class Tax extends Model
             if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
             {
                 $paid['amount_m_3']=$intial_balance['corporate_taxes_payable'];
+                $paid['amount_y_1']=$paid['amount_y_1']+$intial_balance['corporate_taxes_payable'];
             }
             else
             {
