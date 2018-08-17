@@ -27,7 +27,7 @@ class Tax extends Model
     protected $dates=['deleted_at'];
     /**
      * The table associated with the model.
-     * 
+     *
      * @var string
      */
     protected $table = 'tax';
@@ -166,7 +166,7 @@ class Tax extends Model
             {
                 if($forecast->taxes[0]->sales_payable_time=='quarterly')
                 {
-                    $paid['amount_m_3']=$intial_balance['sales_taxes_payable'];
+                    $paid['amount_m_1']=$intial_balance['sales_taxes_payable'];
                     $paid['amount_y_1']=$paid['amount_y_1']+$intial_balance['sales_taxes_payable'];
                 }
                 else
@@ -283,6 +283,28 @@ class Tax extends Model
 
             }
 
+        }
+//        $forecast=Forecast::where('id',$id)->with('initialBalanceSettings');
+//        $intial_balance=$forecast->initialBalanceSettings;
+//        if($intial_balance['long_term_assets']!==null)
+//        {
+//            for($i=1;$i<13;$i++)
+//            {
+//
+//            }
+//        }
+        $intial_depreciation_and_amortization=InitialBalanceSettings::calculatePreviousDepreciationAndAmortization($id);
+        for ($i = 1; $i < 13; $i++) {
+            if ($intial_depreciation_and_amortization['long_term']['amount_m_' . $i] || $intial_depreciation_and_amortization['current']['amount_m_' . $i]) {
+                $asset_total['amount_m_' . $i] = $asset_total['amount_m_' . $i] + $intial_depreciation_and_amortization['long_term']['amount_m_' . $i] + $intial_depreciation_and_amortization['current']['amount_m_' . $i];
+                $include_asset_status=true;
+            }
+        }
+        for ($i = 1; $i < 6; $i++) {
+            if ($intial_depreciation_and_amortization['long_term']['amount_y_' . $i] || $intial_depreciation_and_amortization['current']['amount_y_' . $i]) {
+                $asset_total['amount_y_' . $i] = $asset_total['amount_y_' . $i] + $intial_depreciation_and_amortization['long_term']['amount_y_' . $i] + $intial_depreciation_and_amortization['current']['amount_y_' . $i];
+                $include_asset_status=true;
+            }
         }
         $financing=Financing::getFinancingByForecastId($id);
         if(isset($financing['payments']['finance']))
