@@ -765,12 +765,14 @@ class Forecast extends Model
                 if($short_term_debt['amount_m_'.$i] || $income_tax_payable['amount_m_'.$i] || $sales_tax_payable['amount_m_'.$i])
                 {
                     $current_liabilities['amount_m_'.$i]=$income_tax_payable['amount_m_'.$i]+$sales_tax_payable['amount_m_'.$i]+$short_term_debt['amount_m_'.$i];
+                    $current_liabilities['amount_m_0']=$income_tax_payable['amount_m_0']+$sales_tax_payable['amount_m_0']+$short_term_debt['amount_m_0'];
                 }
 
                 $long_term_debt['amount_m_'.$i]=$financing['balance']['long_term']['amount_m_'.$i];
                 $long_term_liabilities['amount_m_'.$i]=$long_term_debt['amount_m_'.$i];
 
                 $liabilities['amount_m_'.$i]=$long_term_liabilities['amount_m_'.$i]+$current_liabilities['amount_m_'.$i];
+                $liabilities['amount_m_0']=$long_term_liabilities['amount_m_0']+$current_liabilities['amount_m_0'];
             }
 
         }
@@ -974,6 +976,7 @@ class Forecast extends Model
             $months_to_pay=$initial_balance_settings['days_to_pay']/30;
             $payable_depreciation=0;
             $temp=$initial_balance_settings['accounts_payable'];
+
             for($i=0 ; $i<13 ; $i++)
             {
                 if($temp>0)
@@ -987,7 +990,9 @@ class Forecast extends Model
                     $accounts_payable['amount_m_'.$i]=0;
                 }
                 $current_liabilities['amount_m_'.$i]=$current_liabilities['amount_m_'.$i]+$accounts_payable['amount_m_'.$i];
+
             }
+            $liabilities['amount_m_0']=$current_liabilities['amount_m_0'];
             for($i=0 ; $i<6 ; $i++)
             {
                 $accounts_payable['amount_y_'.$i]=0;
