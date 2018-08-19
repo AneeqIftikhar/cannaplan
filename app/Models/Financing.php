@@ -305,6 +305,8 @@ class Financing extends Model
     public static function getFinancingByForecastId($id)
     {
         $forecast=Forecast::where('id',$id)->with(['company','financings','financings.fundable'])->first();
+        if(count($forecast['financings'])==0)
+            return $forecast;
         $forecast['before_start_status']=false;//for front end to check if a before start of forecast is present
         $start_of_forecast = new DateTime( $forecast->company->start_of_forecast );
         $amount_received_arr['finance']=array();
