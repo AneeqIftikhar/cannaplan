@@ -307,9 +307,9 @@ class Tax extends Model
             }
         }
         $financing=Financing::getFinancingByForecastId($id);
-        if(isset($financing['payments']['finance']))
+        if(isset($financing['financings']['payments']['finance']))
         {
-            $payment=$financing['payments']['finance'];
+            $payment=$financing['financings']['payments']['finance'];
             foreach ($payment as $p)
             {
                 for($i=1;$i<13;$i++)
