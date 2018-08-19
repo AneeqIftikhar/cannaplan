@@ -650,6 +650,7 @@ class Financing extends Model
 
 
                     //storing principal paid and interest paid in fundable
+                    $temp['rows_hidden']=false;
                     $temp['principal_paid']=$principal_paid;
                     $temp['interest_paid']=$interest_paid;
 
