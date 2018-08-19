@@ -23,7 +23,7 @@ class CreateInitialBalanceSettings extends Migration
                 //assets
                 $table->float('cash')->nullable();//How much cash do you have in the bank?
                 $table->float('accounts_receivable')->nullable();//How much do your customers owe you for past sales on credit?
-                $table->float('days_to_get_paid')->default(1);//How long will you take to collect on this starting balance
+                $table->float('days_to_get_paid')->default(15);//How long will you take to collect on this starting balance
                 $table->float('inventory')->nullable();
                 $table->float('long_term_assets')->nullable();
                 $table->float('accumulated_depreciation')->nullable();

@@ -1173,6 +1173,10 @@ class Forecast extends Model
         $intial_balance=$forecast->initialBalanceSettings()->first();
         if($intial_balance['accounts_receivable'])
         {
+            if($intial_balance['days_to_get_paid']/30<1)
+            {
+                $intial_balance['days_to_get_paid']=15;
+            }
             $accounts_receivable_months=round($intial_balance['days_to_get_paid']/30);
             $per_month_receivable=$intial_balance['accounts_receivable']/$accounts_receivable_months;
             for($i=1;$i<=$accounts_receivable_months;$i++)
