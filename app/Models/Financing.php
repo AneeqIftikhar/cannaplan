@@ -570,6 +570,12 @@ class Financing extends Model
                         $end=$forecast->financings[$i]->fundable->interest_months;
                     }
 
+                    //testing
+                    if($divisor==0)
+                    {
+                        $divisor=1;
+                    }
+
                     $dividend=$forecast->financings[$i]->fundable->amount*$absolute_interest_rate_monthly;
                     $monthly_interest=$dividend/$divisor;
 
