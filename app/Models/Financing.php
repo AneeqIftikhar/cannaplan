@@ -354,7 +354,7 @@ class Financing extends Model
             $long_term['amount_y_' . $j] = 0;
         }
 
-        for ($i=0;$i<count($forecast->financings);$i++)
+        for ($i=0;$i<count($forecast['financings']);$i++)
         {
             if(isset($forecast->financings[$i]->fundable)) {
                 $forecast['rows_hidden']=false;
