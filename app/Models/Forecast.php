@@ -1358,7 +1358,6 @@ class Forecast extends Model
                 if($asset->asset_duration_type=='current' || $asset->asset_duration_type=='long_term')
                 {
 
-
                     $total_months=0;
                     for($i=1;$i<13;$i++)
                     {
@@ -1456,7 +1455,7 @@ class Forecast extends Model
                     {
                         $sell_month=12;
                     }
-                    if($dep_year>0)
+                    if($diff_year>0)
                     {
                         $diff_month=0;
                     }
