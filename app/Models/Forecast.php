@@ -1501,9 +1501,8 @@ class Forecast extends Model
                             }
                             if($sell_year==0)
                             {
-                                $asset_sale_gain_loss['amount_y_'.($sell_month+1)]=$asset_sale_gain_loss['amount_y_'.($sell_month+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-$total_dep);
+                                $asset_sale_gain_loss['amount_m_'.($sell_month+1)]=$asset_sale_gain_loss['amount_m_'.($sell_month+1)]+round($asset->amount-$asset['asset_duration']['selling_amount']-$total_dep);
                                 $asset_total['amount_m_'.($sell_month+1)] = $asset_total['amount_m_'.($sell_month+1)]+$asset['asset_duration']['selling_amount'];
-
                             }
                             else
                             {
