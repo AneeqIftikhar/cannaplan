@@ -200,7 +200,7 @@ class Asset extends Model
                         {
                             if($forecast->assets[$i]->asset_duration->will_sell==1)
                             {
-                                if($selling_diff_year==0 && $selling_diff_month>=$j)
+                                if($selling_diff_year==0 && ($selling_diff_month+$diff_month)>=$j)
                                 {
                                     $new_value= $decreasing_amount - $dep_monthly;
                                     $decreasing_amount=$new_value;
