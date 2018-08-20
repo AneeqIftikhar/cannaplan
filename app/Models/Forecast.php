@@ -1062,7 +1062,6 @@ class Forecast extends Model
         //calculating retained earnings
         if($initial_balance_settings['retained_earnings']!==null)
         {
-            $begin_value_check=true;
             for($i=0 ; $i<13 ; $i++) {
                 $retained_earnings['amount_m_' . $i]=$retained_earnings['amount_m_' . $i]+$initial_balance_settings['retained_earnings'];
             }
