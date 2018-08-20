@@ -672,7 +672,7 @@ class Asset extends Model
                     {
                         $sell_month=12;
                     }
-                    if($dep_year>0)
+                    if($diff_year>0)
                     {
                         $diff_month=0;
                     }
