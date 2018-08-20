@@ -174,7 +174,8 @@ class FinancingController extends Controller
         if($forecast && $forecast->created_by==$user->id)
         {
             $financing=Financing::getFinancingByForecastId($id);
-            $financing['projected_cash_flow']=Financing::getProjectedCashFlow($id);
+            $temp=Forecast::getCashFlowByForecastId($id);
+            $financing['projected_cash_flow']=$temp['cash_at_the_end'];
             return response()->success($financing,'Financing Fetched Successfully');
         }
         else

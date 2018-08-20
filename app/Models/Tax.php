@@ -116,7 +116,7 @@ class Tax extends Model
 
             for($i=1 ; $i<13 ; $i++)
             {
-                $accrued['amount_m_'.$i]=$rev->total['amount_m_'.$i]*$sales_tax_abs;
+                $accrued['amount_m_'.$i]=round($rev->total['amount_m_'.$i]*$sales_tax_abs);
 
 
 

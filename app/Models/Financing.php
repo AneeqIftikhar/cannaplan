@@ -477,7 +477,7 @@ class Financing extends Model
                 else if($forecast->financings[$i]->fundable_type == 'loan'){
                     $date=date($forecast->financings[$i]->fundable->receive_date);
                     $d2 = new DateTime($date);
-                    if($date<$start_of_forecast)
+                    if($d2<$start_of_forecast)
                     {
                         $diff_month=$start_of_forecast->diff($d2)->m;
                         $diff_month=$diff_month*-1;
