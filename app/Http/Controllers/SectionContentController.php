@@ -77,13 +77,27 @@ class SectionContentController extends Controller
      */
     public function destroy($id)
     {
-        $section_content = SectionContent::destroy($id);
+        $section_content = SectionContent::find($id);
+        $user=Auth::user();
+        if($section_content && $user->id==$section_content->created_by)
+        {
+            if($section_content->content_type=='topic')
+            {
+                $section_content->content()->update(['is_removed'=>false]);
+                $section_content = SectionContent::destroy($id);
+            }
+            else
+            {
+                $section_content = SectionContent::destroy($id);
+            }
 
-        if($section_content){
-            return response()->success([],'Section Content Deleted Successfully');
+            if($section_content){
+                return response()->success([],'Section Content Deleted Successfully');
+            }
+            else{
+                return response()->fail('Section Content Not Found');
+            }
         }
-        else{
-            return response()->fail('Section Content Not Found');
-        }
+
     }
 }

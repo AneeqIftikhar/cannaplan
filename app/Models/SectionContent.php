@@ -46,7 +46,7 @@ class SectionContent extends Model
     /**
      * @var array
      */
-    protected $fillable = ['section_id', 'name', 'order' , 'content_type','content_id'];
+    protected $fillable = ['section_id', 'alias', 'order' , 'content_type','content_id'];
     protected $guarded = ['id','created_by'];
 
     /**

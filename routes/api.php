@@ -67,7 +67,7 @@ Route::group(['middleware' => ['cors']], function () {
 
         /*Chapter Routes*/
         //Resource Routes For Chapter Not Being Used For Now
-        //Route::resource('chapter', 'ChapterController');
+        Route::resource('chapter', 'ChapterController');
         Route::post('update_chapter/{id}','ChapterController@updateChapter');
         Route::post('update_order_chapter','ChapterController@updateOrder');
 
