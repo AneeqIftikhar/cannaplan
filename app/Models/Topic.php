@@ -26,7 +26,8 @@ class Topic extends Model
     /**
      * @var array
      */
-    protected $fillable = ['description'];
+    protected $fillable = ['description','name','company_id','is_removed'];
+    protected $guarded = ['id','created_by'];
     public function contents()
     {
         return $this->morphMany('CannaPlan\Models\SectionContent', 'content');

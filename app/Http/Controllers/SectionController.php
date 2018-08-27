@@ -75,15 +75,20 @@ class SectionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+
     public function destroy($id)
     {
-        $section = Section::destroy($id);
-
-        if($section){
-            return response()->success([],'Section Deleted Successfully');
-        }
-        else{
-            return response()->fail('Section Not Found');
+        $section = Section::find($id);
+        $user=Auth::user();
+        if($section && $user->id==$section->created_by)
+        {
+            $section = Section::destroy($id);
+            if($section){
+                return response()->success([],'Section Deleted Successfully');
+            }
+            else{
+                return response()->fail('Section Not Found');
+            }
         }
     }
 }

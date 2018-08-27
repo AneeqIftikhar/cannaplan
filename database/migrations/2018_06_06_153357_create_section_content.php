@@ -16,14 +16,14 @@ class CreateSectionContent extends Migration
         if (!Schema::hasTable('section_content')) {
             Schema::create('section_content', function (Blueprint $table) {
                 $table->increments('id');
-                $table->string('name','100');
+                $table->string('alias','100')->nullable();
                 $table->integer('order');
 
                 $table->integer('section_id')->unsigned();
                 $table->foreign('section_id')->references('id')->on('section')->onDelete('cascade');
 
-                $table->integer('content_id');
-                $table->string('content_type' , '50');
+                $table->integer('content_id')->nullable();
+                $table->string('content_type' , '50')->nullable();
 
                 $table->integer('created_by')->nullable();
 

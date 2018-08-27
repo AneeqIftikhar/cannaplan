@@ -101,15 +101,32 @@ class ChapterController extends Controller
     }
 
 //    Delition of chapter is not included in this phase
-//    public function destroy($id)
-//    {
-//        $chapter = Chapter::destroy($id);
-//
-//        if($chapter){
-//            return response()->success([],'Chapter Deleted Successfully');
-//        }
-//        else{
-//            return response()->fail('Chapter Not Found');
-//        }
-//    }
+    public function destroy($id)
+    {
+        $chapter = Chapter::find($id);
+        $plan=$chapter->plan;
+        $user=Auth::user();
+        if($chapter && $user->id==$chapter->created_by)
+        {
+            $deleted_order=$chapter->order;
+            $chapter = Chapter::destroy($id);
+
+            if($chapter){
+                $all_chapters=$plan->chapters;
+                foreach ($all_chapters as $all_chapter)
+                {
+                    if($all_chapter->order>$deleted_order)
+                    {
+                        $all_chapter->order=$all_chapter->order-1;
+                        $all_chapter->save();
+                    }
+                }
+                return response()->success([],'Chapter Deleted Successfully');
+            }
+            else{
+                return response()->fail('Chapter Not Found');
+            }
+        }
+
+    }
 }

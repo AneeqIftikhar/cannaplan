@@ -15,10 +15,14 @@ class CreateTopic extends Migration
     {
         if (!Schema::hasTable('topic')) {
             Schema::create('topic', function (Blueprint $table) {
-                $table->integer('id')->unsigned();
-                $table->primary('id');
-                $table->text('description');
+                $table->increments('id');
+                $table->text('description')->nullable();
+                $table->string('name');
 
+                $table->integer('company_id')->unsigned();
+                $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
+
+                $table->boolean('is_removed')->default(false);
                 $table->integer('created_by')->nullable();
 
                 $table->softDeletes();

@@ -31,7 +31,16 @@ class Section extends Model
 
         static::deleting(function($sections) {
             foreach ($sections->sectionContents()->get() as $sectionContent) {
-                $sectionContent->delete();
+                if($sectionContent->content_type=='topic')
+                {
+                    $sectionContent->content()->update(['is_removed'=>false]);
+                    $sectionContent->delete();
+                }
+                else
+                {
+                    $sectionContent->delete();
+                }
+
             }
         });
     }
