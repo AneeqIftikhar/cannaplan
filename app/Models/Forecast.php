@@ -646,9 +646,9 @@ class Forecast extends Model
                 $accounts_receivable['amount_y_'.$i]=0;
             }
 
-            $current_asset['accounts_receivable']=$accounts_receivable;
-        }
 
+        }
+        $current_asset['accounts_receivable']=$accounts_receivable;
 
         //tax
         //calling tax
