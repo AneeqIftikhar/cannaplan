@@ -806,9 +806,6 @@ class Forecast extends Model
             {
                 $long_term_assets_total['amount_y_'.$i]=$asset['total_long_term']['amount_y_'.$i];
             }
-            else{
-                $long_term_assets_total['amount_y_'.$i]=0;
-            }
 
             //calculating assets array
             if($long_term_assets_total['amount_y_' . $i] || $current_asset['amount_y_'.$i])
@@ -998,8 +995,9 @@ class Forecast extends Model
                 $accounts_payable['amount_y_'.$i]=0;
             }
 
-            $current_liabilities['accounts_payable']=$accounts_payable;
+
         }
+        $current_liabilities['accounts_payable']=$accounts_payable;
 
 
         //calling dividend
@@ -1009,7 +1007,8 @@ class Forecast extends Model
         {
             if($i==1)
             {
-                $retained_earnings['amount_m_'.$i]=($dividend['total']['amount_m_'.$i]*-1);
+                if($dividend['total']['amount_m_'.$i])
+                    $retained_earnings['amount_m_'.$i]=($dividend['total']['amount_m_'.$i]*-1);
             }
             else{
                 if($retained_earnings['amount_m_' . ($i-1)] || $dividend['total']['amount_m_' . $i])
@@ -1037,7 +1036,8 @@ class Forecast extends Model
         {
             if($i==1)
             {
-                $retained_earnings['amount_y_'.$i]=($dividend['total']['amount_y_'.$i]*-1);
+                if($dividend['total']['amount_y_'.$i])
+                    $retained_earnings['amount_y_'.$i]=($dividend['total']['amount_y_'.$i]*-1);
             }
             else{
                 if($retained_earnings['amount_y_' . ($i-1)] || $dividend['total']['amount_y_' . $i])
@@ -1060,9 +1060,10 @@ class Forecast extends Model
         }
 
         //calculating retained earnings
-        if($initial_balance_settings['retained_earnings']!==null)
+        if($initial_balance_settings['retained_earnings'])
         {
             for($i=0 ; $i<13 ; $i++) {
+
                 $retained_earnings['amount_m_' . $i]=$retained_earnings['amount_m_' . $i]+$initial_balance_settings['retained_earnings'];
             }
             for($i=1 ; $i<6 ; $i++)
