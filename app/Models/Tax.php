@@ -235,13 +235,13 @@ class Tax extends Model
         $total_interest_paid=array();
         for($i=1;$i<13;$i++)
         {
-            $asset_total['amount_m_'.$i] = 0;
-            $total_interest_paid['amount_m_'.$i] = 0;
+            $asset_total['amount_m_'.$i] = null;
+            $total_interest_paid['amount_m_'.$i] = null;
         }
         for($i=1;$i<6;$i++)
         {
-            $asset_total['amount_y_'.$i] = 0;
-            $total_interest_paid['amount_y_'.$i] = 0;
+            $asset_total['amount_y_'.$i] = null;
+            $total_interest_paid['amount_y_'.$i] = null;
         }
         foreach ($assets->assets as $asset)
         {
@@ -327,13 +327,15 @@ class Tax extends Model
 
         for($i=1;$i<13;$i++)
         {
-            $profit['amount_m_'.$i] = 0;
-            $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i]-$asset_total['amount_m_'.$i]-$total_interest_paid['amount_m_'.$i];
+            $profit['amount_m_'.$i] = null;
+            if($revenue_total['amount_m_'.$i]!==null || $cost_total['amount_m_'.$i]!==null || $labor_total['amount_m_'.$i]!==null || $expense_total['amount_m_'.$i]!==null || $asset_total['amount_m_'.$i]!==null || $total_interest_paid['amount_m_'.$i]!==null)
+                $profit['amount_m_'.$i] = $revenue_total['amount_m_'.$i]-$cost_total['amount_m_'.$i]-$labor_total['amount_m_'.$i]-$expense_total['amount_m_'.$i]-$asset_total['amount_m_'.$i]-$total_interest_paid['amount_m_'.$i];
         }
         for($i=1;$i<6;$i++)
         {
-            $profit['amount_y_'.$i] = 0;
-            $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i]- $asset_total['amount_y_'.$i]-$total_interest_paid['amount_y_'.$i];
+            $profit['amount_y_'.$i] = null;
+            if($revenue_total['amount_y_'.$i]!==null || $cost_total['amount_y_'.$i]!==null || $labor_total['amount_y_'.$i]!==null || $expense_total['amount_y_'.$i]!==null || $asset_total['amount_y_'.$i]!==null || $total_interest_paid['amount_y_'.$i]!==null)
+                $profit['amount_y_'.$i] = $revenue_total['amount_y_'.$i]-$cost_total['amount_y_'.$i]-$labor_total['amount_y_'.$i]-$expense_total['amount_y_'.$i]- $asset_total['amount_y_'.$i]-$total_interest_paid['amount_y_'.$i];
         }
 
         return $profit;
@@ -345,48 +347,55 @@ class Tax extends Model
         $coorporate_tax=$forecast->taxes[0]->coorporate_tax;
         $paid=array();
         $sum=0;
-        $year_1_paid=0;
+        $year_1_paid=null;
         for($i=1;$i<13;$i++)
         {
-            $paid['amount_m_'.$i]=0;
-            $profit['amount_m_'.$i] = round(($coorporate_tax/100)*$profit['amount_m_'.$i]);
-            if($profit['amount_m_'.$i]<0)
-                $profit['amount_m_'.$i]=0;
-            if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
+            $paid['amount_m_'.$i]=null;
+            if($profit['amount_m_'.$i]!==null)
             {
-
-                if($i==4 || $i==7 || $i==10)
+                $profit['amount_m_'.$i] = round(($coorporate_tax/100)*$profit['amount_m_'.$i]);
+                if($profit['amount_m_'.$i]<0)
+                    $profit['amount_m_'.$i]=0;
+                if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
                 {
-                    $paid['amount_m_'.$i]=$sum;
-                    $year_1_paid=$year_1_paid+$sum;
-                    $sum=0;
+
+                    if($i==4 || $i==7 || $i==10)
+                    {
+                        $paid['amount_m_'.$i]=$sum;
+                        $year_1_paid=$year_1_paid+$sum;
+                        $sum=0;
+                    }
+                    $sum=$sum+$profit['amount_m_'.$i];
                 }
-                $sum=$sum+$profit['amount_m_'.$i];
+                else
+                {
+                    $year_1_paid=$year_1_paid+$profit['amount_m_'.$i];
+                }
             }
-            else
-            {
-                $year_1_paid=$year_1_paid+$profit['amount_m_'.$i];
-            }
+
 
         }
         $paid['amount_y_1']=$year_1_paid;
-        $profit['amount_y_1'] = round(($coorporate_tax/100)*$profit['amount_y_1']);
-        if($profit['amount_y_1']<0)
-            $profit['amount_y_1']=0;
-        $previous_remaining=$profit['amount_y_1']-$paid['amount_y_1'];
+        if($profit['amount_y_1']!==null)
+        {
+            $profit['amount_y_1'] = round(($coorporate_tax/100)*$profit['amount_y_1']);
+            if($profit['amount_y_1']<0)
+                $profit['amount_y_1']=0;
+            $previous_remaining=$profit['amount_y_1']-$paid['amount_y_1'];
+        }
+
         for($i=2;$i<6;$i++)
         {
-            $profit['amount_y_'.$i] = round(($coorporate_tax/100)*$profit['amount_y_'.$i]);
-            if($profit['amount_y_'.$i]<0)
-                $profit['amount_y_'.$i]=0;
-            if($forecast->taxes[0]->coorporate_payable_time=='quarterly')
-            {
-                $paid['amount_y_'.$i]=$previous_remaining+(($profit['amount_y_'.$i]/4)*3);
-                $previous_remaining=($profit['amount_y_'.$i]/4);
-            }
-            else
-            {
-                $paid['amount_y_'.$i]=$profit['amount_y_'.$i];
+            if($profit['amount_y_' . $i]!==null) {
+                $profit['amount_y_' . $i] = round(($coorporate_tax / 100) * $profit['amount_y_' . $i]);
+                if ($profit['amount_y_' . $i] < 0)
+                    $profit['amount_y_' . $i] = 0;
+                if ($forecast->taxes[0]->coorporate_payable_time == 'quarterly') {
+                    $paid['amount_y_' . $i] = $previous_remaining + (($profit['amount_y_' . $i] / 4) * 3);
+                    $previous_remaining = ($profit['amount_y_' . $i] / 4);
+                } else {
+                    $paid['amount_y_' . $i] = $profit['amount_y_' . $i];
+                }
             }
         }
         $intial_balance=$forecast->initialBalanceSettings()->first();
