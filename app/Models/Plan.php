@@ -105,5 +105,44 @@ class Plan extends Model
 
 
     }
+    public static function add_entries_in_plan_module2($plan)
+    {
+        $data=json_decode(PlanData::get_json_data() , true);
+        $company=$plan->company;
+        for ($i=0;$i<sizeof($data['chapter']);$i++)
+        {
+            $chap=$plan->chapters()->create(["name"=>$data['chapter'][$i]['name'],"order"=>$data['chapter'][$i]["order"]]);
+            for ($j=0;$j<sizeof($data['chapter'][$i]['section']);$j++)
+            {
+                $section=$chap->sections()->create(["name"=>$data['chapter'][$i]['section'][$j]['name'],"order"=>$data['chapter'][$i]['section'][$j]["order"]]);
+                for ($k=0;$k<sizeof($data['chapter'][$i]['section'][$j]['section_content']);$k++)
+                {
+                    if($data['chapter'][$i]['section'][$j]['section_content'][$k]['content_type']=='topic')
+                    {
+                        //$section->sectionContents()->create($data['chapter'][$i]['section'][$j]['section_content'][$k]);
+                        $section_content=new SectionContent();
+                        $section_content->section_id=$section->id;
+                        $section_content->order=$data['chapter'][$i]['section'][$j]['section_content'][$k]['order'];
+                        $section_content->save();
+                        $topic=Topic::create(['name'=>$data['chapter'][$i]['section'][$j]['section_content'][$k]['name'],'is_removed'=>true,'company_id'=>$company->id]);
+                        $topic->contents()->save($section_content);
+                    }
+                    else
+                    {
+                        $section->sectionContents()->create($data['chapter'][$i]['section'][$j]['section_content'][$k]);
+                    }
 
+                }
+            }
+
+        }
+        $topic_data=json_decode(PlanData::get_topic_data() , true);
+        for ($i=0;$i<sizeof($topic_data);$i++)
+        {
+            $topic=Topic::create(['name'=>$topic_data[$i]['name'],'is_removed'=>false,'company_id'=>$company->id]);
+        }
+
+
+
+    }
 }

@@ -29,6 +29,7 @@ class Company extends Model
 {
     use SoftDeletes;
     protected $dates=['deleted_at'];
+    protected $appends = ['currency'];
     /**
      * The table associated with the model.
      * 
@@ -122,5 +123,9 @@ class Company extends Model
             }
         }
         return false;
+    }
+    public function getCurrencyAttribute()
+    {
+        return $this->currency()->first();
     }
 }
