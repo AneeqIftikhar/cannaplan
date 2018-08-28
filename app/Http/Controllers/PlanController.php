@@ -16,6 +16,8 @@ class PlanController extends Controller
 //    }
 
 
+//testing new database show
+
     public function show($id)
     {
         $plan=Plan::find($id);
@@ -34,10 +36,10 @@ class PlanController extends Controller
     }
 
 
+
    //Nothing To update In Plan
 //    public function update(Request $request, $id)
 //    {
-//        //
 //    }
 
     //Plan Can not be deleted

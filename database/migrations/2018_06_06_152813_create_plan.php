@@ -23,7 +23,7 @@ class CreatePlan extends Migration
                 $table->foreign('company_id')->references('id')->on('company')->onDelete('cascade');
 
                 $table->integer('created_by')->nullable();
-
+                $table->mediumText('planJson')->nullable();
                 $table->softDeletes();
                 $table->timestamps();
             });
